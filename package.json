@@ -12,6 +12,8 @@
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
+    "map:generate": "node scripts/map-data/generate-seoul-map.mjs",
+    "map:test": "node --test scripts/map-data/generate-seoul-map.test.mjs",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
