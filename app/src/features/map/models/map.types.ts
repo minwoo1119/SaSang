@@ -1,5 +1,12 @@
 export type MapMode = "korea" | "world";
 export type RegionCode = string;
+export type RegionBounds = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 export type MapRegion = {
   code: RegionCode;
   name: string;
@@ -7,7 +14,19 @@ export type MapRegion = {
   provinceName?: string;
   geometryType: "Polygon" | "MultiPolygon";
   polygonCount: number;
+  bounds: RegionBounds;
   path: string;
+};
+
+export type RegionPhoto = {
+  id: string;
+  uri: string;
+  width: number;
+  height: number;
+  scale: number;
+  offsetX: number;
+  offsetY: number;
+  createdAt: string;
 };
 
 export type RegionMapAsset = {

@@ -22,6 +22,10 @@ function assertValidMap(map, codePattern) {
     assert.match(region.path, /^M/);
     assert.match(region.path, / Z$/);
     assert.ok(region.polygonCount >= 1);
+    assert.ok(Number.isFinite(region.bounds.x));
+    assert.ok(Number.isFinite(region.bounds.y));
+    assert.ok(region.bounds.width > 0);
+    assert.ok(region.bounds.height > 0);
     assert.ok(["Polygon", "MultiPolygon"].includes(region.geometryType));
     if (region.geometryType === "MultiPolygon") {
       assert.ok(region.polygonCount > 1);

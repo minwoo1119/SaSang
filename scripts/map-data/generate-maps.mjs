@@ -109,6 +109,19 @@ export function generateMap(source, config) {
         throw new Error("Every region requires a code and name.");
       }
       const polygons = polygonsFromGeometry(geometry);
+      const projectedPoints = polygons.flat(2).map(project);
+      const projectedXs = projectedPoints.map(([x]) => x);
+      const projectedYs = projectedPoints.map(([, y]) => y);
+      const bounds = {
+        x: Number(Math.min(...projectedXs).toFixed(2)),
+        y: Number(Math.min(...projectedYs).toFixed(2)),
+        width: Number(
+          (Math.max(...projectedXs) - Math.min(...projectedXs)).toFixed(2),
+        ),
+        height: Number(
+          (Math.max(...projectedYs) - Math.min(...projectedYs)).toFixed(2),
+        ),
+      };
       const path = polygons
         .flatMap((polygon) => polygon)
         .map(
@@ -132,6 +145,7 @@ export function generateMap(source, config) {
           : {}),
         geometryType: geometry.type,
         polygonCount: polygons.length,
+        bounds,
         path,
       };
     })

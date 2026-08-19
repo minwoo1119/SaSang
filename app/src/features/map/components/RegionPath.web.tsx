@@ -7,6 +7,7 @@ const WebPath = Path as unknown as ComponentType<WebPathProps>;
 
 type RegionPathProps = {
   region: MapRegion;
+  photoFilled: boolean;
   selected: boolean;
   visited: boolean;
   onPress: (region: MapRegion) => void;
@@ -14,19 +15,20 @@ type RegionPathProps = {
 
 export const RegionPath = memo(function RegionPath({
   region,
+  photoFilled,
   selected,
   visited,
   onPress,
 }: RegionPathProps) {
   return (
     <WebPath
-      accessibilityLabel={`${region.name}, ${region.code}${visited ? ", 방문함" : ""}`}
+      accessibilityLabel={`${region.name}, ${region.code}${visited ? ", 사진 있음" : ""}`}
       d={region.path}
-      fill={selected ? "#171717" : visited ? "#A3A3A3" : "#F5F5F5"}
+      fill={photoFilled ? "transparent" : selected ? "#272521" : visited ? "#BBB7AE" : "#EEECE6"}
       onClick={() => onPress(region)}
-      stroke={selected ? "#171717" : "#D4D4D4"}
+      stroke={selected ? "#E05A3F" : photoFilled ? "#FFFFFF" : "#C9C5BC"}
       strokeLinejoin="round"
-      strokeWidth={selected ? 1.8 : 0.8}
+      strokeWidth={selected ? 2.2 : photoFilled ? 1.2 : 0.72}
     />
   );
 });

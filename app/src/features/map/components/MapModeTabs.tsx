@@ -1,5 +1,6 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
 import type { MapMode } from "../models/map.types";
+import { MapGlassSurface } from "./MapGlassSurface";
 
 type Props = { value: MapMode; onChange: (mode: MapMode) => void };
 const OPTIONS: readonly { label: string; value: MapMode }[] = [
@@ -9,7 +10,7 @@ const OPTIONS: readonly { label: string; value: MapMode }[] = [
 
 export function MapModeTabs({ value, onChange }: Props) {
   return (
-    <View accessibilityRole="tablist" style={styles.container}>
+    <MapGlassSurface style={styles.container}>
       {OPTIONS.map((option) => {
         const selected = option.value === value;
         return (
@@ -18,7 +19,11 @@ export function MapModeTabs({ value, onChange }: Props) {
             accessibilityState={{ selected }}
             key={option.value}
             onPress={() => onChange(option.value)}
-            style={[styles.tab, selected && styles.selectedTab]}
+            style={({ pressed }) => [
+              styles.tab,
+              selected && styles.selectedTab,
+              pressed && styles.pressed,
+            ]}
           >
             <Text style={[styles.label, selected && styles.selectedLabel]}>
               {option.label}
@@ -26,20 +31,27 @@ export function MapModeTabs({ value, onChange }: Props) {
           </Pressable>
         );
       })}
-    </View>
+    </MapGlassSurface>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     alignSelf: "center",
-    backgroundColor: "#F5F5F5",
-    borderRadius: 12,
+    borderRadius: 24,
     flexDirection: "row",
     padding: 4,
+    overflow: "hidden",
   },
-  tab: { borderRadius: 9, paddingHorizontal: 24, paddingVertical: 9 },
-  selectedTab: { backgroundColor: "#FFFFFF" },
-  label: { color: "#737373", fontSize: 14, fontWeight: "500" },
-  selectedLabel: { color: "#171717", fontWeight: "700" },
+  label: { color: "#777269", fontSize: 14, fontWeight: "600" },
+  pressed: { opacity: 0.72 },
+  selectedLabel: { color: "#FFFFFF", fontWeight: "700" },
+  selectedTab: { backgroundColor: "#272521" },
+  tab: {
+    alignItems: "center",
+    borderRadius: 20,
+    minWidth: 92,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
 });
