@@ -214,10 +214,10 @@ const styles = StyleSheet.create({
   },
   zoomControls: {
     borderRadius: 24,
-    bottom: 12,
     overflow: "hidden",
     position: "absolute",
-    right: 16,
+    right: 12,
+    top: 106,
   },
   zoomIcon: {
     color: "#272521",

@@ -73,53 +73,43 @@ export function MapScreen() {
 
   return (
     <View style={styles.container}>
-      <View
-        style={[
-          styles.mapViewport,
-          { bottom: insets.bottom + 170, top: insets.top + 104 },
-        ]}
-      >
+      <View style={styles.mapViewport}>
         <InteractiveRegionMap mode={mode} />
       </View>
 
-      <View style={[styles.topOverlay, { top: insets.top + 10 }]}>
-        <View style={styles.brandRow}>
+      <View
+        pointerEvents="box-none"
+        style={[styles.topOverlay, { top: insets.top + 8 }]}
+      >
+        <View style={styles.headerRow}>
           <View>
             <Text style={styles.brand}>사상</Text>
-            <Text style={styles.tagline}>나의 여행을 지도에 남기다</Text>
+            <Text style={styles.recordCount}>{photoCount}개의 여행 기록</Text>
           </View>
-          <View style={styles.countBadge}>
-            <Text style={styles.countNumber}>{photoCount}</Text>
-            <Text style={styles.countLabel}>기록</Text>
-          </View>
+          <MapModeTabs onChange={setMode} value={mode} />
         </View>
-        <MapModeTabs onChange={setMode} value={mode} />
       </View>
 
-      <MapGlassSurface
-        style={[styles.bottomSheet, { bottom: insets.bottom + 12 }]}
-      >
-        <View style={styles.regionRow}>
+      {selectedRegion ? (
+        <MapGlassSurface
+          style={[styles.regionControl, { bottom: insets.bottom + 12 }]}
+        >
           {selectedPhoto ? (
             <Image source={{ uri: selectedPhoto.uri }} style={styles.thumbnail} />
           ) : (
-            <View style={styles.regionMarker}>
-              <View style={styles.regionMarkerDot} />
-            </View>
+            <View style={styles.regionMarker} />
           )}
           <View style={styles.regionCopy}>
-            <Text style={styles.regionEyebrow}>
-              {selectedRegion?.provinceName ??
-                (mode === "korea" ? "대한민국" : "세계")}
-            </Text>
             <Text numberOfLines={1} style={styles.regionName}>
-              {selectedRegion?.name ?? "지역을 선택해 주세요"}
+              {selectedRegion.name}
             </Text>
-            <Text style={styles.regionCode}>
-              {selectedRegion?.code ?? "지도를 탭해 여행 기록을 시작하세요"}
+            <Text numberOfLines={1} style={styles.regionCode}>
+              {selectedRegion.provinceName ??
+                (mode === "korea" ? "대한민국" : "세계")}{" "}
+              · {selectedRegion.code}
             </Text>
           </View>
-          {selectedPhoto && selectedRegion ? (
+          {selectedPhoto ? (
             <Pressable
               accessibilityLabel="선택 지역 사진 삭제"
               accessibilityRole="button"
@@ -133,125 +123,106 @@ export function MapScreen() {
               <Text style={styles.removeText}>삭제</Text>
             </Pressable>
           ) : null}
-        </View>
-
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !selectedRegion || isPickingPhoto }}
-          disabled={!selectedRegion || isPickingPhoto}
-          onPress={pickPhoto}
-          style={({ pressed }) => [
-            styles.photoButton,
-            !selectedRegion && styles.disabledButton,
-            pressed && selectedRegion && styles.photoButtonPressed,
-          ]}
-        >
-          {isPickingPhoto ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <>
+          <Pressable
+            accessibilityLabel={selectedPhoto ? "지역 사진 바꾸기" : "지역 사진 추가"}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isPickingPhoto }}
+            disabled={isPickingPhoto}
+            onPress={pickPhoto}
+            style={({ pressed }) => [
+              styles.photoButton,
+              pressed && styles.photoButtonPressed,
+            ]}
+          >
+            {isPickingPhoto ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : (
               <Text style={styles.photoButtonIcon}>＋</Text>
-              <Text style={styles.photoButtonText}>
-                {selectedPhoto ? "사진 바꾸기" : "사진 추가"}
-              </Text>
-            </>
-          )}
-        </Pressable>
-      </MapGlassSurface>
+            )}
+          </Pressable>
+        </MapGlassSurface>
+      ) : (
+        <MapGlassSurface
+          style={[styles.selectionHint, { bottom: insets.bottom + 14 }]}
+        >
+          <Text style={styles.selectionHintText}>지역을 선택해 기록을 시작하세요</Text>
+        </MapGlassSurface>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bottomSheet: {
-    borderRadius: 28,
-    left: 14,
-    padding: 14,
-    position: "absolute",
-    right: 14,
-  },
   brand: {
-    color: "#272521",
-    fontSize: 26,
+    color: "#17191D",
+    fontSize: 24,
     fontWeight: "800",
-    letterSpacing: -1.1,
+    letterSpacing: -0.9,
   },
-  brandRow: {
+  container: { backgroundColor: "#F1F2F0", flex: 1 },
+  headerRow: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 4,
   },
-  container: { backgroundColor: "#F8F6F1", flex: 1 },
-  countBadge: {
-    alignItems: "baseline",
-    backgroundColor: "rgba(39, 37, 33, 0.07)",
-    borderRadius: 18,
-    flexDirection: "row",
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  countLabel: { color: "#777269", fontSize: 11, fontWeight: "600" },
-  countNumber: { color: "#272521", fontSize: 14, fontWeight: "800" },
-  disabledButton: { backgroundColor: "#BDB9B0" },
-  mapViewport: { left: 0, position: "absolute", right: 0 },
+  mapViewport: StyleSheet.absoluteFillObject,
   photoButton: {
     alignItems: "center",
-    backgroundColor: "#E05A3F",
-    borderRadius: 19,
-    flexDirection: "row",
-    gap: 6,
-    height: 50,
+    backgroundColor: "#17191D",
+    borderRadius: 23,
+    height: 46,
     justifyContent: "center",
-    marginTop: 12,
+    width: 46,
   },
   photoButtonIcon: {
     color: "#FFFFFF",
-    fontSize: 21,
+    fontSize: 23,
     fontWeight: "400",
     lineHeight: 23,
   },
-  photoButtonPressed: { backgroundColor: "#C94C34" },
-  photoButtonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" },
+  photoButtonPressed: { backgroundColor: "#3B3E44" },
   pressed: { opacity: 0.55 },
-  regionCode: { color: "#8A857C", fontSize: 11, marginTop: 2 },
-  regionCopy: { flex: 1, minWidth: 0 },
-  regionEyebrow: {
-    color: "#8A857C",
-    fontSize: 11,
-    fontWeight: "600",
-    marginBottom: 1,
-  },
-  regionMarker: {
+  recordCount: { color: "#666B73", fontSize: 11, marginTop: 1 },
+  regionCode: { color: "#777C84", fontSize: 11, marginTop: 2 },
+  regionControl: {
     alignItems: "center",
-    backgroundColor: "#EEEAE2",
-    borderRadius: 18,
-    height: 48,
-    justifyContent: "center",
-    width: 48,
+    borderRadius: 30,
+    flexDirection: "row",
+    gap: 11,
+    left: 12,
+    minHeight: 64,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+    position: "absolute",
+    right: 12,
   },
-  regionMarkerDot: {
-    backgroundColor: "#E05A3F",
-    borderRadius: 5,
-    height: 10,
-    width: 10,
+  regionCopy: { flex: 1, minWidth: 0 },
+  regionMarker: {
+    backgroundColor: "#3268C8",
+    borderRadius: 21,
+    height: 42,
+    width: 42,
   },
   regionName: {
-    color: "#272521",
-    fontSize: 18,
+    color: "#17191D",
+    fontSize: 16,
     fontWeight: "700",
     letterSpacing: -0.45,
   },
-  regionRow: { alignItems: "center", flexDirection: "row", gap: 12 },
   removeButton: { paddingHorizontal: 4, paddingVertical: 10 },
-  removeText: { color: "#8A857C", fontSize: 12, fontWeight: "600" },
-  tagline: { color: "#777269", fontSize: 11, marginTop: 1 },
-  thumbnail: { borderRadius: 18, height: 48, width: 48 },
-  topOverlay: {
-    gap: 10,
-    left: 18,
+  removeText: { color: "#777C84", fontSize: 12, fontWeight: "600" },
+  selectionHint: {
+    alignSelf: "center",
+    borderRadius: 22,
+    paddingHorizontal: 17,
+    paddingVertical: 12,
     position: "absolute",
-    right: 18,
+  },
+  selectionHintText: { color: "#4D5158", fontSize: 13, fontWeight: "600" },
+  thumbnail: { borderRadius: 21, height: 42, width: 42 },
+  topOverlay: {
+    left: 16,
+    position: "absolute",
+    right: 16,
   },
 });

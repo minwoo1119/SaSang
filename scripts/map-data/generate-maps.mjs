@@ -24,20 +24,30 @@ const WORLD_OUTPUT = new URL(
   import.meta.url,
 );
 
+const MERGED_METROPOLITAN_CITY_CODES = new Set([
+  "26",
+  "27",
+  "28",
+  "29",
+  "30",
+  "31",
+]);
+
 export const MAP_CONFIGS = {
   korea: {
     viewBox: { width: 360, height: 520, padding: 12 },
     codePattern: /^\d{5}$/,
     regionProperties: KOREA_CODES,
+    mergeByProvinceCodes: MERGED_METROPOLITAN_CITY_CODES,
     metadata: {
-      version: "sgis-sigungu-2025-2q-v1",
+      version: "sgis-sigungu-2025-2q-v2",
       generatedAt: "2025-06-30T00:00:00.000Z",
       source:
         "https://www.data.go.kr/data/15129688/fileData.do (bnd_sigungu_00_2025_2Q)",
       license: "이용허락범위 제한 없음",
       referenceDate: "2025 Q2",
       identifierPolicy:
-        "Official five-digit legal-district prefix from code.go.kr; joined to SGIS geometry by the 2025 district name snapshot",
+        "Official five-digit legal-district prefix from code.go.kr; Busan, Daegu, Incheon, Gwangju, Daejeon, and Ulsan are represented by their five-digit metropolitan-city codes with all child district polygons preserved",
       excludedFeatures: [],
     },
   },
@@ -72,12 +82,38 @@ function formatNumber(value) {
   return Number(value.toFixed(2)).toString();
 }
 
+function normalizeFeatures(source, config) {
+  const normalized = source.features.map(({ geometry, properties }) => ({
+    geometry,
+    properties: config.regionProperties?.[properties.code] ?? properties,
+  }));
+  if (!config.mergeByProvinceCodes) return normalized;
+
+  const merged = new Map();
+  const retained = [];
+  for (const feature of normalized) {
+    const { provinceCode, provinceName } = feature.properties;
+    if (!config.mergeByProvinceCodes.has(provinceCode)) {
+      retained.push(feature);
+      continue;
+    }
+    const code = `${provinceCode}000`;
+    const current = merged.get(code) ?? {
+      geometry: { type: "MultiPolygon", coordinates: [] },
+      properties: { code, name: provinceName },
+    };
+    current.geometry.coordinates.push(...polygonsFromGeometry(feature.geometry));
+    merged.set(code, current);
+  }
+  return [...retained, ...merged.values()];
+}
+
 export function generateMap(source, config) {
   if (source.type !== "FeatureCollection") {
     throw new Error("Map source must be a GeoJSON FeatureCollection.");
   }
-  const includedFeatures = source.features.filter(({ properties }) =>
-    config.codePattern.test(properties.code),
+  const includedFeatures = normalizeFeatures(source, config).filter(
+    ({ properties }) => config.codePattern.test(properties.code),
   );
   const points = includedFeatures.flatMap(({ geometry }) =>
     polygonsFromGeometry(geometry).flat(2),
@@ -98,9 +134,7 @@ export function generateMap(source, config) {
     originY + (maxY - y) * scale,
   ];
   const regions = includedFeatures
-    .map(({ geometry, properties: sourceProperties }) => {
-      const properties =
-        config.regionProperties?.[sourceProperties.code] ?? sourceProperties;
+    .map(({ geometry, properties }) => {
       if (
         typeof properties.code !== "string" ||
         typeof properties.name !== "string" ||

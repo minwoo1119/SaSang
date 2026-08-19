@@ -35,7 +35,7 @@ function assertValidMap(map, codePattern) {
 
 test("generates every Korea district with a stable five-digit code", () => {
   const result = generateMap(koreaSource, MAP_CONFIGS.korea);
-  assert.equal(result.regions.length, 252);
+  assert.equal(result.regions.length, 208);
   assertValidMap(result, /^\d{5}$/);
   assert.equal(
     result.regions.find(({ name }) => name === "강남구")?.code,
@@ -45,22 +45,27 @@ test("generates every Korea district with a stable five-digit code", () => {
     result.regions.find(({ name }) => name === "종로구")?.code,
     "11110",
   );
-  assert.ok(result.regions.some(({ geometryType }) => geometryType === "MultiPolygon"));
-  assert.deepEqual(
-    result.regions.map(({ geometryType, polygonCount }) => ({
-      geometryType,
-      polygonCount,
-    })),
-    koreaSource.features
-      .map(({ geometry, properties }) => ({
-        code: MAP_CONFIGS.korea.regionProperties[properties.code].code,
-        geometryType: geometry.type,
-        polygonCount:
-          geometry.type === "MultiPolygon" ? geometry.coordinates.length : 1,
-      }))
-      .sort((left, right) => left.code.localeCompare(right.code))
-      .map(({ geometryType, polygonCount }) => ({ geometryType, polygonCount })),
+  const mergedCities = [
+    ["26000", "부산광역시", 16],
+    ["27000", "대구광역시", 9],
+    ["28000", "인천광역시", 10],
+    ["29000", "광주광역시", 5],
+    ["30000", "대전광역시", 5],
+    ["31000", "울산광역시", 5],
+  ];
+  for (const [code, name, minimumPolygonCount] of mergedCities) {
+    const city = result.regions.find((region) => region.code === code);
+    assert.equal(city?.name, name);
+    assert.equal(city?.geometryType, "MultiPolygon");
+    assert.ok(city && city.polygonCount >= minimumPolygonCount);
+  }
+  assert.equal(
+    result.regions.filter(({ provinceCode }) =>
+      ["26", "27", "28", "29", "30", "31"].includes(provinceCode),
+    ).length,
+    0,
   );
+  assert.ok(result.regions.some(({ geometryType }) => geometryType === "MultiPolygon"));
 });
 
 test("generates world countries with ISO alpha-2 codes", () => {

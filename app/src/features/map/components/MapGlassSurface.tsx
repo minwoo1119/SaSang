@@ -12,7 +12,7 @@ export function MapGlassSurface({ children, style }: MapGlassSurfaceProps) {
     <GlassView
       glassEffectStyle="regular"
       style={[styles.surface, style]}
-      tintColor="#FDFCF8CC"
+      tintColor="#FFFFFFB8"
     >
       {children}
     </GlassView>
@@ -21,12 +21,12 @@ export function MapGlassSurface({ children, style }: MapGlassSurfaceProps) {
 
 const styles = StyleSheet.create({
   surface: {
-    backgroundColor: "rgba(253, 252, 248, 0.88)",
-    borderColor: "rgba(255, 255, 255, 0.72)",
+    backgroundColor: "rgba(255, 255, 255, 0.72)",
+    borderColor: "rgba(255, 255, 255, 0.82)",
     borderWidth: StyleSheet.hairlineWidth,
-    shadowColor: "#1D1C19",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 24,
+    shadowColor: "#111827",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
   },
 });

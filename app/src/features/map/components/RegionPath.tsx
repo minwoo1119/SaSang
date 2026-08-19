@@ -21,11 +21,12 @@ export const RegionPath = memo(function RegionPath({
     <Path
       accessibilityLabel={`${region.name}, ${region.code}${visited ? ", 사진 있음" : ""}`}
       d={region.path}
-      fill={photoFilled ? "transparent" : selected ? "#272521" : visited ? "#BBB7AE" : "#EEECE6"}
+      fill={photoFilled ? "transparent" : selected ? "#E8EEF8" : visited ? "#E1E8E3" : "#FAFAF8"}
       onPress={() => onPress(region)}
-      stroke={selected ? "#E05A3F" : photoFilled ? "#FFFFFF" : "#C9C5BC"}
+      stroke={selected ? "#3268C8" : photoFilled ? "#6F746F" : "#9A9D98"}
       strokeLinejoin="round"
-      strokeWidth={selected ? 2.2 : photoFilled ? 1.2 : 0.72}
+      strokeWidth={selected ? 1.15 : photoFilled ? 0.7 : 0.52}
+      vectorEffect="non-scaling-stroke"
     />
   );
 });
