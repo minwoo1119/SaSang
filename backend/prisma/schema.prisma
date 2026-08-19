@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RegionType {
+  KOREA_SIGUNGU
+  WORLD_COUNTRY
+}
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  nickname String?
+  visits Visit[]
+  createdAt DateTime @default(now())
+}
+
+model Region {
+  id String @id @default(cuid())
+  code String
+  name String
+  countryCode String
+  type RegionType
+  mapVersion String
+  visits Visit[]
+  @@unique([code, type, mapVersion])
+  @@index([code])
+}
+
+model Visit {
+  id String @id @default(cuid())
+  userId String
+  regionId String
+  visitedAt DateTime?
+  memo String?
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  region Region @relation(fields:[regionId],references:[id])
+  photos Photo[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId])
+  @@index([regionId])
+}
+
+model Photo {
+  id String @id @default(cuid())
+  visitId String
+  storageKey String @unique
+  url String
+  thumbnailUrl String?
+  scale Float @default(1)
+  offsetX Float @default(0)
+  offsetY Float @default(0)
+  width Int
+  height Int
+  visit Visit @relation(fields:[visitId],references:[id],onDelete:Cascade)
+  createdAt DateTime @default(now())
+  @@index([visitId])
+}
