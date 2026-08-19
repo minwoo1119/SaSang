@@ -1,0 +1,174 @@
+import { readFile, writeFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+
+const KOREA_INPUT = new URL(
+  "./sources/korea-sigungu-2025-2q.geojson",
+  import.meta.url,
+);
+const WORLD_INPUT = new URL(
+  "./sources/natural-earth-admin0-5.1.2.geojson",
+  import.meta.url,
+);
+const KOREA_CODES = JSON.parse(
+  await readFile(
+    new URL("./sources/korea-official-code-map-2025.json", import.meta.url),
+    "utf8",
+  ),
+).regions;
+const KOREA_OUTPUT = new URL(
+  "../../app/src/assets/maps/korea/regions.json",
+  import.meta.url,
+);
+const WORLD_OUTPUT = new URL(
+  "../../app/src/assets/maps/world/countries.json",
+  import.meta.url,
+);
+
+export const MAP_CONFIGS = {
+  korea: {
+    viewBox: { width: 360, height: 520, padding: 12 },
+    codePattern: /^\d{5}$/,
+    regionProperties: KOREA_CODES,
+    metadata: {
+      version: "sgis-sigungu-2025-2q-v1",
+      generatedAt: "2025-06-30T00:00:00.000Z",
+      source:
+        "https://www.data.go.kr/data/15129688/fileData.do (bnd_sigungu_00_2025_2Q)",
+      license: "이용허락범위 제한 없음",
+      referenceDate: "2025 Q2",
+      identifierPolicy:
+        "Official five-digit legal-district prefix from code.go.kr; joined to SGIS geometry by the 2025 district name snapshot",
+      excludedFeatures: [],
+    },
+  },
+  world: {
+    viewBox: { width: 720, height: 360, padding: 10 },
+    codePattern: /^[A-Z]{2}$/,
+    regionProperties: null,
+    metadata: {
+      version: "natural-earth-admin0-5.1.2-110m-v1",
+      generatedAt: "2026-05-13T00:00:00.000Z",
+      source:
+        "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip",
+      license: "CC0-1.0 / public domain",
+      referenceDate: "Natural Earth 5.1.2",
+      identifierPolicy:
+        "ISO 3166-1 alpha-2 (ISO_A2_EH); features without an ISO code are excluded",
+      excludedFeatures: [
+        "Turkish Republic of Northern Cyprus",
+        "Somaliland",
+      ],
+    },
+  },
+};
+
+function polygonsFromGeometry(geometry) {
+  if (geometry.type === "Polygon") return [geometry.coordinates];
+  if (geometry.type === "MultiPolygon") return geometry.coordinates;
+  throw new Error(`Unsupported geometry type: ${geometry.type}`);
+}
+
+function formatNumber(value) {
+  return Number(value.toFixed(2)).toString();
+}
+
+export function generateMap(source, config) {
+  if (source.type !== "FeatureCollection") {
+    throw new Error("Map source must be a GeoJSON FeatureCollection.");
+  }
+  const includedFeatures = source.features.filter(({ properties }) =>
+    config.codePattern.test(properties.code),
+  );
+  const points = includedFeatures.flatMap(({ geometry }) =>
+    polygonsFromGeometry(geometry).flat(2),
+  );
+  const minX = Math.min(...points.map(([x]) => x));
+  const maxX = Math.max(...points.map(([x]) => x));
+  const minY = Math.min(...points.map(([, y]) => y));
+  const maxY = Math.max(...points.map(([, y]) => y));
+  const { width, height, padding } = config.viewBox;
+  const scale = Math.min(
+    (width - padding * 2) / (maxX - minX),
+    (height - padding * 2) / (maxY - minY),
+  );
+  const originX = (width - (maxX - minX) * scale) / 2;
+  const originY = (height - (maxY - minY) * scale) / 2;
+  const project = ([x, y]) => [
+    originX + (x - minX) * scale,
+    originY + (maxY - y) * scale,
+  ];
+  const regions = includedFeatures
+    .map(({ geometry, properties: sourceProperties }) => {
+      const properties =
+        config.regionProperties?.[sourceProperties.code] ?? sourceProperties;
+      if (
+        typeof properties.code !== "string" ||
+        typeof properties.name !== "string" ||
+        properties.name.length === 0
+      ) {
+        throw new Error("Every region requires a code and name.");
+      }
+      const polygons = polygonsFromGeometry(geometry);
+      const path = polygons
+        .flatMap((polygon) => polygon)
+        .map(
+          (ring) =>
+            ring
+              .map((coordinate, index) => {
+                const [x, y] = project(coordinate);
+                return `${index === 0 ? "M" : "L"}${formatNumber(x)} ${formatNumber(y)}`;
+              })
+              .join(" ") + " Z",
+        )
+        .join(" ");
+      return {
+        code: properties.code,
+        name: properties.name,
+        ...(properties.provinceCode
+          ? {
+              provinceCode: properties.provinceCode,
+              provinceName: properties.provinceName,
+            }
+          : {}),
+        geometryType: geometry.type,
+        polygonCount: polygons.length,
+        path,
+      };
+    })
+    .sort((left, right) => left.code.localeCompare(right.code));
+  if (new Set(regions.map(({ code }) => code)).size !== regions.length) {
+    throw new Error("Duplicate region codes are not allowed.");
+  }
+  return {
+    notice: "THIS FILE IS GENERATED. DO NOT EDIT MANUALLY.",
+    metadata: config.metadata,
+    viewBox: config.viewBox,
+    regions,
+  };
+}
+
+async function load(url) {
+  return JSON.parse(await readFile(url, "utf8"));
+}
+
+async function main() {
+  const [koreaSource, worldSource] = await Promise.all([
+    load(KOREA_INPUT),
+    load(WORLD_INPUT),
+  ]);
+  await Promise.all([
+    writeFile(
+      KOREA_OUTPUT,
+      `${JSON.stringify(generateMap(koreaSource, MAP_CONFIGS.korea))}\n`,
+      "utf8",
+    ),
+    writeFile(
+      WORLD_OUTPUT,
+      `${JSON.stringify(generateMap(worldSource, MAP_CONFIGS.world))}\n`,
+      "utf8",
+    ),
+  ]);
+  console.log("Generated Korea and world map assets.");
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) await main();

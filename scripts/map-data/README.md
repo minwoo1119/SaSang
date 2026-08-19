@@ -1,16 +1,42 @@
 # Map data preprocessing
 
-원본 SHP/GeoJSON을 정규화·단순화하고 SVG path 기반 모바일 자산으로 생성하는 결정적 파이프라인을 이 디렉터리에 둡니다.
-
-생성 결과에는 데이터 버전, 생성 시각, 원본 출처와 `THIS FILE IS GENERATED. DO NOT EDIT MANUALLY.` 헤더를 포함해야 합니다.
-
-## 서울 25개 구
+Sasang renders committed, lightweight SVG path assets. The Expo app never parses
+SHP or GeoJSON at runtime.
 
 ```bash
 pnpm map:generate
 pnpm map:test
 ```
 
-원본 GeoJSON을 정규화된 360×300 SVG 좌표로 투영하여
-`app/src/assets/maps/korea/seoul.json`을 생성합니다. 원본과 라이선스 정보는
-[`NOTICE.md`](./NOTICE.md)에 기록되어 있습니다.
+`generate-maps.mjs` normalizes both Polygon and MultiPolygon features into a
+shared view box, sorts regions by stable code, rounds coordinates consistently,
+and writes deterministic JSON. Generated files contain the marker
+`THIS FILE IS GENERATED. DO NOT EDIT MANUALLY.`
+
+## Korea
+
+- Geometry: National Data Center SGIS nationwide sigungu boundary,
+  `bnd_sigungu_00_2025_2Q`, reference date 2025 Q2.
+- Identifier: official five-digit legal-district prefix from the Ministry of
+  the Interior and Safety Administrative Standard Code system, snapshot joined
+  at 2025-06-30. SGIS statistical codes are retained only as source join keys.
+- Input: `sources/korea-sigungu-2025-2q.geojson`.
+- Output: `app/src/assets/maps/korea/regions.json`.
+
+The large source SHP is converted outside the mobile runtime with
+`prepare-shapefile.mjs`. A 250-meter deterministic Douglas-Peucker tolerance is
+applied while preserving every source ring and its Polygon/MultiPolygon type.
+
+## World
+
+- Geometry: Natural Earth 1:110m Admin-0 Countries, version 5.1.2.
+- Identifier: `ISO_A2_EH` (ISO 3166-1 alpha-2).
+- Input: `sources/natural-earth-admin0-5.1.2.geojson`.
+- Output: `app/src/assets/maps/world/countries.json`.
+
+Natural Earth features without a valid ISO alpha-2 code are not assigned an
+invented code. `Turkish Republic of Northern Cyprus` and `Somaliland` are
+therefore excluded and recorded in the generated asset metadata.
+
+The old Seoul 2015 source and generator remain only as a regression fixture;
+the app does not import the Seoul-only generated asset.

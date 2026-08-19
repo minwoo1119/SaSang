@@ -17,7 +17,7 @@ export const RegionPath = memo(function RegionPath({
 }: RegionPathProps) {
   return (
     <Path
-      accessibilityLabel={`${region.name}${visited ? ", 방문함" : ""}`}
+      accessibilityLabel={`${region.name}, ${region.code}${visited ? ", 방문함" : ""}`}
       d={region.path}
       fill={selected ? "#171717" : visited ? "#A3A3A3" : "#F5F5F5"}
       onPress={() => onPress(region)}

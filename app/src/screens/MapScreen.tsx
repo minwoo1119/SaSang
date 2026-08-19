@@ -1,5 +1,6 @@
 import { Pressable, SafeAreaView, StyleSheet, Text, View } from "react-native";
-import seoulMapJson from "../assets/maps/korea/seoul.json";
+import koreaMapJson from "../assets/maps/korea/regions.json";
+import worldMapJson from "../assets/maps/world/countries.json";
 import { InteractiveRegionMap } from "@/features/map/components/InteractiveRegionMap";
 import { MapModeTabs } from "@/features/map/components/MapModeTabs";
 import { useMapUiStore } from "@/features/map/store/mapUi.store";
@@ -8,7 +9,8 @@ export function MapScreen() {
   const mode = useMapUiStore((state) => state.mode);
   const setMode = useMapUiStore((state) => state.setMode);
   const selectedRegionCode = useMapUiStore((state) => state.selectedRegionCode);
-  const selectedRegion = seoulMapJson.regions.find(
+  const regions = mode === "korea" ? koreaMapJson.regions : worldMapJson.regions;
+  const selectedRegion = regions.find(
     ({ code }) => code === selectedRegionCode,
   );
 
@@ -20,20 +22,16 @@ export function MapScreen() {
       </View>
       <MapModeTabs value={mode} onChange={setMode} />
       <View style={styles.mapArea}>
-        {mode === "korea" ? (
-          <InteractiveRegionMap />
-        ) : (
-          <View style={styles.worldPlaceholder}>
-            <Text style={styles.mapTitle}>세계 지도</Text>
-            <Text style={styles.mapHint}>다음 단계에서 추가됩니다.</Text>
-          </View>
-        )}
+        <InteractiveRegionMap mode={mode} />
       </View>
       <View style={styles.selectionArea}>
         <Text style={styles.selectionLabel}>선택한 지역</Text>
         <Text style={styles.selectionName}>
           {selectedRegion?.name ?? "지도를 눌러보세요"}
         </Text>
+        {selectedRegion ? (
+          <Text style={styles.selectionCode}>{selectedRegion.code}</Text>
+        ) : null}
       </View>
       <Pressable
         accessibilityRole="button"
@@ -57,9 +55,6 @@ const styles = StyleSheet.create({
   },
   subtitle: { color: "#737373", fontSize: 14, marginTop: 6 },
   mapArea: { alignItems: "center", flex: 1, justifyContent: "center" },
-  worldPlaceholder: { alignItems: "center" },
-  mapTitle: { color: "#262626", fontSize: 22, fontWeight: "600" },
-  mapHint: { color: "#A3A3A3", fontSize: 14, marginTop: 8 },
   selectionArea: {
     borderTopColor: "#F5F5F5",
     borderTopWidth: 1,
@@ -72,6 +67,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginTop: 4,
   },
+  selectionCode: { color: "#737373", fontSize: 13, marginTop: 3 },
   primaryButton: {
     alignItems: "center",
     backgroundColor: "#171717",

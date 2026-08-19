@@ -1,0 +1,1519 @@
+{
+  "notice": "THIS FILE IS GENERATED. DO NOT EDIT MANUALLY.",
+  "referenceDate": "2025-06-30",
+  "source": "https://www.code.go.kr/stdcode/regCodeL.do",
+  "regions": {
+    "11010": {
+      "code": "11110",
+      "name": "종로구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11020": {
+      "code": "11140",
+      "name": "중구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11030": {
+      "code": "11170",
+      "name": "용산구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11040": {
+      "code": "11200",
+      "name": "성동구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11050": {
+      "code": "11215",
+      "name": "광진구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11060": {
+      "code": "11230",
+      "name": "동대문구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11070": {
+      "code": "11260",
+      "name": "중랑구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11080": {
+      "code": "11290",
+      "name": "성북구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11090": {
+      "code": "11305",
+      "name": "강북구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11100": {
+      "code": "11320",
+      "name": "도봉구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11110": {
+      "code": "11350",
+      "name": "노원구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11120": {
+      "code": "11380",
+      "name": "은평구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11130": {
+      "code": "11410",
+      "name": "서대문구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11140": {
+      "code": "11440",
+      "name": "마포구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11150": {
+      "code": "11470",
+      "name": "양천구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11160": {
+      "code": "11500",
+      "name": "강서구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11170": {
+      "code": "11530",
+      "name": "구로구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11180": {
+      "code": "11545",
+      "name": "금천구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11190": {
+      "code": "11560",
+      "name": "영등포구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11200": {
+      "code": "11590",
+      "name": "동작구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11210": {
+      "code": "11620",
+      "name": "관악구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11220": {
+      "code": "11650",
+      "name": "서초구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11230": {
+      "code": "11680",
+      "name": "강남구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11240": {
+      "code": "11710",
+      "name": "송파구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "11250": {
+      "code": "11740",
+      "name": "강동구",
+      "provinceCode": "11",
+      "provinceName": "서울특별시"
+    },
+    "21010": {
+      "code": "26110",
+      "name": "중구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21020": {
+      "code": "26140",
+      "name": "서구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21030": {
+      "code": "26170",
+      "name": "동구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21040": {
+      "code": "26200",
+      "name": "영도구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21050": {
+      "code": "26230",
+      "name": "부산진구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21060": {
+      "code": "26260",
+      "name": "동래구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21070": {
+      "code": "26290",
+      "name": "남구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21080": {
+      "code": "26320",
+      "name": "북구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21090": {
+      "code": "26350",
+      "name": "해운대구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21100": {
+      "code": "26380",
+      "name": "사하구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21110": {
+      "code": "26410",
+      "name": "금정구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21120": {
+      "code": "26440",
+      "name": "강서구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21130": {
+      "code": "26470",
+      "name": "연제구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21140": {
+      "code": "26500",
+      "name": "수영구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21150": {
+      "code": "26530",
+      "name": "사상구",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "21510": {
+      "code": "26710",
+      "name": "기장군",
+      "provinceCode": "26",
+      "provinceName": "부산광역시"
+    },
+    "22010": {
+      "code": "27110",
+      "name": "중구",
+      "provinceCode": "27",
+      "provinceName": "대구광역시"
+    },
+    "22020": {
+      "code": "27140",
+      "name": "동구",
+      "provinceCode": "27",
+      "provinceName": "대구광역시"
+    },
+    "22030": {
+      "code": "27170",
+      "name": "서구",
+      "provinceCode": "27",
+      "provinceName": "대구광역시"
+    },
+    "22040": {
+      "code": "27200",
+      "name": "남구",
+      "provinceCode": "27",
+      "provinceName": "대구광역시"
+    },
+    "22050": {
+      "code": "27230",
+      "name": "북구",
+      "provinceCode": "27",
+      "provinceName": "대구광역시"
+    },
+    "22060": {
+      "code": "27260",
+      "name": "수성구",
+      "provinceCode": "27",
+      "provinceName": "대구광역시"
+    },
+    "22070": {
+      "code": "27290",
+      "name": "달서구",
+      "provinceCode": "27",
+      "provinceName": "대구광역시"
+    },
+    "22510": {
+      "code": "27710",
+      "name": "달성군",
+      "provinceCode": "27",
+      "provinceName": "대구광역시"
+    },
+    "22520": {
+      "code": "27720",
+      "name": "군위군",
+      "provinceCode": "27",
+      "provinceName": "대구광역시"
+    },
+    "23010": {
+      "code": "28110",
+      "name": "중구",
+      "provinceCode": "28",
+      "provinceName": "인천광역시"
+    },
+    "23020": {
+      "code": "28140",
+      "name": "동구",
+      "provinceCode": "28",
+      "provinceName": "인천광역시"
+    },
+    "23040": {
+      "code": "28185",
+      "name": "연수구",
+      "provinceCode": "28",
+      "provinceName": "인천광역시"
+    },
+    "23050": {
+      "code": "28200",
+      "name": "남동구",
+      "provinceCode": "28",
+      "provinceName": "인천광역시"
+    },
+    "23060": {
+      "code": "28237",
+      "name": "부평구",
+      "provinceCode": "28",
+      "provinceName": "인천광역시"
+    },
+    "23070": {
+      "code": "28245",
+      "name": "계양구",
+      "provinceCode": "28",
+      "provinceName": "인천광역시"
+    },
+    "23080": {
+      "code": "28260",
+      "name": "서구",
+      "provinceCode": "28",
+      "provinceName": "인천광역시"
+    },
+    "23090": {
+      "code": "28177",
+      "name": "미추홀구",
+      "provinceCode": "28",
+      "provinceName": "인천광역시"
+    },
+    "23510": {
+      "code": "28710",
+      "name": "강화군",
+      "provinceCode": "28",
+      "provinceName": "인천광역시"
+    },
+    "23520": {
+      "code": "28720",
+      "name": "옹진군",
+      "provinceCode": "28",
+      "provinceName": "인천광역시"
+    },
+    "24010": {
+      "code": "29110",
+      "name": "동구",
+      "provinceCode": "29",
+      "provinceName": "광주광역시"
+    },
+    "24020": {
+      "code": "29140",
+      "name": "서구",
+      "provinceCode": "29",
+      "provinceName": "광주광역시"
+    },
+    "24030": {
+      "code": "29155",
+      "name": "남구",
+      "provinceCode": "29",
+      "provinceName": "광주광역시"
+    },
+    "24040": {
+      "code": "29170",
+      "name": "북구",
+      "provinceCode": "29",
+      "provinceName": "광주광역시"
+    },
+    "24050": {
+      "code": "29200",
+      "name": "광산구",
+      "provinceCode": "29",
+      "provinceName": "광주광역시"
+    },
+    "25010": {
+      "code": "30110",
+      "name": "동구",
+      "provinceCode": "30",
+      "provinceName": "대전광역시"
+    },
+    "25020": {
+      "code": "30140",
+      "name": "중구",
+      "provinceCode": "30",
+      "provinceName": "대전광역시"
+    },
+    "25030": {
+      "code": "30170",
+      "name": "서구",
+      "provinceCode": "30",
+      "provinceName": "대전광역시"
+    },
+    "25040": {
+      "code": "30200",
+      "name": "유성구",
+      "provinceCode": "30",
+      "provinceName": "대전광역시"
+    },
+    "25050": {
+      "code": "30230",
+      "name": "대덕구",
+      "provinceCode": "30",
+      "provinceName": "대전광역시"
+    },
+    "26010": {
+      "code": "31110",
+      "name": "중구",
+      "provinceCode": "31",
+      "provinceName": "울산광역시"
+    },
+    "26020": {
+      "code": "31140",
+      "name": "남구",
+      "provinceCode": "31",
+      "provinceName": "울산광역시"
+    },
+    "26030": {
+      "code": "31170",
+      "name": "동구",
+      "provinceCode": "31",
+      "provinceName": "울산광역시"
+    },
+    "26040": {
+      "code": "31200",
+      "name": "북구",
+      "provinceCode": "31",
+      "provinceName": "울산광역시"
+    },
+    "26510": {
+      "code": "31710",
+      "name": "울주군",
+      "provinceCode": "31",
+      "provinceName": "울산광역시"
+    },
+    "29010": {
+      "code": "36110",
+      "name": "세종시",
+      "provinceCode": "36",
+      "provinceName": "세종특별자치시"
+    },
+    "31011": {
+      "code": "41111",
+      "name": "수원시 장안구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31012": {
+      "code": "41113",
+      "name": "수원시 권선구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31013": {
+      "code": "41115",
+      "name": "수원시 팔달구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31014": {
+      "code": "41117",
+      "name": "수원시 영통구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31021": {
+      "code": "41131",
+      "name": "성남시 수정구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31022": {
+      "code": "41133",
+      "name": "성남시 중원구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31023": {
+      "code": "41135",
+      "name": "성남시 분당구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31030": {
+      "code": "41150",
+      "name": "의정부시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31041": {
+      "code": "41171",
+      "name": "안양시 만안구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31042": {
+      "code": "41173",
+      "name": "안양시 동안구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31051": {
+      "code": "41192",
+      "name": "부천시 원미구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31052": {
+      "code": "41194",
+      "name": "부천시 소사구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31053": {
+      "code": "41196",
+      "name": "부천시 오정구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31060": {
+      "code": "41210",
+      "name": "광명시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31070": {
+      "code": "41220",
+      "name": "평택시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31080": {
+      "code": "41250",
+      "name": "동두천시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31091": {
+      "code": "41271",
+      "name": "안산시 상록구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31092": {
+      "code": "41273",
+      "name": "안산시 단원구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31101": {
+      "code": "41281",
+      "name": "고양시 덕양구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31103": {
+      "code": "41285",
+      "name": "고양시 일산동구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31104": {
+      "code": "41287",
+      "name": "고양시 일산서구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31110": {
+      "code": "41290",
+      "name": "과천시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31120": {
+      "code": "41310",
+      "name": "구리시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31130": {
+      "code": "41360",
+      "name": "남양주시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31140": {
+      "code": "41370",
+      "name": "오산시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31150": {
+      "code": "41390",
+      "name": "시흥시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31160": {
+      "code": "41410",
+      "name": "군포시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31170": {
+      "code": "41430",
+      "name": "의왕시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31180": {
+      "code": "41450",
+      "name": "하남시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31191": {
+      "code": "41461",
+      "name": "용인시 처인구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31192": {
+      "code": "41463",
+      "name": "용인시 기흥구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31193": {
+      "code": "41465",
+      "name": "용인시 수지구",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31200": {
+      "code": "41480",
+      "name": "파주시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31210": {
+      "code": "41500",
+      "name": "이천시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31220": {
+      "code": "41550",
+      "name": "안성시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31230": {
+      "code": "41570",
+      "name": "김포시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31240": {
+      "code": "41590",
+      "name": "화성시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31250": {
+      "code": "41610",
+      "name": "광주시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31260": {
+      "code": "41630",
+      "name": "양주시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31270": {
+      "code": "41650",
+      "name": "포천시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31280": {
+      "code": "41670",
+      "name": "여주시",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31550": {
+      "code": "41800",
+      "name": "연천군",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31570": {
+      "code": "41820",
+      "name": "가평군",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "31580": {
+      "code": "41830",
+      "name": "양평군",
+      "provinceCode": "41",
+      "provinceName": "경기도"
+    },
+    "32010": {
+      "code": "51110",
+      "name": "춘천시",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32020": {
+      "code": "51130",
+      "name": "원주시",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32030": {
+      "code": "51150",
+      "name": "강릉시",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32040": {
+      "code": "51170",
+      "name": "동해시",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32050": {
+      "code": "51190",
+      "name": "태백시",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32060": {
+      "code": "51210",
+      "name": "속초시",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32070": {
+      "code": "51230",
+      "name": "삼척시",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32510": {
+      "code": "51720",
+      "name": "홍천군",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32520": {
+      "code": "51730",
+      "name": "횡성군",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32530": {
+      "code": "51750",
+      "name": "영월군",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32540": {
+      "code": "51760",
+      "name": "평창군",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32550": {
+      "code": "51770",
+      "name": "정선군",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32560": {
+      "code": "51780",
+      "name": "철원군",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32570": {
+      "code": "51790",
+      "name": "화천군",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32580": {
+      "code": "51800",
+      "name": "양구군",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32590": {
+      "code": "51810",
+      "name": "인제군",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32600": {
+      "code": "51820",
+      "name": "고성군",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "32610": {
+      "code": "51830",
+      "name": "양양군",
+      "provinceCode": "51",
+      "provinceName": "강원특별자치도"
+    },
+    "33020": {
+      "code": "43130",
+      "name": "충주시",
+      "provinceCode": "43",
+      "provinceName": "충청북도"
+    },
+    "33030": {
+      "code": "43150",
+      "name": "제천시",
+      "provinceCode": "43",
+      "provinceName": "충청북도"
+    },
+    "33041": {
+      "code": "43111",
+      "name": "청주시 상당구",
+      "provinceCode": "43",
+      "provinceName": "충청북도"
+    },
+    "33042": {
+      "code": "43112",
+      "name": "청주시 서원구",
+      "provinceCode": "43",
+      "provinceName": "충청북도"
+    },
+    "33043": {
+      "code": "43113",
+      "name": "청주시 흥덕구",
+      "provinceCode": "43",
+      "provinceName": "충청북도"
+    },
+    "33044": {
+      "code": "43114",
+      "name": "청주시 청원구",
+      "provinceCode": "43",
+      "provinceName": "충청북도"
+    },
+    "33520": {
+      "code": "43720",
+      "name": "보은군",
+      "provinceCode": "43",
+      "provinceName": "충청북도"
+    },
+    "33530": {
+      "code": "43730",
+      "name": "옥천군",
+      "provinceCode": "43",
+      "provinceName": "충청북도"
+    },
+    "33540": {
+      "code": "43740",
+      "name": "영동군",
+      "provinceCode": "43",
+      "provinceName": "충청북도"
+    },
+    "33550": {
+      "code": "43750",
+      "name": "진천군",
+      "provinceCode": "43",
+      "provinceName": "충청북도"
+    },
+    "33560": {
+      "code": "43760",
+      "name": "괴산군",
+      "provinceCode": "43",
+      "provinceName": "충청북도"
+    },
+    "33570": {
+      "code": "43770",
+      "name": "음성군",
+      "provinceCode": "43",
+      "provinceName": "충청북도"
+    },
+    "33580": {
+      "code": "43800",
+      "name": "단양군",
+      "provinceCode": "43",
+      "provinceName": "충청북도"
+    },
+    "33590": {
+      "code": "43745",
+      "name": "증평군",
+      "provinceCode": "43",
+      "provinceName": "충청북도"
+    },
+    "34011": {
+      "code": "44131",
+      "name": "천안시 동남구",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34012": {
+      "code": "44133",
+      "name": "천안시 서북구",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34020": {
+      "code": "44150",
+      "name": "공주시",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34030": {
+      "code": "44180",
+      "name": "보령시",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34040": {
+      "code": "44200",
+      "name": "아산시",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34050": {
+      "code": "44210",
+      "name": "서산시",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34060": {
+      "code": "44230",
+      "name": "논산시",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34070": {
+      "code": "44250",
+      "name": "계룡시",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34080": {
+      "code": "44270",
+      "name": "당진시",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34510": {
+      "code": "44710",
+      "name": "금산군",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34530": {
+      "code": "44760",
+      "name": "부여군",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34540": {
+      "code": "44770",
+      "name": "서천군",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34550": {
+      "code": "44790",
+      "name": "청양군",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34560": {
+      "code": "44800",
+      "name": "홍성군",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34570": {
+      "code": "44810",
+      "name": "예산군",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "34580": {
+      "code": "44825",
+      "name": "태안군",
+      "provinceCode": "44",
+      "provinceName": "충청남도"
+    },
+    "35011": {
+      "code": "52111",
+      "name": "전주시 완산구",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "35012": {
+      "code": "52113",
+      "name": "전주시 덕진구",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "35020": {
+      "code": "52130",
+      "name": "군산시",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "35030": {
+      "code": "52140",
+      "name": "익산시",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "35040": {
+      "code": "52180",
+      "name": "정읍시",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "35050": {
+      "code": "52190",
+      "name": "남원시",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "35060": {
+      "code": "52210",
+      "name": "김제시",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "35510": {
+      "code": "52710",
+      "name": "완주군",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "35520": {
+      "code": "52720",
+      "name": "진안군",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "35530": {
+      "code": "52730",
+      "name": "무주군",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "35540": {
+      "code": "52740",
+      "name": "장수군",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "35550": {
+      "code": "52750",
+      "name": "임실군",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "35560": {
+      "code": "52770",
+      "name": "순창군",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "35570": {
+      "code": "52790",
+      "name": "고창군",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "35580": {
+      "code": "52800",
+      "name": "부안군",
+      "provinceCode": "52",
+      "provinceName": "전북특별자치도"
+    },
+    "36010": {
+      "code": "46110",
+      "name": "목포시",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36020": {
+      "code": "46130",
+      "name": "여수시",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36030": {
+      "code": "46150",
+      "name": "순천시",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36040": {
+      "code": "46170",
+      "name": "나주시",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36060": {
+      "code": "46230",
+      "name": "광양시",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36510": {
+      "code": "46710",
+      "name": "담양군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36520": {
+      "code": "46720",
+      "name": "곡성군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36530": {
+      "code": "46730",
+      "name": "구례군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36550": {
+      "code": "46770",
+      "name": "고흥군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36560": {
+      "code": "46780",
+      "name": "보성군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36570": {
+      "code": "46790",
+      "name": "화순군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36580": {
+      "code": "46800",
+      "name": "장흥군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36590": {
+      "code": "46810",
+      "name": "강진군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36600": {
+      "code": "46820",
+      "name": "해남군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36610": {
+      "code": "46830",
+      "name": "영암군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36620": {
+      "code": "46840",
+      "name": "무안군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36630": {
+      "code": "46860",
+      "name": "함평군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36640": {
+      "code": "46870",
+      "name": "영광군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36650": {
+      "code": "46880",
+      "name": "장성군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36660": {
+      "code": "46890",
+      "name": "완도군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36670": {
+      "code": "46900",
+      "name": "진도군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "36680": {
+      "code": "46910",
+      "name": "신안군",
+      "provinceCode": "46",
+      "provinceName": "전라남도"
+    },
+    "37011": {
+      "code": "47111",
+      "name": "포항시 남구",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37012": {
+      "code": "47113",
+      "name": "포항시 북구",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37020": {
+      "code": "47130",
+      "name": "경주시",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37030": {
+      "code": "47150",
+      "name": "김천시",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37040": {
+      "code": "47170",
+      "name": "안동시",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37050": {
+      "code": "47190",
+      "name": "구미시",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37060": {
+      "code": "47210",
+      "name": "영주시",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37070": {
+      "code": "47230",
+      "name": "영천시",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37080": {
+      "code": "47250",
+      "name": "상주시",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37090": {
+      "code": "47280",
+      "name": "문경시",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37100": {
+      "code": "47290",
+      "name": "경산시",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37520": {
+      "code": "47730",
+      "name": "의성군",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37530": {
+      "code": "47750",
+      "name": "청송군",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37540": {
+      "code": "47760",
+      "name": "영양군",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37550": {
+      "code": "47770",
+      "name": "영덕군",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37560": {
+      "code": "47820",
+      "name": "청도군",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37570": {
+      "code": "47830",
+      "name": "고령군",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37580": {
+      "code": "47840",
+      "name": "성주군",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37590": {
+      "code": "47850",
+      "name": "칠곡군",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37600": {
+      "code": "47900",
+      "name": "예천군",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37610": {
+      "code": "47920",
+      "name": "봉화군",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37620": {
+      "code": "47930",
+      "name": "울진군",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "37630": {
+      "code": "47940",
+      "name": "울릉군",
+      "provinceCode": "47",
+      "provinceName": "경상북도"
+    },
+    "38030": {
+      "code": "48170",
+      "name": "진주시",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38050": {
+      "code": "48220",
+      "name": "통영시",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38060": {
+      "code": "48240",
+      "name": "사천시",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38070": {
+      "code": "48250",
+      "name": "김해시",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38080": {
+      "code": "48270",
+      "name": "밀양시",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38090": {
+      "code": "48310",
+      "name": "거제시",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38100": {
+      "code": "48330",
+      "name": "양산시",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38111": {
+      "code": "48121",
+      "name": "창원시 의창구",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38112": {
+      "code": "48123",
+      "name": "창원시 성산구",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38113": {
+      "code": "48125",
+      "name": "창원시 마산합포구",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38114": {
+      "code": "48127",
+      "name": "창원시 마산회원구",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38115": {
+      "code": "48129",
+      "name": "창원시 진해구",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38510": {
+      "code": "48720",
+      "name": "의령군",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38520": {
+      "code": "48730",
+      "name": "함안군",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38530": {
+      "code": "48740",
+      "name": "창녕군",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38540": {
+      "code": "48820",
+      "name": "고성군",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38550": {
+      "code": "48840",
+      "name": "남해군",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38560": {
+      "code": "48850",
+      "name": "하동군",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38570": {
+      "code": "48860",
+      "name": "산청군",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38580": {
+      "code": "48870",
+      "name": "함양군",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38590": {
+      "code": "48880",
+      "name": "거창군",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "38600": {
+      "code": "48890",
+      "name": "합천군",
+      "provinceCode": "48",
+      "provinceName": "경상남도"
+    },
+    "39010": {
+      "code": "50110",
+      "name": "제주시",
+      "provinceCode": "50",
+      "provinceName": "제주특별자치도"
+    },
+    "39020": {
+      "code": "50130",
+      "name": "서귀포시",
+      "provinceCode": "50",
+      "provinceName": "제주특별자치도"
+    }
+  }
+}
