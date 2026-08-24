@@ -1,3 +1,3 @@
-import { MapScreen } from "@/screens/MapScreen";
+import { LoginScreen } from "@/screens/LoginScreen";
 
-export default MapScreen;
+export default LoginScreen;
