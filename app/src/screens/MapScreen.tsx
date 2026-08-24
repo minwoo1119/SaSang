@@ -38,6 +38,7 @@ export function MapScreen() {
   const photoCount = map.regions.filter(
     ({ code }) => regionPhotos[getRegionPhotoKey(mode, code)],
   ).length;
+  const tabBarOffset = insets.bottom + 86;
 
   const pickPhoto = async () => {
     if (!selectedRegion || isPickingPhoto) return;
@@ -92,7 +93,7 @@ export function MapScreen() {
 
       {selectedRegion ? (
         <MapGlassSurface
-          style={[styles.regionControl, { bottom: insets.bottom + 12 }]}
+          style={[styles.regionControl, { bottom: tabBarOffset }]}
         >
           {selectedPhoto ? (
             <Image source={{ uri: selectedPhoto.uri }} style={styles.thumbnail} />
@@ -143,7 +144,7 @@ export function MapScreen() {
         </MapGlassSurface>
       ) : (
         <MapGlassSurface
-          style={[styles.selectionHint, { bottom: insets.bottom + 14 }]}
+          style={[styles.selectionHint, { bottom: tabBarOffset }]}
         >
           <Text style={styles.selectionHintText}>지역을 선택해 기록을 시작하세요</Text>
         </MapGlassSurface>
