@@ -1,19 +1,91 @@
 import { Tabs } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import { Text } from "react-native";
+import type { ComponentProps } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-type TabIconProps = {
-  color: string;
-  name: "map" | "photo.stack" | "ellipsis";
+type TabMeta = {
   fallback: string;
+  label: string;
+  symbol: "map" | "photo.stack" | "ellipsis";
 };
 
-function TabIcon({ color, name, fallback }: TabIconProps) {
+const TAB_META: Record<string, TabMeta> = {
+  map: { fallback: "⌖", label: "지도", symbol: "map" },
+  more: { fallback: "•••", label: "더보기", symbol: "ellipsis" },
+  places: { fallback: "▧", label: "장소", symbol: "photo.stack" },
+};
+
+type FloatingTabBarProps = Parameters<
+  NonNullable<ComponentProps<typeof Tabs>["tabBar"]>
+>[0];
+
+function FloatingTabBar({
+  descriptors,
+  insets,
+  navigation,
+  state,
+}: FloatingTabBarProps) {
+  return (
+    <View
+      pointerEvents="box-none"
+      style={[styles.wrapper, { bottom: Math.max(insets.bottom, 14) }]}
+    >
+      <View style={styles.bar}>
+        {state.routes.map((route, index) => {
+          const focused = state.index === index;
+          const options = descriptors[route.key]?.options;
+          const meta = TAB_META[route.name];
+          const color = focused ? "#17191D" : "#777C84";
+
+          const onPress = () => {
+            const event = navigation.emit({
+              canPreventDefault: true,
+              target: route.key,
+              type: "tabPress",
+            });
+
+            if (!focused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
+          };
+
+          return (
+            <Pressable
+              accessibilityLabel={options?.tabBarAccessibilityLabel}
+              accessibilityRole="button"
+              accessibilityState={focused ? { selected: true } : {}}
+              key={route.key}
+              onPress={onPress}
+              style={({ pressed }) => [
+                styles.item,
+                focused && styles.itemFocused,
+                pressed && styles.itemPressed,
+              ]}
+            >
+              <TabIcon color={color} fallback={meta.fallback} name={meta.symbol} />
+              <Text style={[styles.label, { color }]}>{meta.label}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function TabIcon({
+  color,
+  fallback,
+  name,
+}: {
+  color: string;
+  fallback: string;
+  name: TabMeta["symbol"];
+}) {
   return (
     <SymbolView
-      fallback={<Text style={{ color, fontSize: 19 }}>{fallback}</Text>}
+      fallback={<Text style={[styles.fallbackIcon, { color }]}>{fallback}</Text>}
       name={name}
-      size={21}
+      size={20}
       tintColor={color}
     />
   );
@@ -22,43 +94,14 @@ function TabIcon({ color, name, fallback }: TabIconProps) {
 export default function TabLayout() {
   return (
     <Tabs
+      tabBar={(props) => <FloatingTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#17191D",
-        tabBarInactiveTintColor: "#777C84",
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: "700",
-        },
-        tabBarItemStyle: {
-          borderRadius: 28,
-          height: 54,
-          paddingVertical: 5,
-        },
-        tabBarStyle: {
-          backgroundColor: "#FFFFFF",
-          borderColor: "#E9E4DB",
-          borderRadius: 32,
-          borderTopWidth: 1,
-          borderWidth: 1,
-          bottom: 18,
-          elevation: 10,
-          height: 64,
-          left: 18,
-          paddingBottom: 6,
-          paddingTop: 6,
-          position: "absolute",
-          right: 18,
-          boxShadow: "0 8px 18px rgba(23, 25, 29, 0.12)",
-        },
       }}
     >
       <Tabs.Screen
         name="map"
         options={{
-          tabBarIcon: ({ color }) => (
-            <TabIcon color={color} fallback="⌖" name="map" />
-          ),
           tabBarLabel: "지도",
           title: "지도",
         }}
@@ -66,9 +109,6 @@ export default function TabLayout() {
       <Tabs.Screen
         name="places"
         options={{
-          tabBarIcon: ({ color }) => (
-            <TabIcon color={color} fallback="▧" name="photo.stack" />
-          ),
           tabBarLabel: "장소",
           title: "장소",
         }}
@@ -76,9 +116,6 @@ export default function TabLayout() {
       <Tabs.Screen
         name="more"
         options={{
-          tabBarIcon: ({ color }) => (
-            <TabIcon color={color} fallback="•••" name="ellipsis" />
-          ),
           tabBarLabel: "더보기",
           title: "더보기",
         }}
@@ -86,3 +123,49 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  bar: {
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E9E4DB",
+    borderRadius: 34,
+    borderWidth: 1,
+    boxShadow: "0 8px 18px rgba(23, 25, 29, 0.12)",
+    elevation: 10,
+    flexDirection: "row",
+    gap: 4,
+    height: 66,
+    padding: 6,
+  },
+  fallbackIcon: {
+    fontSize: 18,
+    fontWeight: "800",
+    lineHeight: 20,
+    textAlign: "center",
+  },
+  item: {
+    alignItems: "center",
+    borderRadius: 28,
+    flex: 1,
+    gap: 2,
+    height: 54,
+    justifyContent: "center",
+  },
+  itemFocused: {
+    backgroundColor: "#F3F0E9",
+  },
+  itemPressed: {
+    opacity: 0.72,
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: "700",
+    lineHeight: 14,
+  },
+  wrapper: {
+    left: 18,
+    position: "absolute",
+    right: 18,
+  },
+});
