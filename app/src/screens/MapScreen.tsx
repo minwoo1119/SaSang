@@ -38,7 +38,7 @@ export function MapScreen() {
   const photoCount = map.regions.filter(
     ({ code }) => regionPhotos[getRegionPhotoKey(mode, code)],
   ).length;
-  const tabBarOffset = 10;
+  const tabBarOffset = insets.bottom + 92;
 
   const pickPhoto = async () => {
     if (!selectedRegion || isPickingPhoto) return;
