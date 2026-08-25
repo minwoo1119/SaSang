@@ -40,6 +40,10 @@ applied while preserving every source ring and its Polygon/MultiPolygon type.
 - Input: `sources/natural-earth-admin0-5.1.2.geojson`.
 - Output: `app/src/assets/maps/world/countries.json`.
 
+Country display names are localized to Korean during generation with
+`Intl.DisplayNames`. The original Natural Earth English name is preserved as
+`englishName` so the app can still support English-name search.
+
 Natural Earth features without a valid ISO alpha-2 code are not assigned an
 invented code. `Turkish Republic of Northern Cyprus` and `Somaliland` are
 therefore excluded and recorded in the generated asset metadata.

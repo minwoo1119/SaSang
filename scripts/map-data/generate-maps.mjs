@@ -35,6 +35,7 @@ const MERGED_SPECIAL_AND_METROPOLITAN_CITY_CODES = new Set([
   "30",
   "31",
 ]);
+const KOREAN_REGION_NAMES = new Intl.DisplayNames(["ko"], { type: "region" });
 
 export const MAP_CONFIGS = {
   korea: {
@@ -60,16 +61,17 @@ export const MAP_CONFIGS = {
     codePattern: /^[A-Z]{2}$/,
     regionProperties: null,
     metadata: {
-      version: "natural-earth-admin0-5.1.2-110m-v1",
+      version: "natural-earth-admin0-5.1.2-110m-v2",
       generatedAt: "2026-05-13T00:00:00.000Z",
       source:
         "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip",
       license: "CC0-1.0 / public domain",
       referenceDate: "Natural Earth 5.1.2",
       identifierPolicy:
-        "ISO 3166-1 alpha-2 (ISO_A2_EH); features without an ISO code are excluded",
+        "ISO 3166-1 alpha-2 (ISO_A2_EH); features without an ISO code are excluded; display names are localized to Korean with Intl.DisplayNames and original names are preserved as englishName",
       excludedFeatures: ["Turkish Republic of Northern Cyprus", "Somaliland"],
     },
+    localizeNamesToKorean: true,
   },
 };
 
@@ -164,13 +166,27 @@ function normalizeFeatures(source, config) {
   ];
 }
 
+function localizeRegionProperties(properties, config) {
+  if (!config.localizeNamesToKorean) return properties;
+  const koreanName = KOREAN_REGION_NAMES.of(properties.code);
+  if (!koreanName || koreanName === properties.code) return properties;
+  return {
+    ...properties,
+    englishName: properties.name,
+    name: koreanName,
+  };
+}
+
 export function generateMap(source, config) {
   if (source.type !== "FeatureCollection") {
     throw new Error("Map source must be a GeoJSON FeatureCollection.");
   }
-  const includedFeatures = normalizeFeatures(source, config).filter(
-    ({ properties }) => config.codePattern.test(properties.code),
-  );
+  const includedFeatures = normalizeFeatures(source, config)
+    .filter(({ properties }) => config.codePattern.test(properties.code))
+    .map(({ geometry, properties }) => ({
+      geometry,
+      properties: localizeRegionProperties(properties, config),
+    }));
   const points = includedFeatures.flatMap(({ geometry }) =>
     polygonsFromGeometry(geometry).flat(2),
   );
@@ -227,6 +243,9 @@ export function generateMap(source, config) {
       return {
         code: properties.code,
         name: properties.name,
+        ...(properties.englishName
+          ? { englishName: properties.englishName }
+          : {}),
         ...(properties.provinceCode
           ? {
               provinceCode: properties.provinceCode,

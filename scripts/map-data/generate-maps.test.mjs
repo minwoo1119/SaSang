@@ -97,6 +97,16 @@ test("generates world countries with ISO alpha-2 codes", () => {
   const result = generateMap(worldSource, MAP_CONFIGS.world);
   assert.equal(result.regions.length, 175);
   assertValidMap(result, /^[A-Z]{2}$/);
+  assert.equal(result.regions.find(({ code }) => code === "US")?.name, "미국");
+  assert.equal(result.regions.find(({ code }) => code === "JP")?.name, "일본");
+  assert.equal(
+    result.regions.find(({ code }) => code === "US")?.englishName,
+    "United States of America",
+  );
+  assert.equal(
+    result.regions.find(({ code }) => code === "JP")?.englishName,
+    "Japan",
+  );
   assert.ok(
     result.regions.some(({ geometryType }) => geometryType === "MultiPolygon"),
   );

@@ -10,6 +10,7 @@ export type RegionBounds = {
 export type MapRegion = {
   code: RegionCode;
   name: string;
+  englishName?: string;
   provinceCode?: string;
   provinceName?: string;
   geometryType: "Polygon" | "MultiPolygon";

@@ -51,7 +51,8 @@ export function MapScreen() {
     return map.regions
       .filter((region) => {
         const provinceName = region.provinceName ?? "";
-        return `${region.name} ${provinceName} ${region.code}`
+        const englishName = region.englishName ?? "";
+        return `${region.name} ${englishName} ${provinceName} ${region.code}`
           .toLowerCase()
           .includes(trimmedSearchQuery);
       })

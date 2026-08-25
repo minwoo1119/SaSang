@@ -19,21 +19,67 @@ type PlaceCard = {
   region: MapRegion;
 };
 
+function findSampleRegion(mode: MapMode, code: string) {
+  const region = MAP_ASSETS[mode].regions.find((item) => item.code === code);
+  if (!region) {
+    throw new Error(`Sample region not found: ${mode}:${code}`);
+  }
+  return region;
+}
+
+function samplePhoto(id: string, uri: string, createdAt: string): RegionPhoto {
+  return {
+    createdAt,
+    height: 1000,
+    id,
+    offsetX: 0,
+    offsetY: 0,
+    scale: 1,
+    uri,
+    width: 1200,
+  };
+}
+
 const sampleCards: PlaceCard[] = [
   {
     id: "sample-korea-seoul",
     mode: "korea",
-    region: MAP_ASSETS.korea.regions[0],
+    photo: samplePhoto(
+      "sample-photo-seoul",
+      "https://picsum.photos/id/1011/1200/1000",
+      "2026-08-20T09:00:00.000Z",
+    ),
+    region: findSampleRegion("korea", "11000"),
   },
   {
-    id: "sample-korea-second",
+    id: "sample-korea-daegu",
     mode: "korea",
-    region: MAP_ASSETS.korea.regions[1],
+    photo: samplePhoto(
+      "sample-photo-daegu",
+      "https://picsum.photos/id/1043/1200/1000",
+      "2026-08-18T09:00:00.000Z",
+    ),
+    region: findSampleRegion("korea", "27000"),
   },
   {
-    id: "sample-world-first",
+    id: "sample-world-japan",
     mode: "world",
-    region: MAP_ASSETS.world.regions[0],
+    photo: samplePhoto(
+      "sample-photo-japan",
+      "https://picsum.photos/id/1036/1200/1000",
+      "2026-08-16T09:00:00.000Z",
+    ),
+    region: findSampleRegion("world", "JP"),
+  },
+  {
+    id: "sample-world-france",
+    mode: "world",
+    photo: samplePhoto(
+      "sample-photo-france",
+      "https://picsum.photos/id/1067/1200/1000",
+      "2026-08-14T09:00:00.000Z",
+    ),
+    region: findSampleRegion("world", "FR"),
   },
 ];
 
