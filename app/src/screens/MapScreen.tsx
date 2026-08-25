@@ -58,6 +58,7 @@ export function MapScreen() {
       .slice(0, 6);
   }, [map.regions, trimmedSearchQuery]);
   const showSearchResults = trimmedSearchQuery.length > 0;
+  const canSubmitSearch = searchResults.length > 0;
 
   useEffect(() => {
     setSearchQuery("");
@@ -159,20 +160,29 @@ export function MapScreen() {
           <Pressable
             accessibilityLabel="지역 검색"
             accessibilityRole="button"
-            disabled={searchResults.length === 0}
+            disabled={!canSubmitSearch}
             hitSlop={8}
             onPress={handleSearchSubmit}
             style={({ pressed }) => [
               styles.searchButton,
-              searchResults.length === 0 && styles.searchButtonDisabled,
+              !canSubmitSearch && styles.searchButtonDisabled,
               pressed && styles.searchButtonPressed,
             ]}
           >
             <SymbolView
-              fallback={<Text style={styles.searchButtonFallback}>⌕</Text>}
+              fallback={
+                <Text
+                  style={[
+                    styles.searchButtonFallback,
+                    !canSubmitSearch && styles.searchButtonFallbackDisabled,
+                  ]}
+                >
+                  ⌕
+                </Text>
+              }
               name="magnifyingglass"
               size={17}
-              tintColor="#FFFFFF"
+              tintColor={canSubmitSearch ? "#007AFF" : "#A1A1AA"}
             />
           </Pressable>
         </MapGlassSurface>
@@ -391,22 +401,23 @@ const styles = StyleSheet.create({
   },
   searchButton: {
     alignItems: "center",
-    backgroundColor: "#007AFF",
+    backgroundColor: "rgba(0, 122, 255, 0.12)",
     borderRadius: 16,
     height: 32,
     justifyContent: "center",
     width: 32,
   },
   searchButtonDisabled: {
-    backgroundColor: "#A1A1AA",
+    backgroundColor: "#F4F4F5",
   },
   searchButtonFallback: {
-    color: "#FFFFFF",
+    color: "#007AFF",
     fontSize: 17,
     fontWeight: "800",
     lineHeight: 18,
   },
-  searchButtonPressed: { backgroundColor: "#0068D9" },
+  searchButtonFallbackDisabled: { color: "#A1A1AA" },
+  searchButtonPressed: { backgroundColor: "rgba(0, 122, 255, 0.2)" },
   searchResult: {
     alignItems: "center",
     flexDirection: "row",
