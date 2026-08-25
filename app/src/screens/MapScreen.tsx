@@ -1,12 +1,14 @@
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Keyboard,
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,8 +24,10 @@ import {
 export function MapScreen() {
   const insets = useSafeAreaInsets();
   const [isPickingPhoto, setIsPickingPhoto] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const mode = useMapUiStore((state) => state.mode);
   const setMode = useMapUiStore((state) => state.setMode);
+  const selectRegion = useMapUiStore((state) => state.selectRegion);
   const selectedRegionCode = useMapUiStore((state) => state.selectedRegionCode);
   const regionPhotos = useMapUiStore((state) => state.regionPhotos);
   const setRegionPhoto = useMapUiStore((state) => state.setRegionPhoto);
@@ -39,6 +43,30 @@ export function MapScreen() {
     ({ code }) => regionPhotos[getRegionPhotoKey(mode, code)],
   ).length;
   const tabBarOffset = insets.bottom + 92;
+  const trimmedSearchQuery = searchQuery.trim().toLowerCase();
+  const searchResults = useMemo(() => {
+    if (trimmedSearchQuery.length === 0) return [];
+
+    return map.regions
+      .filter((region) => {
+        const provinceName = region.provinceName ?? "";
+        return `${region.name} ${provinceName} ${region.code}`
+          .toLowerCase()
+          .includes(trimmedSearchQuery);
+      })
+      .slice(0, 6);
+  }, [map.regions, trimmedSearchQuery]);
+  const showSearchResults = trimmedSearchQuery.length > 0;
+
+  useEffect(() => {
+    setSearchQuery("");
+  }, [mode]);
+
+  const handleSearchResultPress = (code: string, name: string) => {
+    selectRegion(code);
+    setSearchQuery(name);
+    Keyboard.dismiss();
+  };
 
   const pickPhoto = async () => {
     if (!selectedRegion || isPickingPhoto) return;
@@ -89,6 +117,69 @@ export function MapScreen() {
           </View>
           <MapModeTabs onChange={setMode} value={mode} />
         </View>
+        <MapGlassSurface style={styles.searchBar}>
+          <Text style={styles.searchPrefix}>검색</Text>
+          <TextInput
+            autoCapitalize="none"
+            autoCorrect={false}
+            clearButtonMode="while-editing"
+            onChangeText={setSearchQuery}
+            placeholder={
+              mode === "korea" ? "지역명 또는 코드" : "국가명 또는 코드"
+            }
+            placeholderTextColor="#8A8A91"
+            returnKeyType="search"
+            style={styles.searchInput}
+            value={searchQuery}
+          />
+          {searchQuery.length > 0 ? (
+            <Pressable
+              accessibilityLabel="검색어 지우기"
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => setSearchQuery("")}
+              style={({ pressed }) => [
+                styles.clearSearchButton,
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text style={styles.clearSearchText}>x</Text>
+            </Pressable>
+          ) : null}
+        </MapGlassSurface>
+        {showSearchResults ? (
+          <MapGlassSurface style={styles.searchResults}>
+            {searchResults.length > 0 ? (
+              searchResults.map((region) => (
+                <Pressable
+                  accessibilityRole="button"
+                  key={region.code}
+                  onPress={() =>
+                    handleSearchResultPress(region.code, region.name)
+                  }
+                  style={({ pressed }) => [
+                    styles.searchResult,
+                    pressed && styles.searchResultPressed,
+                  ]}
+                >
+                  <View style={styles.searchResultMarker} />
+                  <View style={styles.searchResultCopy}>
+                    <Text numberOfLines={1} style={styles.searchResultName}>
+                      {region.name}
+                    </Text>
+                    <Text numberOfLines={1} style={styles.searchResultMeta}>
+                      {region.provinceName ??
+                        (mode === "korea" ? "국내" : "해외")}{" "}
+                      · {region.code}
+                    </Text>
+                  </View>
+                </Pressable>
+              ))
+            ) : (
+              <Text style={styles.emptySearchResult}>검색 결과 없음</Text>
+            )}
+          </MapGlassSurface>
+        ) : null}
       </View>
 
       {selectedRegion ? (
@@ -220,6 +311,88 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   selectionHintText: { color: "#52525B", fontSize: 13, fontWeight: "600" },
+  clearSearchButton: {
+    alignItems: "center",
+    backgroundColor: "#E4E4E7",
+    borderRadius: 11,
+    height: 22,
+    justifyContent: "center",
+    width: 22,
+  },
+  clearSearchText: {
+    color: "#52525B",
+    fontSize: 13,
+    fontWeight: "800",
+    lineHeight: 15,
+  },
+  emptySearchResult: {
+    color: "#71717A",
+    fontSize: 13,
+    fontWeight: "600",
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+  },
+  searchBar: {
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.96)",
+    borderColor: "rgba(0, 0, 0, 0.08)",
+    borderRadius: 23,
+    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: 10,
+    height: 46,
+    marginTop: 12,
+    paddingHorizontal: 14,
+  },
+  searchInput: {
+    color: "#18181B",
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "600",
+    height: 44,
+    minWidth: 0,
+    padding: 0,
+  },
+  searchPrefix: {
+    color: "#007AFF",
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  searchResult: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+    minHeight: 48,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  searchResultCopy: { flex: 1, minWidth: 0 },
+  searchResultMarker: {
+    backgroundColor: "#007AFF",
+    borderRadius: 4,
+    height: 8,
+    width: 8,
+  },
+  searchResultMeta: {
+    color: "#71717A",
+    fontSize: 11,
+    fontWeight: "600",
+    marginTop: 2,
+  },
+  searchResultName: {
+    color: "#18181B",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  searchResultPressed: { backgroundColor: "rgba(0, 122, 255, 0.08)" },
+  searchResults: {
+    backgroundColor: "rgba(255, 255, 255, 0.97)",
+    borderColor: "rgba(0, 0, 0, 0.08)",
+    borderRadius: 18,
+    borderWidth: StyleSheet.hairlineWidth,
+    marginTop: 8,
+    overflow: "hidden",
+  },
   thumbnail: { borderRadius: 21, height: 42, width: 42 },
   topOverlay: {
     left: 16,
