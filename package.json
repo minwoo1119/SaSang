@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "pnpm": "10.34.5",
+    "polygon-clipping": "^0.15.7",
     "prettier": "^3.6.2",
     "turbo": "^2.10.7",
     "typescript": "~6.0.3"

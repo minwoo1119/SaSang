@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import polygonClipping from "polygon-clipping";
 
 const KOREA_INPUT = new URL(
   "./sources/korea-sigungu-2025-2q.geojson",
@@ -25,7 +26,8 @@ const WORLD_OUTPUT = new URL(
   import.meta.url,
 );
 
-const MERGED_METROPOLITAN_CITY_CODES = new Set([
+const MERGED_SPECIAL_AND_METROPOLITAN_CITY_CODES = new Set([
+  "11",
   "26",
   "27",
   "28",
@@ -34,25 +36,22 @@ const MERGED_METROPOLITAN_CITY_CODES = new Set([
   "31",
 ]);
 
-const shouldDissolveMergedGeometry = (config) =>
-  Boolean(config.mergeByProvinceCodes || config.mergeCityDistricts);
-
 export const MAP_CONFIGS = {
   korea: {
     viewBox: { width: 360, height: 520, padding: 12 },
     codePattern: /^\d{5}$/,
     regionProperties: KOREA_CODES,
-    mergeByProvinceCodes: MERGED_METROPOLITAN_CITY_CODES,
+    mergeByProvinceCodes: MERGED_SPECIAL_AND_METROPOLITAN_CITY_CODES,
     mergeCityDistricts: true,
     metadata: {
-      version: "sgis-sigungu-2025-2q-v3",
+      version: "sgis-sigungu-2025-2q-v4",
       generatedAt: "2025-06-30T00:00:00.000Z",
       source:
         "https://www.data.go.kr/data/15129688/fileData.do (bnd_sigungu_00_2025_2Q)",
       license: "이용허락범위 제한 없음",
       referenceDate: "2025 Q2",
       identifierPolicy:
-        "Official five-digit legal-district prefix from code.go.kr; Busan, Daegu, Incheon, Gwangju, Daejeon, and Ulsan are represented by their five-digit metropolitan-city codes; non-metropolitan cities split into districts named '{city} {district-gu}' are represented by the parent city code with shared district boundaries dissolved",
+        "Official five-digit legal-district prefix from code.go.kr; Seoul, Busan, Daegu, Incheon, Gwangju, Daejeon, and Ulsan are represented by their five-digit special/metropolitan-city codes; non-metropolitan cities split into districts named '{city} {district-gu}' are represented by the parent city code with shared district boundaries dissolved",
       excludedFeatures: [],
     },
   },
@@ -80,71 +79,9 @@ function polygonsFromGeometry(geometry) {
   throw new Error(`Unsupported geometry type: ${geometry.type}`);
 }
 
-function pointKey([x, y]) {
-  return `${x},${y}`;
-}
-
-function edgeKey(start, end) {
-  const startKey = pointKey(start);
-  const endKey = pointKey(end);
-  return startKey < endKey ? `${startKey}|${endKey}` : `${endKey}|${startKey}`;
-}
-
 function dissolvePolygons(polygons) {
-  const edgesByKey = new Map();
-  for (const polygon of polygons) {
-    for (const ring of polygon) {
-      for (let index = 0; index < ring.length - 1; index += 1) {
-        const start = ring[index];
-        const end = ring[index + 1];
-        if (pointKey(start) === pointKey(end)) continue;
-        const key = edgeKey(start, end);
-        const edges = edgesByKey.get(key) ?? [];
-        edges.push({ start, end });
-        edgesByKey.set(key, edges);
-      }
-    }
-  }
-
-  const exteriorEdges = [...edgesByKey.values()]
-    .filter((edges) => edges.length === 1)
-    .map(([edge]) => edge);
-  const unused = new Set(exteriorEdges.map((_, index) => index));
-  const edgesFromPoint = new Map();
-  for (const [index, edge] of exteriorEdges.entries()) {
-    const startKey = pointKey(edge.start);
-    const edges = edgesFromPoint.get(startKey) ?? [];
-    edges.push(index);
-    edgesFromPoint.set(startKey, edges);
-  }
-
-  const rings = [];
-  while (unused.size > 0) {
-    const firstIndex = unused.values().next().value;
-    const firstEdge = exteriorEdges[firstIndex];
-    unused.delete(firstIndex);
-
-    const ring = [firstEdge.start, firstEdge.end];
-    const ringStartKey = pointKey(firstEdge.start);
-    let cursorKey = pointKey(firstEdge.end);
-
-    while (cursorKey !== ringStartKey) {
-      const nextIndex = (edgesFromPoint.get(cursorKey) ?? []).find((index) =>
-        unused.has(index),
-      );
-      if (nextIndex === undefined) {
-        throw new Error("Unable to dissolve adjacent map polygons.");
-      }
-      const nextEdge = exteriorEdges[nextIndex];
-      unused.delete(nextIndex);
-      ring.push(nextEdge.end);
-      cursorKey = pointKey(nextEdge.end);
-    }
-
-    rings.push(ring);
-  }
-
-  return rings.map((ring) => [ring]);
+  if (polygons.length === 0) return [];
+  return polygonClipping.union(...polygons).map(([outerRing]) => [outerRing]);
 }
 
 function formatNumber(value) {
@@ -152,14 +89,11 @@ function formatNumber(value) {
 }
 
 function mergedFeature(code, properties, polygons, config) {
-  const coordinates = shouldDissolveMergedGeometry(config)
-    ? dissolvePolygons(polygons)
-    : polygons;
+  const coordinates = dissolvePolygons(polygons);
   return {
     geometry: {
       type: coordinates.length === 1 ? "Polygon" : "MultiPolygon",
-      coordinates:
-        coordinates.length === 1 ? coordinates[0] : coordinates,
+      coordinates: coordinates.length === 1 ? coordinates[0] : coordinates,
     },
     properties,
   };

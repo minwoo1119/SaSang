@@ -23,11 +23,11 @@ and writes deterministic JSON. Generated files contain the marker
 - Input: `sources/korea-sigungu-2025-2q.geojson`.
 - Output: `app/src/assets/maps/korea/regions.json`.
 
-Busan, Daegu, Incheon, Gwangju, Daejeon, and Ulsan are merged to their
-metropolitan-city region. Non-metropolitan cities that are split into district
-features, such as Suwon, Cheongju, and Changwon, are also merged to the parent
-city region. Seoul remains split into 25 district regions for the current MVP
-map experience.
+Seoul, Busan, Daegu, Incheon, Gwangju, Daejeon, and Ulsan are merged to their
+special/metropolitan-city region. Non-metropolitan cities that are split into
+district features, such as Suwon, Cheongju, and Changwon, are also merged to
+the parent city region. Shared district boundaries are dissolved during
+generation so the app renders only the merged city outlines.
 
 The large source SHP is converted outside the mobile runtime with
 `prepare-shapefile.mjs`. A 250-meter deterministic Douglas-Peucker tolerance is

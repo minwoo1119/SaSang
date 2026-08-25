@@ -35,23 +35,20 @@ function assertValidMap(map, codePattern) {
 
 test("generates every Korea district with a stable five-digit code", () => {
   const result = generateMap(koreaSource, MAP_CONFIGS.korea);
-  assert.equal(result.regions.length, 185);
+  assert.equal(result.regions.length, 161);
   assertValidMap(result, /^\d{5}$/);
   assert.equal(
-    result.regions.find(({ name }) => name === "강남구")?.code,
-    "11680",
-  );
-  assert.equal(
-    result.regions.find(({ name }) => name === "종로구")?.code,
-    "11110",
+    result.regions.find(({ name }) => name === "서울특별시")?.code,
+    "11000",
   );
   const mergedCities = [
-    ["26000", "부산광역시", "MultiPolygon", 218],
-    ["27000", "대구광역시", "MultiPolygon", 9],
-    ["28000", "인천광역시", "MultiPolygon", 695],
-    ["29000", "광주광역시", "MultiPolygon", 5],
-    ["30000", "대전광역시", "MultiPolygon", 3],
-    ["31000", "울산광역시", "MultiPolygon", 447],
+    ["11000", "서울특별시", "Polygon", 1],
+    ["26000", "부산광역시", "MultiPolygon", 192],
+    ["27000", "대구광역시", "Polygon", 1],
+    ["28000", "인천광역시", "MultiPolygon", 637],
+    ["29000", "광주광역시", "Polygon", 1],
+    ["30000", "대전광역시", "Polygon", 1],
+    ["31000", "울산광역시", "MultiPolygon", 298],
   ];
   for (const [code, name, geometryType, polygonCount] of mergedCities) {
     const city = result.regions.find((region) => region.code === code);
@@ -61,23 +58,23 @@ test("generates every Korea district with a stable five-digit code", () => {
   }
   assert.equal(
     result.regions.filter(({ provinceCode }) =>
-      ["26", "27", "28", "29", "30", "31"].includes(provinceCode),
+      ["11", "26", "27", "28", "29", "30", "31"].includes(provinceCode),
     ).length,
     0,
   );
   const mergedDistrictCities = [
-    ["41110", "수원시", "MultiPolygon", 3],
-    ["41130", "성남시", "MultiPolygon", 2],
+    ["41110", "수원시", "Polygon", 1],
+    ["41130", "성남시", "Polygon", 1],
     ["41170", "안양시", "Polygon", 1],
     ["41190", "부천시", "MultiPolygon", 2],
     ["41270", "안산시", "MultiPolygon", 26],
-    ["41280", "고양시", "MultiPolygon", 3],
-    ["41460", "용인시", "MultiPolygon", 4],
-    ["43110", "청주시", "MultiPolygon", 3],
-    ["44130", "천안시", "MultiPolygon", 2],
-    ["47110", "포항시", "MultiPolygon", 290],
-    ["48120", "창원시", "MultiPolygon", 62],
-    ["52110", "전주시", "MultiPolygon", 2],
+    ["41280", "고양시", "Polygon", 1],
+    ["41460", "용인시", "Polygon", 1],
+    ["43110", "청주시", "Polygon", 1],
+    ["44130", "천안시", "Polygon", 1],
+    ["47110", "포항시", "MultiPolygon", 223],
+    ["48120", "창원시", "MultiPolygon", 57],
+    ["52110", "전주시", "Polygon", 1],
   ];
   for (const [code, name, geometryType, polygonCount] of mergedDistrictCities) {
     const city = result.regions.find((region) => region.code === code);
@@ -87,7 +84,7 @@ test("generates every Korea district with a stable five-digit code", () => {
   }
   assert.deepEqual(
     result.regions
-      .filter(({ name }) => /시 .*구$/.test(name))
+      .filter(({ name }) => /구$/.test(name))
       .map(({ name }) => name),
     [],
   );
