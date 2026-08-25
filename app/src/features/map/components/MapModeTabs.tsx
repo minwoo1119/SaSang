@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   label: { color: "#71717A", fontSize: 13, fontWeight: "600" },
   pressed: { opacity: 0.72 },
   selectedLabel: { color: "#FFFFFF", fontWeight: "700" },
-  selectedTab: { backgroundColor: "#18181B" },
+  selectedTab: { backgroundColor: "#007AFF" },
   tab: {
     alignItems: "center",
     borderRadius: 20,

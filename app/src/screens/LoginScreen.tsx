@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   guestButton: {
-    backgroundColor: "#18181B",
+    backgroundColor: "#007AFF",
   },
   guestText: {
     color: "#FFFFFF",

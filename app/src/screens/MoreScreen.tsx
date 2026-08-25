@@ -104,39 +104,42 @@ export function MoreScreen() {
       <Text style={styles.title}>더보기</Text>
 
       <View style={styles.profileSection}>
-        <Pressable
-          accessibilityLabel="프로필 이미지 수정"
-          accessibilityRole="button"
-          onPress={pickProfileImage}
-          style={({ pressed }) => [
-            styles.avatarButton,
-            pressed && styles.pressed,
-          ]}
-        >
-          {profileImageUri ? (
-            <Image source={{ uri: profileImageUri }} style={styles.avatarImage} />
-          ) : (
-            <Text style={styles.avatarInitial}>{name.slice(0, 1)}</Text>
-          )}
-        </Pressable>
+        <View style={styles.profileHeader}>
+          <Pressable
+            accessibilityLabel="프로필 이미지 수정"
+            accessibilityRole="button"
+            onPress={pickProfileImage}
+            style={({ pressed }) => [
+              styles.avatarButton,
+              pressed && styles.pressed,
+            ]}
+          >
+            {profileImageUri ? (
+              <Image source={{ uri: profileImageUri }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarInitial}>{name.slice(0, 1)}</Text>
+            )}
+          </Pressable>
 
-        <View style={styles.profileCopy}>
-          <Text style={styles.sectionLabel}>개인 프로필</Text>
-          {isEditingName ? (
-            <TextInput
-              autoFocus
-              maxLength={20}
-              onChangeText={setDraftName}
-              onSubmitEditing={saveName}
-              returnKeyType="done"
-              style={styles.nameInput}
-              value={draftName}
-            />
-          ) : (
-            <Text numberOfLines={1} style={styles.profileName}>
-              {name}
-            </Text>
-          )}
+          <View style={styles.profileCopy}>
+            <Text style={styles.sectionLabel}>개인 프로필</Text>
+            {isEditingName ? (
+              <TextInput
+                autoFocus
+                maxLength={20}
+                onChangeText={setDraftName}
+                onSubmitEditing={saveName}
+                returnKeyType="done"
+                style={styles.nameInput}
+                value={draftName}
+              />
+            ) : (
+              <Text numberOfLines={1} style={styles.profileName}>
+                {name}
+              </Text>
+            )}
+            <Text style={styles.profileHint}>프로필 사진과 표시 이름을 관리해요</Text>
+          </View>
         </View>
 
         <Pressable
@@ -192,20 +195,22 @@ export function MoreScreen() {
 const styles = StyleSheet.create({
   avatarButton: {
     alignItems: "center",
-    backgroundColor: "#18181B",
-    borderRadius: 34,
-    height: 68,
+    backgroundColor: "#007AFF",
+    borderColor: "rgba(255, 255, 255, 0.92)",
+    borderRadius: 42,
+    borderWidth: 3,
+    height: 84,
     justifyContent: "center",
     overflow: "hidden",
-    width: 68,
+    width: 84,
   },
   avatarImage: {
-    height: 68,
-    width: 68,
+    height: 84,
+    width: 84,
   },
   avatarInitial: {
     color: "#FFFFFF",
-    fontSize: 25,
+    fontSize: 30,
     fontWeight: "800",
   },
   container: {
@@ -218,9 +223,10 @@ const styles = StyleSheet.create({
   },
   editButton: {
     alignItems: "center",
-    backgroundColor: "#18181B",
-    borderRadius: 8,
-    height: 38,
+    alignSelf: "stretch",
+    backgroundColor: "#007AFF",
+    borderRadius: 14,
+    height: 44,
     justifyContent: "center",
     paddingHorizontal: 15,
   },
@@ -252,7 +258,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   infoTabTextSelected: {
-    color: "#18181B",
+    color: "#007AFF",
   },
   infoTitle: {
     color: "#18181B",
@@ -260,7 +266,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   nameInput: {
-    borderBottomColor: "#18181B",
+    borderBottomColor: "#007AFF",
     borderBottomWidth: 1,
     color: "#18181B",
     fontSize: 22,
@@ -283,23 +289,31 @@ const styles = StyleSheet.create({
   },
   profileCopy: {
     flex: 1,
-    gap: 4,
+    gap: 5,
     minWidth: 0,
+  },
+  profileHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 16,
+  },
+  profileHint: {
+    color: "#71717A",
+    fontSize: 13,
+    lineHeight: 18,
   },
   profileName: {
     color: "#18181B",
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "800",
   },
   profileSection: {
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E5E7EB",
-    borderRadius: 16,
+    backgroundColor: "#F8FBFF",
+    borderColor: "#D6E9FF",
+    borderRadius: 28,
     borderWidth: 1,
-    flexDirection: "row",
-    gap: 14,
-    padding: 16,
+    gap: 18,
+    padding: 18,
   },
   sectionLabel: {
     color: "#71717A",

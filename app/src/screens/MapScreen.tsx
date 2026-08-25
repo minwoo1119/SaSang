@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   mapViewport: StyleSheet.absoluteFillObject,
   photoButton: {
     alignItems: "center",
-    backgroundColor: "#18181B",
+    backgroundColor: "#007AFF",
     borderRadius: 23,
     height: 46,
     justifyContent: "center",
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     lineHeight: 23,
   },
-  photoButtonPressed: { backgroundColor: "#3F3F46" },
+  photoButtonPressed: { backgroundColor: "#0068D9" },
   pressed: { opacity: 0.55 },
   recordCount: { color: "#71717A", fontSize: 11, marginTop: 1 },
   regionCode: { color: "#71717A", fontSize: 11, marginTop: 2 },
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   },
   regionCopy: { flex: 1, minWidth: 0 },
   regionMarker: {
-    backgroundColor: "#18181B",
+    backgroundColor: "#007AFF",
     borderRadius: 21,
     height: 42,
     width: 42,

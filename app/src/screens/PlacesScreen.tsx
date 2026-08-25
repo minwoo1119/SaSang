@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   filterTextSelected: {
-    color: "#18181B",
+    color: "#007AFF",
   },
   header: {
     gap: 18,
