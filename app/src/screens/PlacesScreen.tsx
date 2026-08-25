@@ -188,16 +188,19 @@ function PlacePhotoCard({ card }: { card: PlaceCard }) {
       accessibilityRole="button"
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
-      {card.photo ? (
-        <Image source={{ uri: card.photo.uri }} style={styles.cardImage} />
-      ) : (
-        <View style={styles.sampleImage}>
-          <View style={styles.sampleMarker} />
-          <Text numberOfLines={1} style={styles.sampleImageText}>
-            {card.region.name}
-          </Text>
-        </View>
-      )}
+      <View style={styles.imageFrame}>
+        {card.photo ? (
+          <Image source={{ uri: card.photo.uri }} style={styles.cardImage} />
+        ) : (
+          <View style={styles.sampleImage}>
+            <View style={styles.sampleMarker} />
+            <Text numberOfLines={1} style={styles.sampleImageText}>
+              {card.region.name}
+            </Text>
+          </View>
+        )}
+      </View>
+      <View style={styles.cardDivider} />
       <View style={styles.cardBody}>
         <View style={styles.cardTitleRow}>
           <Text numberOfLines={1} style={styles.regionName}>
@@ -219,22 +222,29 @@ function PlacePhotoCard({ card }: { card: PlaceCard }) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#FFFFFF",
-    borderColor: "rgba(0, 0, 0, 0.07)",
+    borderColor: "rgba(24, 24, 27, 0.1)",
     borderRadius: 8,
-    borderWidth: StyleSheet.hairlineWidth,
-    gap: 11,
+    borderWidth: 1,
+    gap: 0,
     overflow: "hidden",
-    padding: 8,
+    shadowColor: "#18181B",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
   },
   cardBody: {
-    gap: 3,
-    paddingBottom: 4,
-    paddingHorizontal: 3,
+    gap: 4,
+    paddingBottom: 13,
+    paddingHorizontal: 13,
+    paddingTop: 12,
+  },
+  cardDivider: {
+    backgroundColor: "rgba(24, 24, 27, 0.07)",
+    height: StyleSheet.hairlineWidth,
   },
   cardImage: {
-    aspectRatio: 1.18,
     backgroundColor: "#F4F4F5",
-    borderRadius: 8,
+    height: "100%",
     width: "100%",
   },
   cardTitleRow: {
@@ -273,8 +283,13 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   header: {
-    paddingBottom: 16,
+    paddingBottom: 18,
     paddingHorizontal: 16,
+  },
+  imageFrame: {
+    aspectRatio: 1.18,
+    backgroundColor: "#F4F4F5",
+    width: "100%",
   },
   headerRow: {
     alignItems: "center",
@@ -282,7 +297,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   list: {
-    gap: 18,
+    gap: 20,
     paddingHorizontal: 16,
   },
   locationText: {
@@ -311,10 +326,9 @@ const styles = StyleSheet.create({
   },
   sampleImage: {
     alignItems: "center",
-    aspectRatio: 1.18,
     backgroundColor: "#F8FBFF",
-    borderRadius: 8,
     gap: 10,
+    height: "100%",
     justifyContent: "center",
     overflow: "hidden",
     paddingHorizontal: 18,
