@@ -166,9 +166,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   googleButton: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#747775",
-    borderWidth: 1,
+    backgroundColor: "#F2F2F2",
   },
   googleText: {
     color: "#1F1F1F",
