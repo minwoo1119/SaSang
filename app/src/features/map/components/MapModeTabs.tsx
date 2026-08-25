@@ -43,10 +43,10 @@ const styles = StyleSheet.create({
     padding: 4,
     overflow: "hidden",
   },
-  label: { color: "#666B73", fontSize: 13, fontWeight: "600" },
+  label: { color: "#71717A", fontSize: 13, fontWeight: "600" },
   pressed: { opacity: 0.72 },
   selectedLabel: { color: "#FFFFFF", fontWeight: "700" },
-  selectedTab: { backgroundColor: "#17191D" },
+  selectedTab: { backgroundColor: "#18181B" },
   tab: {
     alignItems: "center",
     borderRadius: 20,

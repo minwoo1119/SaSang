@@ -155,12 +155,12 @@ export function MapScreen() {
 
 const styles = StyleSheet.create({
   brand: {
-    color: "#17191D",
+    color: "#18181B",
     fontSize: 24,
     fontWeight: "800",
     letterSpacing: -0.9,
   },
-  container: { backgroundColor: "#F1F2F0", flex: 1 },
+  container: { backgroundColor: "#FAFAFA", flex: 1 },
   headerRow: {
     alignItems: "center",
     flexDirection: "row",
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   mapViewport: StyleSheet.absoluteFillObject,
   photoButton: {
     alignItems: "center",
-    backgroundColor: "#17191D",
+    backgroundColor: "#18181B",
     borderRadius: 23,
     height: 46,
     justifyContent: "center",
@@ -181,10 +181,10 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     lineHeight: 23,
   },
-  photoButtonPressed: { backgroundColor: "#3B3E44" },
+  photoButtonPressed: { backgroundColor: "#3F3F46" },
   pressed: { opacity: 0.55 },
-  recordCount: { color: "#666B73", fontSize: 11, marginTop: 1 },
-  regionCode: { color: "#777C84", fontSize: 11, marginTop: 2 },
+  recordCount: { color: "#71717A", fontSize: 11, marginTop: 1 },
+  regionCode: { color: "#71717A", fontSize: 11, marginTop: 2 },
   regionControl: {
     alignItems: "center",
     borderRadius: 30,
@@ -199,19 +199,19 @@ const styles = StyleSheet.create({
   },
   regionCopy: { flex: 1, minWidth: 0 },
   regionMarker: {
-    backgroundColor: "#3268C8",
+    backgroundColor: "#18181B",
     borderRadius: 21,
     height: 42,
     width: 42,
   },
   regionName: {
-    color: "#17191D",
+    color: "#18181B",
     fontSize: 16,
     fontWeight: "700",
     letterSpacing: -0.45,
   },
   removeButton: { paddingHorizontal: 4, paddingVertical: 10 },
-  removeText: { color: "#777C84", fontSize: 12, fontWeight: "600" },
+  removeText: { color: "#71717A", fontSize: 12, fontWeight: "600" },
   selectionHint: {
     alignSelf: "center",
     borderRadius: 22,
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     position: "absolute",
   },
-  selectionHintText: { color: "#4D5158", fontSize: 13, fontWeight: "600" },
+  selectionHintText: { color: "#52525B", fontSize: 13, fontWeight: "600" },
   thumbnail: { borderRadius: 21, height: 42, width: 42 },
   topOverlay: {
     left: 16,

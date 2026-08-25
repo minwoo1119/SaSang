@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     aspectRatio: 1.18,
-    backgroundColor: "#E8E3DA",
+    backgroundColor: "#F1F5F9",
     borderRadius: 8,
     width: "100%",
   },
@@ -182,11 +182,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   container: {
-    backgroundColor: "#F6F4EF",
+    backgroundColor: "#FAFAFA",
     flex: 1,
   },
   dateText: {
-    color: "#777C84",
+    color: "#71717A",
     fontSize: 13,
   },
   filterButton: {
@@ -200,12 +200,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   filterText: {
-    color: "#777C84",
+    color: "#71717A",
     fontSize: 14,
     fontWeight: "700",
   },
   filterTextSelected: {
-    color: "#17191D",
+    color: "#18181B",
   },
   header: {
     gap: 18,
@@ -217,12 +217,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   locationText: {
-    color: "#3D4148",
+    color: "#3F3F46",
     fontSize: 14,
     fontWeight: "600",
   },
   modeLabel: {
-    color: "#777C84",
+    color: "#71717A",
     fontSize: 12,
     fontWeight: "700",
   },
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     opacity: 0.78,
   },
   regionName: {
-    color: "#17191D",
+    color: "#18181B",
     flex: 1,
     fontSize: 17,
     fontWeight: "800",
@@ -238,26 +238,26 @@ const styles = StyleSheet.create({
   sampleImage: {
     alignItems: "center",
     aspectRatio: 1.18,
-    backgroundColor: "#E9E4DB",
+    backgroundColor: "#F1F5F9",
     borderRadius: 8,
     justifyContent: "center",
     overflow: "hidden",
     width: "100%",
   },
   sampleImageText: {
-    color: "#8A8173",
+    color: "#94A3B8",
     fontSize: 24,
     fontWeight: "800",
   },
   segmentedControl: {
-    backgroundColor: "#E9E4DB",
+    backgroundColor: "#F1F5F9",
     borderRadius: 10,
     flexDirection: "row",
     gap: 4,
     padding: 4,
   },
   title: {
-    color: "#17191D",
+    color: "#18181B",
     fontSize: 28,
     fontWeight: "800",
   },

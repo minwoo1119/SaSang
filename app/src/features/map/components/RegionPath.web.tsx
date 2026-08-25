@@ -24,9 +24,17 @@ export const RegionPath = memo(function RegionPath({
     <WebPath
       accessibilityLabel={`${region.name}, ${region.code}${visited ? ", 사진 있음" : ""}`}
       d={region.path}
-      fill={photoFilled ? "transparent" : selected ? "#E8EEF8" : visited ? "#E1E8E3" : "#FAFAF8"}
+      fill={
+        photoFilled
+          ? "transparent"
+          : selected
+            ? "#F4F4F5"
+            : visited
+              ? "#F8FAFC"
+              : "#FFFFFF"
+      }
       onClick={() => onPress(region)}
-      stroke={selected ? "#3268C8" : photoFilled ? "#6F746F" : "#9A9D98"}
+      stroke={selected ? "#18181B" : photoFilled ? "#71717A" : "#D4D4D8"}
       strokeLinejoin="round"
       strokeWidth={selected ? 1.15 : photoFilled ? 0.7 : 0.52}
       vectorEffect="non-scaling-stroke"

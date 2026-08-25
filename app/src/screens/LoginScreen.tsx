@@ -99,13 +99,13 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   container: {
-    backgroundColor: "#F6F4EF",
+    backgroundColor: "#FAFAFA",
     flex: 1,
     justifyContent: "space-between",
     paddingHorizontal: 24,
   },
   description: {
-    color: "#60646C",
+    color: "#6B7280",
     fontSize: 15,
     lineHeight: 22,
     marginTop: 12,
@@ -113,11 +113,11 @@ const styles = StyleSheet.create({
   },
   googleButton: {
     backgroundColor: "#FFFFFF",
-    borderColor: "#DADCE0",
-    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderWidth: StyleSheet.hairlineWidth,
   },
   googleMark: {
-    color: "#4285F4",
+    color: "#18181B",
     fontSize: 18,
     fontWeight: "800",
     width: 18,
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   guestButton: {
-    backgroundColor: "#17191D",
+    backgroundColor: "#18181B",
   },
   guestText: {
     color: "#FFFFFF",
@@ -143,7 +143,9 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   kakaoButton: {
-    backgroundColor: "#FEE500",
+    backgroundColor: "#FFFFFF",
+    borderColor: "#E5E7EB",
+    borderWidth: StyleSheet.hairlineWidth,
   },
   kakaoMark: {
     color: "#191600",
@@ -160,7 +162,7 @@ const styles = StyleSheet.create({
     opacity: 0.72,
   },
   title: {
-    color: "#2C3036",
+    color: "#3F3F46",
     fontSize: 20,
     fontWeight: "700",
     letterSpacing: 0,

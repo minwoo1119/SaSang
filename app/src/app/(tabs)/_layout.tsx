@@ -35,7 +35,7 @@ function FloatingTabBar({
           const focused = state.index === index;
           const options = descriptors[route.key]?.options;
           const meta = TAB_META[route.name];
-          const color = focused ? "#17191D" : "#777C84";
+          const color = focused ? "#18181B" : "#71717A";
 
           const onPress = () => {
             const event = navigation.emit({
@@ -128,10 +128,10 @@ const styles = StyleSheet.create({
   bar: {
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-    borderColor: "#E9E4DB",
+    borderColor: "rgba(228, 228, 231, 0.9)",
     borderRadius: 34,
     borderWidth: 1,
-    boxShadow: "0 8px 18px rgba(23, 25, 29, 0.12)",
+    boxShadow: "0 8px 18px rgba(24, 24, 27, 0.10)",
     elevation: 10,
     flexDirection: "row",
     gap: 4,
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   itemFocused: {
-    backgroundColor: "#F3F0E9",
+    backgroundColor: "#F4F4F5",
   },
   itemPressed: {
     opacity: 0.72,

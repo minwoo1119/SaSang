@@ -192,7 +192,7 @@ export function MoreScreen() {
 const styles = StyleSheet.create({
   avatarButton: {
     alignItems: "center",
-    backgroundColor: "#17191D",
+    backgroundColor: "#18181B",
     borderRadius: 34,
     height: 68,
     justifyContent: "center",
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   container: {
-    backgroundColor: "#F6F4EF",
+    backgroundColor: "#FAFAFA",
     flex: 1,
   },
   content: {
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   },
   editButton: {
     alignItems: "center",
-    backgroundColor: "#17191D",
+    backgroundColor: "#18181B",
     borderRadius: 8,
     height: 38,
     justifyContent: "center",
@@ -247,34 +247,34 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   infoTabText: {
-    color: "#777C84",
+    color: "#71717A",
     fontSize: 13,
     fontWeight: "800",
   },
   infoTabTextSelected: {
-    color: "#17191D",
+    color: "#18181B",
   },
   infoTitle: {
-    color: "#17191D",
+    color: "#18181B",
     fontSize: 18,
     fontWeight: "800",
   },
   nameInput: {
-    borderBottomColor: "#17191D",
+    borderBottomColor: "#18181B",
     borderBottomWidth: 1,
-    color: "#17191D",
+    color: "#18181B",
     fontSize: 22,
     fontWeight: "800",
     minWidth: 120,
     padding: 0,
   },
   panelText: {
-    color: "#4D5158",
+    color: "#52525B",
     fontSize: 14,
     lineHeight: 21,
   },
   panelTitle: {
-    color: "#17191D",
+    color: "#18181B",
     fontSize: 16,
     fontWeight: "800",
   },
@@ -287,14 +287,14 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   profileName: {
-    color: "#17191D",
+    color: "#18181B",
     fontSize: 22,
     fontWeight: "800",
   },
   profileSection: {
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-    borderColor: "#E9E4DB",
+    borderColor: "#E5E7EB",
     borderRadius: 16,
     borderWidth: 1,
     flexDirection: "row",
@@ -302,19 +302,19 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   sectionLabel: {
-    color: "#777C84",
+    color: "#71717A",
     fontSize: 12,
     fontWeight: "800",
   },
   tabList: {
-    backgroundColor: "#E9E4DB",
+    backgroundColor: "#F1F5F9",
     borderRadius: 10,
     flexDirection: "row",
     gap: 4,
     padding: 4,
   },
   title: {
-    color: "#17191D",
+    color: "#18181B",
     fontSize: 28,
     fontWeight: "800",
     letterSpacing: 0,
