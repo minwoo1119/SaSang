@@ -1,15 +1,13 @@
 import { Image } from "expo-image";
 import { useMemo, useState } from "react";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MAP_ASSETS } from "@/features/map/models/mapAssets";
-import type { MapMode, MapRegion, RegionPhoto } from "@/features/map/models/map.types";
+import type {
+  MapMode,
+  MapRegion,
+  RegionPhoto,
+} from "@/features/map/models/map.types";
 import { useMapUiStore } from "@/features/map/store/mapUi.store";
 
 type PlaceFilter = "korea" | "world";
@@ -62,24 +60,31 @@ export function PlacesScreen() {
           new Date(a.photo?.createdAt ?? 0).getTime(),
       );
 
-    return [...photoCards, ...sampleCards].filter(({ mode }) => mode === filter);
+    return [...photoCards, ...sampleCards].filter(
+      ({ mode }) => mode === filter,
+    );
   }, [filter, regionPhotos]);
 
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-        <Text style={styles.title}>장소</Text>
-        <View style={styles.segmentedControl}>
-          <FilterButton
-            label="국내"
-            onPress={() => setFilter("korea")}
-            selected={filter === "korea"}
-          />
-          <FilterButton
-            label="해외"
-            onPress={() => setFilter("world")}
-            selected={filter === "world"}
-          />
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.title}>장소</Text>
+            <Text style={styles.subtitle}>최근 기록한 여행 사진</Text>
+          </View>
+          <View style={styles.segmentedControl}>
+            <FilterButton
+              label="국내"
+              onPress={() => setFilter("korea")}
+              selected={filter === "korea"}
+            />
+            <FilterButton
+              label="해외"
+              onPress={() => setFilter("world")}
+              selected={filter === "world"}
+            />
+          </View>
         </View>
       </View>
 
@@ -141,7 +146,10 @@ function PlacePhotoCard({ card }: { card: PlaceCard }) {
         <Image source={{ uri: card.photo.uri }} style={styles.cardImage} />
       ) : (
         <View style={styles.sampleImage}>
-          <Text style={styles.sampleImageText}>{card.region.name}</Text>
+          <View style={styles.sampleMarker} />
+          <Text numberOfLines={1} style={styles.sampleImageText}>
+            {card.region.name}
+          </Text>
         </View>
       )}
       <View style={styles.cardBody}>
@@ -164,14 +172,22 @@ function PlacePhotoCard({ card }: { card: PlaceCard }) {
 
 const styles = StyleSheet.create({
   card: {
-    gap: 10,
+    backgroundColor: "#FFFFFF",
+    borderColor: "rgba(0, 0, 0, 0.07)",
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: 11,
+    overflow: "hidden",
+    padding: 8,
   },
   cardBody: {
     gap: 3,
+    paddingBottom: 4,
+    paddingHorizontal: 3,
   },
   cardImage: {
     aspectRatio: 1.18,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: "#F4F4F5",
     borderRadius: 8,
     width: "100%",
   },
@@ -187,44 +203,56 @@ const styles = StyleSheet.create({
   },
   dateText: {
     color: "#71717A",
-    fontSize: 13,
+    fontSize: 12,
+    fontWeight: "600",
   },
   filterButton: {
     alignItems: "center",
-    borderRadius: 8,
-    flex: 1,
+    borderRadius: 18,
     height: 36,
     justifyContent: "center",
+    minWidth: 58,
+    paddingHorizontal: 14,
   },
   filterButtonSelected: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "rgba(0, 122, 255, 0.12)",
   },
   filterText: {
-    color: "#71717A",
+    color: "#3F3F46",
     fontSize: 14,
     fontWeight: "700",
   },
   filterTextSelected: {
     color: "#007AFF",
+    fontWeight: "800",
   },
   header: {
-    gap: 18,
     paddingBottom: 16,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
+  },
+  headerRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   list: {
-    gap: 26,
-    paddingHorizontal: 20,
+    gap: 18,
+    paddingHorizontal: 16,
   },
   locationText: {
-    color: "#3F3F46",
+    color: "#52525B",
     fontSize: 14,
     fontWeight: "600",
   },
   modeLabel: {
-    color: "#71717A",
-    fontSize: 12,
-    fontWeight: "700",
+    backgroundColor: "rgba(0, 122, 255, 0.1)",
+    borderRadius: 10,
+    color: "#007AFF",
+    fontSize: 11,
+    fontWeight: "800",
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
   pressed: {
     opacity: 0.78,
@@ -232,33 +260,51 @@ const styles = StyleSheet.create({
   regionName: {
     color: "#18181B",
     flex: 1,
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: "800",
   },
   sampleImage: {
     alignItems: "center",
     aspectRatio: 1.18,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: "#F8FBFF",
     borderRadius: 8,
+    gap: 10,
     justifyContent: "center",
     overflow: "hidden",
+    paddingHorizontal: 18,
     width: "100%",
   },
   sampleImageText: {
-    color: "#94A3B8",
-    fontSize: 24,
+    color: "#007AFF",
+    fontSize: 20,
     fontWeight: "800",
+    maxWidth: "100%",
+  },
+  sampleMarker: {
+    backgroundColor: "#007AFF",
+    borderRadius: 18,
+    height: 36,
+    opacity: 0.16,
+    width: 36,
   },
   segmentedControl: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: 10,
+    backgroundColor: "#FFFFFF",
+    borderColor: "rgba(0, 0, 0, 0.08)",
+    borderRadius: 22,
+    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
     gap: 4,
     padding: 4,
   },
+  subtitle: {
+    color: "#71717A",
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 2,
+  },
   title: {
     color: "#18181B",
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "800",
   },
 });
