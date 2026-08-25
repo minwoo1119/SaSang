@@ -14,7 +14,7 @@
     "typecheck": "turbo typecheck",
     "test": "turbo test",
     "map:generate": "node scripts/map-data/generate-maps.mjs",
-    "map:test": "node --test --test-isolation=none scripts/map-data/*.test.mjs",
+    "map:test": "node --test scripts/map-data/*.test.mjs",
     "format:check": "prettier --check ."
   },
   "devDependencies": {

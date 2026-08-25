@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
@@ -10,7 +11,7 @@ const WORLD_INPUT = new URL(
   import.meta.url,
 );
 const KOREA_CODES = JSON.parse(
-  await readFile(
+  readFileSync(
     new URL("./sources/korea-official-code-map-2025.json", import.meta.url),
     "utf8",
   ),
@@ -39,15 +40,16 @@ export const MAP_CONFIGS = {
     codePattern: /^\d{5}$/,
     regionProperties: KOREA_CODES,
     mergeByProvinceCodes: MERGED_METROPOLITAN_CITY_CODES,
+    mergeCityDistricts: true,
     metadata: {
-      version: "sgis-sigungu-2025-2q-v2",
+      version: "sgis-sigungu-2025-2q-v3",
       generatedAt: "2025-06-30T00:00:00.000Z",
       source:
         "https://www.data.go.kr/data/15129688/fileData.do (bnd_sigungu_00_2025_2Q)",
       license: "이용허락범위 제한 없음",
       referenceDate: "2025 Q2",
       identifierPolicy:
-        "Official five-digit legal-district prefix from code.go.kr; Busan, Daegu, Incheon, Gwangju, Daejeon, and Ulsan are represented by their five-digit metropolitan-city codes with all child district polygons preserved",
+        "Official five-digit legal-district prefix from code.go.kr; Busan, Daegu, Incheon, Gwangju, Daejeon, and Ulsan are represented by their five-digit metropolitan-city codes; non-metropolitan city districts named '{city} {district-gu}' are represented by the parent city code with all child district polygons preserved",
       excludedFeatures: [],
     },
   },
@@ -64,10 +66,7 @@ export const MAP_CONFIGS = {
       referenceDate: "Natural Earth 5.1.2",
       identifierPolicy:
         "ISO 3166-1 alpha-2 (ISO_A2_EH); features without an ISO code are excluded",
-      excludedFeatures: [
-        "Turkish Republic of Northern Cyprus",
-        "Somaliland",
-      ],
+      excludedFeatures: ["Turkish Republic of Northern Cyprus", "Somaliland"],
     },
   },
 };
@@ -87,25 +86,58 @@ function normalizeFeatures(source, config) {
     geometry,
     properties: config.regionProperties?.[properties.code] ?? properties,
   }));
-  if (!config.mergeByProvinceCodes) return normalized;
 
-  const merged = new Map();
-  const retained = [];
-  for (const feature of normalized) {
-    const { provinceCode, provinceName } = feature.properties;
-    if (!config.mergeByProvinceCodes.has(provinceCode)) {
-      retained.push(feature);
+  let features = normalized;
+  if (config.mergeByProvinceCodes) {
+    const merged = new Map();
+    const retained = [];
+    for (const feature of features) {
+      const { provinceCode, provinceName } = feature.properties;
+      if (!config.mergeByProvinceCodes.has(provinceCode)) {
+        retained.push(feature);
+        continue;
+      }
+      const code = `${provinceCode}000`;
+      const current = merged.get(code) ?? {
+        geometry: { type: "MultiPolygon", coordinates: [] },
+        properties: { code, name: provinceName },
+      };
+      current.geometry.coordinates.push(
+        ...polygonsFromGeometry(feature.geometry),
+      );
+      merged.set(code, current);
+    }
+    features = [...retained, ...merged.values()];
+  }
+
+  if (!config.mergeCityDistricts) return features;
+
+  const cityMerged = new Map();
+  const cityRetained = [];
+  for (const feature of features) {
+    const { code, name, provinceCode, provinceName } = feature.properties;
+    const cityMatch = /^(.+시)\s+.+구$/.exec(name);
+    if (!cityMatch) {
+      cityRetained.push(feature);
       continue;
     }
-    const code = `${provinceCode}000`;
-    const current = merged.get(code) ?? {
+    const cityName = cityMatch[1];
+    const cityCode = `${code.slice(0, 4)}0`;
+    const current = cityMerged.get(cityCode) ?? {
       geometry: { type: "MultiPolygon", coordinates: [] },
-      properties: { code, name: provinceName },
+      properties: {
+        code: cityCode,
+        name: cityName,
+        provinceCode,
+        provinceName,
+      },
     };
-    current.geometry.coordinates.push(...polygonsFromGeometry(feature.geometry));
-    merged.set(code, current);
+    current.geometry.coordinates.push(
+      ...polygonsFromGeometry(feature.geometry),
+    );
+    cityMerged.set(cityCode, current);
   }
-  return [...retained, ...merged.values()];
+  return [...cityRetained, ...cityMerged.values()];
 }
 
 export function generateMap(source, config) {
