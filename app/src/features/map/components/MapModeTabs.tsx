@@ -38,7 +38,7 @@ export function MapModeTabs({ value, onChange }: Props) {
 const styles = StyleSheet.create({
   container: {
     alignSelf: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.94)",
+    backgroundColor: "#FFFFFF",
     borderColor: "rgba(0, 0, 0, 0.08)",
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 24,
@@ -48,14 +48,14 @@ const styles = StyleSheet.create({
   },
   label: { color: "#3F3F46", fontSize: 14, fontWeight: "700" },
   pressed: { opacity: 0.72 },
-  selectedLabel: { color: "#FFFFFF", fontWeight: "700" },
   selectedTab: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "rgba(0, 122, 255, 0.12)",
     shadowColor: "#007AFF",
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.22,
+    shadowOpacity: 0.08,
     shadowRadius: 8,
   },
+  selectedLabel: { color: "#007AFF", fontWeight: "800" },
   tab: {
     alignItems: "center",
     borderRadius: 20,

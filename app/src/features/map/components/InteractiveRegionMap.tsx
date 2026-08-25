@@ -225,11 +225,11 @@ export function InteractiveRegionMap({
 const styles = StyleSheet.create({
   container: { flex: 1, overflow: "hidden", width: "100%" },
   map: { height: "100%", width: "100%" },
-  pressed: { backgroundColor: "rgba(39, 37, 33, 0.08)" },
-  resetText: { color: "#5F5B54", fontSize: 11, fontWeight: "700" },
+  pressed: { backgroundColor: "rgba(0, 122, 255, 0.08)" },
+  resetText: { color: "#007AFF", fontSize: 11, fontWeight: "800" },
   separator: {
     alignSelf: "center",
-    backgroundColor: "rgba(39, 37, 33, 0.1)",
+    backgroundColor: "rgba(0, 0, 0, 0.08)",
     height: StyleSheet.hairlineWidth,
     width: 24,
   },
@@ -240,16 +240,19 @@ const styles = StyleSheet.create({
     width: 44,
   },
   zoomControls: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "rgba(0, 0, 0, 0.08)",
     borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
     bottom: 24,
     overflow: "hidden",
     position: "absolute",
     right: 12,
   },
   zoomIcon: {
-    color: "#272521",
+    color: "#007AFF",
     fontSize: 23,
-    fontWeight: "400",
+    fontWeight: "500",
     lineHeight: 25,
   },
 });
