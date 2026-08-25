@@ -4,8 +4,8 @@ import { MapGlassSurface } from "./MapGlassSurface";
 
 type Props = { value: MapMode; onChange: (mode: MapMode) => void };
 const OPTIONS: readonly { label: string; value: MapMode }[] = [
-  { label: "대한민국", value: "korea" },
-  { label: "세계", value: "world" },
+  { label: "국내", value: "korea" },
+  { label: "해외", value: "world" },
 ];
 
 export function MapModeTabs({ value, onChange }: Props) {
@@ -38,20 +38,29 @@ export function MapModeTabs({ value, onChange }: Props) {
 const styles = StyleSheet.create({
   container: {
     alignSelf: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.94)",
+    borderColor: "rgba(0, 0, 0, 0.08)",
+    borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 24,
     flexDirection: "row",
-    padding: 4,
     overflow: "hidden",
+    padding: 4,
   },
-  label: { color: "#71717A", fontSize: 13, fontWeight: "600" },
+  label: { color: "#3F3F46", fontSize: 14, fontWeight: "700" },
   pressed: { opacity: 0.72 },
   selectedLabel: { color: "#FFFFFF", fontWeight: "700" },
-  selectedTab: { backgroundColor: "#007AFF" },
+  selectedTab: {
+    backgroundColor: "#007AFF",
+    shadowColor: "#007AFF",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+  },
   tab: {
     alignItems: "center",
     borderRadius: 20,
-    minWidth: 82,
-    paddingHorizontal: 16,
-    paddingVertical: 9,
+    minWidth: 68,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
   },
 });
