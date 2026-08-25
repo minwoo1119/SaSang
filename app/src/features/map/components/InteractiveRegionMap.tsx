@@ -9,10 +9,7 @@ import Animated, {
 import Svg, { Path } from "react-native-svg";
 import { MAP_ASSETS } from "../models/mapAssets";
 import type { MapMode, MapRegion } from "../models/map.types";
-import {
-  getRegionPhotoKey,
-  useMapUiStore,
-} from "../store/mapUi.store";
+import { getRegionPhotoKey, useMapUiStore } from "../store/mapUi.store";
 import { MapGlassSurface } from "./MapGlassSurface";
 import { RegionPath } from "./RegionPath";
 import { RegionPhotoLayer } from "./RegionPhotoLayer";
@@ -29,11 +26,13 @@ function clamp(value: number, minimum: number, maximum: number) {
 type InteractiveRegionMapProps = {
   mode: MapMode;
   visitedRegionCodes?: ReadonlySet<string>;
+  zoomControlsBottom?: number;
 };
 
 export function InteractiveRegionMap({
   mode,
   visitedRegionCodes = new Set(),
+  zoomControlsBottom = 24,
 }: InteractiveRegionMapProps) {
   const map = MAP_ASSETS[mode];
   const selectedRegionCode = useMapUiStore((state) => state.selectedRegionCode);
@@ -52,7 +51,9 @@ export function InteractiveRegionMap({
     () =>
       new Set(
         map.regions
-          .filter((region) => regionPhotos[getRegionPhotoKey(mode, region.code)])
+          .filter(
+            (region) => regionPhotos[getRegionPhotoKey(mode, region.code)],
+          )
           .map((region) => region.code),
       ),
     [map.regions, mode, regionPhotos],
@@ -178,12 +179,17 @@ export function InteractiveRegionMap({
         </Animated.View>
       </GestureDetector>
 
-      <MapGlassSurface style={styles.zoomControls}>
+      <MapGlassSurface
+        style={[styles.zoomControls, { bottom: zoomControlsBottom }]}
+      >
         <Pressable
           accessibilityLabel="지도 확대"
           accessibilityRole="button"
           onPress={() => zoomBy(0.6)}
-          style={({ pressed }) => [styles.zoomButton, pressed && styles.pressed]}
+          style={({ pressed }) => [
+            styles.zoomButton,
+            pressed && styles.pressed,
+          ]}
         >
           <Text style={styles.zoomIcon}>＋</Text>
         </Pressable>
@@ -192,7 +198,10 @@ export function InteractiveRegionMap({
           accessibilityLabel="지도 축소"
           accessibilityRole="button"
           onPress={() => zoomBy(-0.6)}
-          style={({ pressed }) => [styles.zoomButton, pressed && styles.pressed]}
+          style={({ pressed }) => [
+            styles.zoomButton,
+            pressed && styles.pressed,
+          ]}
         >
           <Text style={styles.zoomIcon}>−</Text>
         </Pressable>
@@ -201,7 +210,10 @@ export function InteractiveRegionMap({
           accessibilityLabel="지도 위치 초기화"
           accessibilityRole="button"
           onPress={resetViewport}
-          style={({ pressed }) => [styles.zoomButton, pressed && styles.pressed]}
+          style={({ pressed }) => [
+            styles.zoomButton,
+            pressed && styles.pressed,
+          ]}
         >
           <Text style={styles.resetText}>1:1</Text>
         </Pressable>
@@ -229,10 +241,10 @@ const styles = StyleSheet.create({
   },
   zoomControls: {
     borderRadius: 24,
+    bottom: 24,
     overflow: "hidden",
     position: "absolute",
     right: 12,
-    top: 106,
   },
   zoomIcon: {
     color: "#272521",

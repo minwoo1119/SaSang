@@ -1,4 +1,5 @@
 import { Image } from "expo-image";
+import { SymbolView } from "expo-symbols";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -68,6 +69,12 @@ export function MapScreen() {
     Keyboard.dismiss();
   };
 
+  const handleSearchSubmit = () => {
+    const [firstResult] = searchResults;
+    if (!firstResult) return;
+    handleSearchResultPress(firstResult.code, firstResult.name);
+  };
+
   const pickPhoto = async () => {
     if (!selectedRegion || isPickingPhoto) return;
 
@@ -103,7 +110,10 @@ export function MapScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.mapViewport}>
-        <InteractiveRegionMap mode={mode} />
+        <InteractiveRegionMap
+          mode={mode}
+          zoomControlsBottom={tabBarOffset + 78}
+        />
       </View>
 
       <View
@@ -118,11 +128,11 @@ export function MapScreen() {
           <MapModeTabs onChange={setMode} value={mode} />
         </View>
         <MapGlassSurface style={styles.searchBar}>
-          <Text style={styles.searchPrefix}>검색</Text>
           <TextInput
             autoCapitalize="none"
             autoCorrect={false}
             clearButtonMode="while-editing"
+            onSubmitEditing={handleSearchSubmit}
             onChangeText={setSearchQuery}
             placeholder={
               mode === "korea" ? "지역명 또는 코드" : "국가명 또는 코드"
@@ -146,6 +156,25 @@ export function MapScreen() {
               <Text style={styles.clearSearchText}>x</Text>
             </Pressable>
           ) : null}
+          <Pressable
+            accessibilityLabel="지역 검색"
+            accessibilityRole="button"
+            disabled={searchResults.length === 0}
+            hitSlop={8}
+            onPress={handleSearchSubmit}
+            style={({ pressed }) => [
+              styles.searchButton,
+              searchResults.length === 0 && styles.searchButtonDisabled,
+              pressed && styles.searchButtonPressed,
+            ]}
+          >
+            <SymbolView
+              fallback={<Text style={styles.searchButtonFallback}>⌕</Text>}
+              name="magnifyingglass"
+              size={17}
+              tintColor="#FFFFFF"
+            />
+          </Pressable>
         </MapGlassSurface>
         {showSearchResults ? (
           <MapGlassSurface style={styles.searchResults}>
@@ -187,7 +216,10 @@ export function MapScreen() {
           style={[styles.regionControl, { bottom: tabBarOffset }]}
         >
           {selectedPhoto ? (
-            <Image source={{ uri: selectedPhoto.uri }} style={styles.thumbnail} />
+            <Image
+              source={{ uri: selectedPhoto.uri }}
+              style={styles.thumbnail}
+            />
           ) : (
             <View style={styles.regionMarker} />
           )}
@@ -216,7 +248,9 @@ export function MapScreen() {
             </Pressable>
           ) : null}
           <Pressable
-            accessibilityLabel={selectedPhoto ? "지역 사진 바꾸기" : "지역 사진 추가"}
+            accessibilityLabel={
+              selectedPhoto ? "지역 사진 바꾸기" : "지역 사진 추가"
+            }
             accessibilityRole="button"
             accessibilityState={{ disabled: isPickingPhoto }}
             disabled={isPickingPhoto}
@@ -237,7 +271,9 @@ export function MapScreen() {
         <MapGlassSurface
           style={[styles.selectionHint, { bottom: tabBarOffset }]}
         >
-          <Text style={styles.selectionHintText}>지역을 선택해 기록을 시작하세요</Text>
+          <Text style={styles.selectionHintText}>
+            지역을 선택해 기록을 시작하세요
+          </Text>
         </MapGlassSurface>
       )}
     </View>
@@ -353,11 +389,24 @@ const styles = StyleSheet.create({
     minWidth: 0,
     padding: 0,
   },
-  searchPrefix: {
-    color: "#007AFF",
-    fontSize: 13,
-    fontWeight: "800",
+  searchButton: {
+    alignItems: "center",
+    backgroundColor: "#007AFF",
+    borderRadius: 16,
+    height: 32,
+    justifyContent: "center",
+    width: 32,
   },
+  searchButtonDisabled: {
+    backgroundColor: "#A1A1AA",
+  },
+  searchButtonFallback: {
+    color: "#FFFFFF",
+    fontSize: 17,
+    fontWeight: "800",
+    lineHeight: 18,
+  },
+  searchButtonPressed: { backgroundColor: "#0068D9" },
   searchResult: {
     alignItems: "center",
     flexDirection: "row",
