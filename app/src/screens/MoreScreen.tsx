@@ -85,11 +85,16 @@ export function MoreScreen() {
           >
             {profileImageUri ? (
               <Image
+                contentFit="cover"
                 source={{ uri: profileImageUri }}
                 style={styles.avatarImage}
               />
             ) : (
-              <Text style={styles.avatarInitial}>{name.slice(0, 1)}</Text>
+              <Image
+                contentFit="cover"
+                source={require("../../assets/images/default-profile.png")}
+                style={styles.avatarImage}
+              />
             )}
           </Pressable>
 
@@ -168,11 +173,6 @@ const styles = StyleSheet.create({
   avatarImage: {
     height: 84,
     width: 84,
-  },
-  avatarInitial: {
-    color: "#007AFF",
-    fontSize: 30,
-    fontWeight: "800",
   },
   container: {
     backgroundColor: "#FAFAFA",
