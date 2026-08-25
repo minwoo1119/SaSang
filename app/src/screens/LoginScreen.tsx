@@ -1,4 +1,5 @@
 import { router } from "expo-router";
+import { Image } from "expo-image";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -25,12 +26,21 @@ export function LoginScreen() {
         { paddingBottom: insets.bottom + 24, paddingTop: insets.top + 28 },
       ]}
     >
-      <View style={styles.hero}>
-        <Text style={styles.brand}>사상</Text>
-        <Text style={styles.title}>나의 여행을 지도에 남기다</Text>
-        <Text style={styles.description}>
-          방문한 지역을 고르고, 그 경계 안에 내 사진을 담아 여행 지도를 완성하세요.
-        </Text>
+      <View style={styles.heroWrap}>
+        <View style={styles.iconSurface}>
+          <Image
+            contentFit="cover"
+            source={require("../../assets/images/icon.png")}
+            style={styles.appIcon}
+          />
+        </View>
+        <View style={styles.hero}>
+          <Text style={styles.brand}>사상</Text>
+          <Text style={styles.title}>사진으로 채우는 여행 지도</Text>
+          <Text style={styles.description}>
+            방문한 지역을 고르고, 그 경계 안에 내 사진을 담아보세요.
+          </Text>
+        </View>
       </View>
 
       <View style={styles.actions}>
@@ -43,7 +53,9 @@ export function LoginScreen() {
             pressed && styles.pressed,
           ]}
         >
-          <Text style={styles.kakaoMark}>K</Text>
+          <View style={styles.providerMark}>
+            <Text style={styles.kakaoMark}>K</Text>
+          </View>
           <Text style={styles.kakaoText}>Kakao로 로그인</Text>
         </Pressable>
 
@@ -56,7 +68,9 @@ export function LoginScreen() {
             pressed && styles.pressed,
           ]}
         >
-          <Text style={styles.googleMark}>G</Text>
+          <View style={styles.providerMark}>
+            <Text style={styles.googleMark}>G</Text>
+          </View>
           <Text style={styles.googleText}>Google로 로그인</Text>
         </Pressable>
 
@@ -78,24 +92,29 @@ export function LoginScreen() {
 
 const styles = StyleSheet.create({
   actions: {
-    gap: 12,
+    gap: 10,
     width: "100%",
   },
+  appIcon: {
+    borderRadius: 23,
+    height: 76,
+    width: 76,
+  },
   brand: {
-    color: "#17191D",
-    fontSize: 40,
+    color: "#18181B",
+    fontSize: 34,
     fontWeight: "800",
     letterSpacing: 0,
     textAlign: "center",
   },
   button: {
     alignItems: "center",
-    borderRadius: 8,
+    borderRadius: 18,
     flexDirection: "row",
-    gap: 12,
-    height: 54,
+    gap: 10,
+    height: 56,
     justifyContent: "center",
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     width: "100%",
   },
   container: {
@@ -105,10 +124,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   description: {
-    color: "#6B7280",
+    color: "#71717A",
     fontSize: 15,
     lineHeight: 22,
-    marginTop: 12,
+    marginTop: 10,
     textAlign: "center",
   },
   googleButton: {
@@ -118,13 +137,13 @@ const styles = StyleSheet.create({
   },
   googleMark: {
     color: "#18181B",
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "800",
-    width: 18,
+    lineHeight: 17,
   },
   googleText: {
-    color: "#1F1F1F",
-    fontSize: 16,
+    color: "#18181B",
+    fontSize: 15,
     fontWeight: "700",
   },
   guestButton: {
@@ -132,15 +151,33 @@ const styles = StyleSheet.create({
   },
   guestText: {
     color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "700",
+    fontSize: 15,
+    fontWeight: "800",
   },
   hero: {
     alignItems: "center",
-    flex: 1,
-    justifyContent: "center",
     maxWidth: 360,
     width: "100%",
+  },
+  heroWrap: {
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+  },
+  iconSurface: {
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderColor: "rgba(0, 0, 0, 0.08)",
+    borderRadius: 31,
+    borderWidth: StyleSheet.hairlineWidth,
+    height: 94,
+    justifyContent: "center",
+    marginBottom: 24,
+    shadowColor: "#18181B",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    width: 94,
   },
   kakaoButton: {
     backgroundColor: "#FFFFFF",
@@ -149,24 +186,32 @@ const styles = StyleSheet.create({
   },
   kakaoMark: {
     color: "#191600",
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "900",
-    width: 18,
+    lineHeight: 17,
   },
   kakaoText: {
-    color: "#191600",
-    fontSize: 16,
+    color: "#18181B",
+    fontSize: 15,
     fontWeight: "700",
   },
   pressed: {
     opacity: 0.72,
   },
+  providerMark: {
+    alignItems: "center",
+    backgroundColor: "#F4F4F5",
+    borderRadius: 12,
+    height: 24,
+    justifyContent: "center",
+    width: 24,
+  },
   title: {
     color: "#3F3F46",
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: "700",
     letterSpacing: 0,
-    marginTop: 10,
+    marginTop: 8,
     textAlign: "center",
   },
 });
