@@ -58,11 +58,14 @@ function FloatingTabBar({
               onPress={onPress}
               style={({ pressed }) => [
                 styles.item,
-                focused && styles.itemFocused,
                 pressed && styles.itemPressed,
               ]}
             >
-              <TabIcon color={color} fallback={meta.fallback} name={meta.symbol} />
+              <TabIcon
+                color={color}
+                fallback={meta.fallback}
+                name={meta.symbol}
+              />
               <Text style={[styles.label, { color }]}>{meta.label}</Text>
             </Pressable>
           );
@@ -83,7 +86,9 @@ function TabIcon({
 }) {
   return (
     <SymbolView
-      fallback={<Text style={[styles.fallbackIcon, { color }]}>{fallback}</Text>}
+      fallback={
+        <Text style={[styles.fallbackIcon, { color }]}>{fallback}</Text>
+      }
       name={name}
       size={20}
       tintColor={color}
@@ -151,9 +156,6 @@ const styles = StyleSheet.create({
     gap: 2,
     height: 54,
     justifyContent: "center",
-  },
-  itemFocused: {
-    backgroundColor: "#EAF4FF",
   },
   itemPressed: {
     opacity: 0.72,
