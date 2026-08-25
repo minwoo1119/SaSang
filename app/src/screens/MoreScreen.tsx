@@ -161,7 +161,7 @@ export function MoreScreen() {
 const styles = StyleSheet.create({
   avatarButton: {
     alignItems: "center",
-    backgroundColor: "rgba(0, 122, 255, 0.1)",
+    backgroundColor: "#FFFFFF",
     borderColor: "#FFFFFF",
     borderRadius: 42,
     borderWidth: 3,
