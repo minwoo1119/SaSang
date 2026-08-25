@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
@@ -11,50 +12,14 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-type InfoTab = "privacy" | "terms" | "app";
-
-const infoTabs: { id: InfoTab; label: string }[] = [
-  { id: "privacy", label: "개인정보" },
-  { id: "terms", label: "이용약관" },
-  { id: "app", label: "앱 정보" },
-];
-
-const infoContent: Record<InfoTab, { title: string; body: string[] }> = {
-  app: {
-    body: [
-      "Sasang은 방문한 지역을 사진으로 채우는 개인 여행 지도 앱입니다.",
-      "현재 버전은 지도 선택, 지역 사진 등록, 장소 피드 확인을 중심으로 구성되어 있습니다.",
-      "오픈소스 라이선스와 세부 앱 정보는 정식 배포 단계에서 별도 문서로 연결됩니다.",
-    ],
-    title: "앱 정보",
-  },
-  privacy: {
-    body: [
-      "프로필 이름과 이미지는 앱에서 사용자 식별 및 개인화된 화면 표시를 위해 사용됩니다.",
-      "선택한 여행 사진은 사용자가 지정한 지역의 지도 표현과 장소 피드에 표시됩니다.",
-      "정식 개인정보 처리방침은 계정, 백엔드, 저장소 연동 시점에 맞춰 별도 고지됩니다.",
-    ],
-    title: "개인정보 처리방침",
-  },
-  terms: {
-    body: [
-      "사용자는 본인이 권리를 가진 사진을 등록해야 합니다.",
-      "지도 경계와 지역 정보는 행정구역 데이터 변경에 따라 업데이트될 수 있습니다.",
-      "정식 이용약관은 서비스 배포 전에 세부 조항을 확정해 제공합니다.",
-    ],
-    title: "이용약관",
-  },
-};
+import { INFO_ITEMS, type InfoType } from "@/features/more/models/infoContent";
 
 export function MoreScreen() {
   const insets = useSafeAreaInsets();
-  const [activeInfoTab, setActiveInfoTab] = useState<InfoTab>("privacy");
   const [isEditingName, setIsEditingName] = useState(false);
   const [name, setName] = useState("여행자");
   const [draftName, setDraftName] = useState(name);
   const [profileImageUri, setProfileImageUri] = useState<string | null>(null);
-  const activeInfo = infoContent[activeInfoTab];
 
   const pickProfileImage = async () => {
     try {
@@ -92,6 +57,10 @@ export function MoreScreen() {
     setIsEditingName(false);
   };
 
+  const openInfoPage = (type: InfoType) => {
+    router.push({ pathname: "/info/[type]", params: { type } });
+  };
+
   return (
     <ScrollView
       style={styles.container}
@@ -115,7 +84,10 @@ export function MoreScreen() {
             ]}
           >
             {profileImageUri ? (
-              <Image source={{ uri: profileImageUri }} style={styles.avatarImage} />
+              <Image
+                source={{ uri: profileImageUri }}
+                style={styles.avatarImage}
+              />
             ) : (
               <Text style={styles.avatarInitial}>{name.slice(0, 1)}</Text>
             )}
@@ -138,14 +110,19 @@ export function MoreScreen() {
                 {name}
               </Text>
             )}
-            <Text style={styles.profileHint}>프로필 사진과 표시 이름을 관리해요</Text>
+            <Text style={styles.profileHint}>
+              프로필 사진과 표시 이름을 관리해요
+            </Text>
           </View>
         </View>
 
         <Pressable
           accessibilityRole="button"
           onPress={isEditingName ? saveName : startNameEdit}
-          style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}
+          style={({ pressed }) => [
+            styles.editButton,
+            pressed && styles.pressed,
+          ]}
         >
           <Text style={styles.editButtonText}>
             {isEditingName ? "저장" : "수정"}
@@ -155,36 +132,20 @@ export function MoreScreen() {
 
       <View style={styles.infoSection}>
         <Text style={styles.infoTitle}>약관 및 정보</Text>
-        <View style={styles.tabList}>
-          {infoTabs.map((tab) => {
-            const selected = activeInfoTab === tab.id;
-            return (
-              <Pressable
-                accessibilityRole="tab"
-                accessibilityState={{ selected }}
-                key={tab.id}
-                onPress={() => setActiveInfoTab(tab.id)}
-                style={[styles.infoTab, selected && styles.infoTabSelected]}
-              >
-                <Text
-                  style={[
-                    styles.infoTabText,
-                    selected && styles.infoTabTextSelected,
-                  ]}
-                >
-                  {tab.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <View style={styles.infoPanel}>
-          <Text style={styles.panelTitle}>{activeInfo.title}</Text>
-          {activeInfo.body.map((paragraph) => (
-            <Text key={paragraph} style={styles.panelText}>
-              {paragraph}
-            </Text>
+        <View style={styles.infoList}>
+          {INFO_ITEMS.map((item) => (
+            <Pressable
+              accessibilityRole="button"
+              key={item.id}
+              onPress={() => openInfoPage(item.id)}
+              style={({ pressed }) => [
+                styles.infoRow,
+                pressed && styles.infoRowPressed,
+              ]}
+            >
+              <Text style={styles.infoRowText}>{item.label}</Text>
+              <Text style={styles.infoChevron}>›</Text>
+            </Pressable>
           ))}
         </View>
       </View>
@@ -195,8 +156,8 @@ export function MoreScreen() {
 const styles = StyleSheet.create({
   avatarButton: {
     alignItems: "center",
-    backgroundColor: "#007AFF",
-    borderColor: "rgba(255, 255, 255, 0.92)",
+    backgroundColor: "#F4F4F5",
+    borderColor: "#FFFFFF",
     borderRadius: 42,
     borderWidth: 3,
     height: 84,
@@ -209,7 +170,7 @@ const styles = StyleSheet.create({
     width: 84,
   },
   avatarInitial: {
-    color: "#FFFFFF",
+    color: "#3F3F46",
     fontSize: 30,
     fontWeight: "800",
   },
@@ -224,7 +185,7 @@ const styles = StyleSheet.create({
   editButton: {
     alignItems: "center",
     alignSelf: "stretch",
-    backgroundColor: "#007AFF",
+    backgroundColor: "#18181B",
     borderRadius: 14,
     height: 44,
     justifyContent: "center",
@@ -235,30 +196,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "800",
   },
-  infoPanel: {
-    gap: 10,
-    paddingTop: 16,
-  },
   infoSection: {
-    gap: 14,
-  },
-  infoTab: {
-    alignItems: "center",
-    borderRadius: 8,
-    flex: 1,
-    height: 38,
-    justifyContent: "center",
-  },
-  infoTabSelected: {
-    backgroundColor: "#FFFFFF",
-  },
-  infoTabText: {
-    color: "#71717A",
-    fontSize: 13,
-    fontWeight: "800",
-  },
-  infoTabTextSelected: {
-    color: "#007AFF",
+    gap: 12,
   },
   infoTitle: {
     color: "#18181B",
@@ -266,23 +205,13 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   nameInput: {
-    borderBottomColor: "#007AFF",
+    borderBottomColor: "#18181B",
     borderBottomWidth: 1,
     color: "#18181B",
     fontSize: 22,
     fontWeight: "800",
     minWidth: 120,
     padding: 0,
-  },
-  panelText: {
-    color: "#52525B",
-    fontSize: 14,
-    lineHeight: 21,
-  },
-  panelTitle: {
-    color: "#18181B",
-    fontSize: 16,
-    fontWeight: "800",
   },
   pressed: {
     opacity: 0.72,
@@ -308,10 +237,10 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   profileSection: {
-    backgroundColor: "#F8FBFF",
-    borderColor: "#D6E9FF",
-    borderRadius: 28,
-    borderWidth: 1,
+    backgroundColor: "#FFFFFF",
+    borderColor: "rgba(0, 0, 0, 0.07)",
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
     gap: 18,
     padding: 18,
   },
@@ -320,12 +249,35 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "800",
   },
-  tabList: {
-    backgroundColor: "#F1F5F9",
-    borderRadius: 10,
+  infoChevron: {
+    color: "#A1A1AA",
+    fontSize: 24,
+    fontWeight: "500",
+    lineHeight: 26,
+  },
+  infoList: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "rgba(0, 0, 0, 0.07)",
+    borderRadius: 18,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: "hidden",
+  },
+  infoRow: {
+    alignItems: "center",
+    borderBottomColor: "rgba(0, 0, 0, 0.07)",
+    borderBottomWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
-    gap: 4,
-    padding: 4,
+    justifyContent: "space-between",
+    minHeight: 52,
+    paddingHorizontal: 16,
+  },
+  infoRowPressed: {
+    backgroundColor: "#F4F4F5",
+  },
+  infoRowText: {
+    color: "#18181B",
+    fontSize: 15,
+    fontWeight: "700",
   },
   title: {
     color: "#18181B",
