@@ -34,9 +34,9 @@ export const RegionPath = memo(function RegionPath({
               : "#FFFFFF"
       }
       onClick={() => onPress(region)}
-      stroke={selected ? "#007AFF" : photoFilled ? "#71717A" : "#D4D4D8"}
+      stroke={photoFilled ? "#71717A" : "#D4D4D8"}
       strokeLinejoin="round"
-      strokeWidth={selected ? 1.15 : photoFilled ? 0.7 : 0.52}
+      strokeWidth={photoFilled ? 0.7 : 0.52}
       vectorEffect="non-scaling-stroke"
     />
   );

@@ -6,7 +6,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import Svg from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
 import { MAP_ASSETS } from "../models/mapAssets";
 import type { MapMode, MapRegion } from "../models/map.types";
 import {
@@ -56,6 +56,10 @@ export function InteractiveRegionMap({
           .map((region) => region.code),
       ),
     [map.regions, mode, regionPhotos],
+  );
+  const selectedRegion = useMemo(
+    () => map.regions.find(({ code }) => code === selectedRegionCode),
+    [map.regions, selectedRegionCode],
   );
 
   const resetViewport = useCallback(() => {
@@ -159,6 +163,17 @@ export function InteractiveRegionMap({
                 />
               );
             })}
+            {selectedRegion ? (
+              <Path
+                d={selectedRegion.path}
+                fill="transparent"
+                pointerEvents="none"
+                stroke="#007AFF"
+                strokeLinejoin="round"
+                strokeWidth={1.45}
+                vectorEffect="non-scaling-stroke"
+              />
+            ) : null}
           </Svg>
         </Animated.View>
       </GestureDetector>
