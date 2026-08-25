@@ -156,7 +156,7 @@ export function MoreScreen() {
 const styles = StyleSheet.create({
   avatarButton: {
     alignItems: "center",
-    backgroundColor: "#F4F4F5",
+    backgroundColor: "rgba(0, 122, 255, 0.1)",
     borderColor: "#FFFFFF",
     borderRadius: 42,
     borderWidth: 3,
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
     width: 84,
   },
   avatarInitial: {
-    color: "#3F3F46",
+    color: "#007AFF",
     fontSize: 30,
     fontWeight: "800",
   },
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   editButton: {
     alignItems: "center",
     alignSelf: "stretch",
-    backgroundColor: "#18181B",
+    backgroundColor: "#007AFF",
     borderRadius: 14,
     height: 44,
     justifyContent: "center",
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   nameInput: {
-    borderBottomColor: "#18181B",
+    borderBottomColor: "#007AFF",
     borderBottomWidth: 1,
     color: "#18181B",
     fontSize: 22,
@@ -245,12 +245,12 @@ const styles = StyleSheet.create({
     padding: 18,
   },
   sectionLabel: {
-    color: "#71717A",
+    color: "#007AFF",
     fontSize: 12,
     fontWeight: "800",
   },
   infoChevron: {
-    color: "#A1A1AA",
+    color: "#007AFF",
     fontSize: 24,
     fontWeight: "500",
     lineHeight: 26,
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   infoRowPressed: {
-    backgroundColor: "#F4F4F5",
+    backgroundColor: "rgba(0, 122, 255, 0.06)",
   },
   infoRowText: {
     color: "#18181B",
