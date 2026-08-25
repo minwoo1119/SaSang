@@ -90,7 +90,7 @@ function TabIcon({
         <Text style={[styles.fallbackIcon, { color }]}>{fallback}</Text>
       }
       name={name}
-      size={20}
+      size={23}
       tintColor={color}
     />
   );
@@ -144,9 +144,9 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   fallbackIcon: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "800",
-    lineHeight: 20,
+    lineHeight: 22,
     textAlign: "center",
   },
   item: {
@@ -161,9 +161,9 @@ const styles = StyleSheet.create({
     opacity: 0.72,
   },
   label: {
-    fontSize: 11,
-    fontWeight: "700",
-    lineHeight: 14,
+    fontSize: 12,
+    fontWeight: "800",
+    lineHeight: 15,
   },
   wrapper: {
     left: 18,
