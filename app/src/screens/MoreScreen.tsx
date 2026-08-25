@@ -12,7 +12,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { SocialLoginButton } from "@/features/auth/components/SocialLoginButton";
 import { INFO_ITEMS, type InfoType } from "@/features/more/models/infoContent";
 
 type LoginProvider = "Kakao" | "Google";
@@ -143,25 +142,19 @@ export function MoreScreen() {
             {isEditingName ? "저장" : "수정"}
           </Text>
         </Pressable>
-      </View>
 
-      <View style={styles.transferSection}>
-        <Text style={styles.infoTitle}>데이터 옮기기</Text>
-        <View style={styles.transferCard}>
+        <View style={styles.transferInline}>
           <Text style={styles.transferText}>
-            로그인 없이 만든 여행 기록은 이 기기에 보관됩니다. 계정으로
-            로그인하면 서버에 동기화해 다른 기기에서도 이어서 사용할 수 있어요.
+            로그인하면 이 기기의 여행 기록을 계정으로 옮길 수 있어요.
           </Text>
           <View style={styles.transferActions}>
-            <SocialLoginButton
+            <TransferButton
               label="Kakao로 로그인하여 데이터 옮기기"
               onPress={() => showPendingTransfer("Kakao")}
-              provider="kakao"
             />
-            <SocialLoginButton
+            <TransferButton
               label="Google로 로그인하여 데이터 옮기기"
               onPress={() => showPendingTransfer("Google")}
-              provider="google"
             />
           </View>
         </View>
@@ -187,6 +180,33 @@ export function MoreScreen() {
         </View>
       </View>
     </ScrollView>
+  );
+}
+
+function TransferButton({
+  label,
+  onPress,
+}: {
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.transferButton,
+        pressed && styles.transferButtonPressed,
+      ]}
+    >
+      <Text
+        adjustsFontSizeToFit
+        numberOfLines={1}
+        style={styles.transferButtonText}
+      >
+        {label}
+      </Text>
+    </Pressable>
   );
 }
 
@@ -318,18 +338,30 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
   },
   transferActions: {
-    gap: 10,
+    gap: 8,
   },
-  transferCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "rgba(0, 0, 0, 0.07)",
-    borderRadius: 18,
-    borderWidth: StyleSheet.hairlineWidth,
-    gap: 14,
-    padding: 14,
+  transferButton: {
+    alignItems: "center",
+    backgroundColor: "#F4F4F5",
+    borderRadius: 12,
+    height: 42,
+    justifyContent: "center",
+    paddingHorizontal: 12,
   },
-  transferSection: {
+  transferButtonPressed: {
+    backgroundColor: "rgba(0, 122, 255, 0.08)",
+  },
+  transferButtonText: {
+    color: "#007AFF",
+    fontSize: 13,
+    fontWeight: "800",
+    minWidth: 0,
+  },
+  transferInline: {
+    borderTopColor: "rgba(0, 0, 0, 0.07)",
+    borderTopWidth: StyleSheet.hairlineWidth,
     gap: 12,
+    paddingTop: 16,
   },
   transferText: {
     color: "#52525B",
