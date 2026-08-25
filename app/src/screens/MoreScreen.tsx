@@ -65,8 +65,15 @@ export function MoreScreen() {
 
   const showPendingTransfer = (provider: LoginProvider) => {
     Alert.alert(
-      `${provider} 데이터 옮기기`,
-      "아직 로그인 및 서버 동기화 연동 전입니다. 연동 후에는 이 기기에 저장된 여행 기록을 계정으로 옮깁니다.",
+      `${provider} 데이터 내보내기`,
+      "아직 로그인 및 서버 동기화 연동 전입니다. 연동 후에는 이 기기에 저장된 여행 기록을 계정으로 내보냅니다.",
+    );
+  };
+
+  const showPendingLogout = () => {
+    Alert.alert(
+      "로그아웃",
+      "아직 로그인 연동 전이라 로그아웃할 계정이 없습니다.",
     );
   };
 
@@ -142,21 +149,19 @@ export function MoreScreen() {
             {isEditingName ? "저장" : "수정"}
           </Text>
         </Pressable>
+      </View>
 
-        <View style={styles.transferInline}>
-          <Text style={styles.transferText}>
-            로그인하면 이 기기의 여행 기록을 계정으로 옮길 수 있어요.
-          </Text>
-          <View style={styles.transferActions}>
-            <TransferButton
-              label="Kakao로 로그인하여 데이터 옮기기"
-              onPress={() => showPendingTransfer("Kakao")}
-            />
-            <TransferButton
-              label="Google로 로그인하여 데이터 옮기기"
-              onPress={() => showPendingTransfer("Google")}
-            />
-          </View>
+      <View style={styles.infoSection}>
+        <Text style={styles.infoTitle}>데이터 내보내기</Text>
+        <View style={styles.infoList}>
+          <MoreRow
+            label="Kakao로 로그인하여 내보내기"
+            onPress={() => showPendingTransfer("Kakao")}
+          />
+          <MoreRow
+            label="Google로 로그인하여 내보내기"
+            onPress={() => showPendingTransfer("Google")}
+          />
         </View>
       </View>
 
@@ -164,48 +169,43 @@ export function MoreScreen() {
         <Text style={styles.infoTitle}>약관 및 정보</Text>
         <View style={styles.infoList}>
           {INFO_ITEMS.map((item) => (
-            <Pressable
-              accessibilityRole="button"
+            <MoreRow
               key={item.id}
+              label={item.label}
               onPress={() => openInfoPage(item.id)}
-              style={({ pressed }) => [
-                styles.infoRow,
-                pressed && styles.infoRowPressed,
-              ]}
-            >
-              <Text style={styles.infoRowText}>{item.label}</Text>
-              <Text style={styles.infoChevron}>›</Text>
-            </Pressable>
+            />
           ))}
         </View>
       </View>
+
+      <Pressable
+        accessibilityRole="button"
+        onPress={showPendingLogout}
+        style={({ pressed }) => [
+          styles.logoutButton,
+          pressed && styles.logoutButtonPressed,
+        ]}
+      >
+        <Text style={styles.logoutButtonText}>로그아웃</Text>
+      </Pressable>
     </ScrollView>
   );
 }
 
-function TransferButton({
-  label,
-  onPress,
-}: {
-  label: string;
-  onPress: () => void;
-}) {
+function MoreRow({ label, onPress }: { label: string; onPress: () => void }) {
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [
-        styles.transferButton,
-        pressed && styles.transferButtonPressed,
+        styles.infoRow,
+        pressed && styles.infoRowPressed,
       ]}
     >
-      <Text
-        adjustsFontSizeToFit
-        numberOfLines={1}
-        style={styles.transferButtonText}
-      >
+      <Text numberOfLines={1} style={styles.infoRowText}>
         {label}
       </Text>
+      <Text style={styles.infoChevron}>›</Text>
     </Pressable>
   );
 }
@@ -330,43 +330,31 @@ const styles = StyleSheet.create({
     color: "#18181B",
     fontSize: 15,
     fontWeight: "700",
+    flex: 1,
+    minWidth: 0,
+    paddingRight: 12,
+  },
+  logoutButton: {
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderColor: "rgba(239, 68, 68, 0.28)",
+    borderRadius: 18,
+    borderWidth: 1,
+    height: 52,
+    justifyContent: "center",
+  },
+  logoutButtonPressed: {
+    backgroundColor: "rgba(239, 68, 68, 0.06)",
+  },
+  logoutButtonText: {
+    color: "#EF4444",
+    fontSize: 15,
+    fontWeight: "800",
   },
   title: {
     color: "#18181B",
     fontSize: 28,
     fontWeight: "800",
     letterSpacing: 0,
-  },
-  transferActions: {
-    gap: 8,
-  },
-  transferButton: {
-    alignItems: "center",
-    backgroundColor: "#F4F4F5",
-    borderRadius: 12,
-    height: 42,
-    justifyContent: "center",
-    paddingHorizontal: 12,
-  },
-  transferButtonPressed: {
-    backgroundColor: "rgba(0, 122, 255, 0.08)",
-  },
-  transferButtonText: {
-    color: "#007AFF",
-    fontSize: 13,
-    fontWeight: "800",
-    minWidth: 0,
-  },
-  transferInline: {
-    borderTopColor: "rgba(0, 0, 0, 0.07)",
-    borderTopWidth: StyleSheet.hairlineWidth,
-    gap: 12,
-    paddingTop: 16,
-  },
-  transferText: {
-    color: "#52525B",
-    fontSize: 13,
-    fontWeight: "600",
-    lineHeight: 19,
   },
 });
