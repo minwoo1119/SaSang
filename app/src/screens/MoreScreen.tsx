@@ -12,7 +12,10 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SocialLoginButton } from "@/features/auth/components/SocialLoginButton";
 import { INFO_ITEMS, type InfoType } from "@/features/more/models/infoContent";
+
+type LoginProvider = "Kakao" | "Google";
 
 export function MoreScreen() {
   const insets = useSafeAreaInsets();
@@ -59,6 +62,13 @@ export function MoreScreen() {
 
   const openInfoPage = (type: InfoType) => {
     router.push({ pathname: "/info/[type]", params: { type } });
+  };
+
+  const showPendingTransfer = (provider: LoginProvider) => {
+    Alert.alert(
+      `${provider} 데이터 옮기기`,
+      "아직 로그인 및 서버 동기화 연동 전입니다. 연동 후에는 이 기기에 저장된 여행 기록을 계정으로 옮깁니다.",
+    );
   };
 
   return (
@@ -133,6 +143,28 @@ export function MoreScreen() {
             {isEditingName ? "저장" : "수정"}
           </Text>
         </Pressable>
+      </View>
+
+      <View style={styles.transferSection}>
+        <Text style={styles.infoTitle}>데이터 옮기기</Text>
+        <View style={styles.transferCard}>
+          <Text style={styles.transferText}>
+            로그인 없이 만든 여행 기록은 이 기기에 보관됩니다. 계정으로
+            로그인하면 서버에 동기화해 다른 기기에서도 이어서 사용할 수 있어요.
+          </Text>
+          <View style={styles.transferActions}>
+            <SocialLoginButton
+              label="Kakao로 로그인하여 데이터 옮기기"
+              onPress={() => showPendingTransfer("Kakao")}
+              provider="kakao"
+            />
+            <SocialLoginButton
+              label="Google로 로그인하여 데이터 옮기기"
+              onPress={() => showPendingTransfer("Google")}
+              provider="google"
+            />
+          </View>
+        </View>
       </View>
 
       <View style={styles.infoSection}>
@@ -284,5 +316,25 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "800",
     letterSpacing: 0,
+  },
+  transferActions: {
+    gap: 10,
+  },
+  transferCard: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "rgba(0, 0, 0, 0.07)",
+    borderRadius: 18,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: 14,
+    padding: 14,
+  },
+  transferSection: {
+    gap: 12,
+  },
+  transferText: {
+    color: "#52525B",
+    fontSize: 13,
+    fontWeight: "600",
+    lineHeight: 19,
   },
 });
