@@ -153,15 +153,23 @@ export function MoreScreen() {
 
       <View style={styles.infoSection}>
         <Text style={styles.infoTitle}>데이터 내보내기</Text>
-        <View style={styles.infoList}>
-          <MoreRow
-            label="Kakao로 로그인하여 내보내기"
-            onPress={() => showPendingTransfer("Kakao")}
-          />
-          <MoreRow
-            label="Google로 로그인하여 내보내기"
-            onPress={() => showPendingTransfer("Google")}
-          />
+        <View style={styles.exportCard}>
+          <Text style={styles.exportText}>
+            기기에 저장된 여행 기록을 계정으로 옮겨 다른 기기에서도 이어서
+            사용할 수 있어요.
+          </Text>
+          <View style={styles.exportActions}>
+            <ExportButton
+              label="Kakao"
+              onPress={() => showPendingTransfer("Kakao")}
+              tone="kakao"
+            />
+            <ExportButton
+              label="Google"
+              onPress={() => showPendingTransfer("Google")}
+              tone="google"
+            />
+          </View>
         </View>
       </View>
 
@@ -210,6 +218,40 @@ function MoreRow({ label, onPress }: { label: string; onPress: () => void }) {
   );
 }
 
+function ExportButton({
+  label,
+  onPress,
+  tone,
+}: {
+  label: string;
+  onPress: () => void;
+  tone: "google" | "kakao";
+}) {
+  return (
+    <Pressable
+      accessibilityLabel={`${label}로 로그인하여 내보내기`}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.exportButton,
+        tone === "kakao" ? styles.exportKakaoButton : styles.exportGoogleButton,
+        pressed && styles.exportButtonPressed,
+      ]}
+    >
+      <Text
+        style={[
+          styles.exportButtonText,
+          tone === "kakao"
+            ? styles.exportKakaoButtonText
+            : styles.exportGoogleButtonText,
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   avatarButton: {
     alignItems: "center",
@@ -247,6 +289,50 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 13,
     fontWeight: "800",
+  },
+  exportActions: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  exportButton: {
+    alignItems: "center",
+    borderRadius: 14,
+    flex: 1,
+    height: 44,
+    justifyContent: "center",
+  },
+  exportButtonPressed: {
+    opacity: 0.72,
+  },
+  exportButtonText: {
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  exportCard: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "rgba(0, 0, 0, 0.07)",
+    borderRadius: 18,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: 14,
+    padding: 14,
+  },
+  exportGoogleButton: {
+    backgroundColor: "#F2F2F2",
+  },
+  exportGoogleButtonText: {
+    color: "#1F1F1F",
+  },
+  exportKakaoButton: {
+    backgroundColor: "#FEE500",
+  },
+  exportKakaoButtonText: {
+    color: "rgba(0, 0, 0, 0.85)",
+  },
+  exportText: {
+    color: "#52525B",
+    fontSize: 13,
+    fontWeight: "600",
+    lineHeight: 19,
   },
   infoSection: {
     gap: 12,
@@ -336,19 +422,18 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderColor: "rgba(239, 68, 68, 0.28)",
-    borderRadius: 18,
-    borderWidth: 1,
-    height: 52,
+    alignSelf: "center",
+    borderRadius: 14,
+    height: 42,
     justifyContent: "center",
+    paddingHorizontal: 18,
   },
   logoutButtonPressed: {
-    backgroundColor: "rgba(239, 68, 68, 0.06)",
+    backgroundColor: "#F4F4F5",
   },
   logoutButtonText: {
     color: "#EF4444",
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "800",
   },
   title: {
