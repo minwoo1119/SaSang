@@ -103,7 +103,9 @@ const styles = StyleSheet.create({
   },
   guestButton: {
     alignItems: "center",
-    backgroundColor: "#007AFF",
+    backgroundColor: "#FFFFFF",
+    borderColor: "rgba(0, 95, 204, 0.22)",
+    borderWidth: StyleSheet.hairlineWidth,
     borderRadius: 12,
     flexDirection: "row",
     gap: 10,
@@ -113,7 +115,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   guestText: {
-    color: "#FFFFFF",
+    color: "#005FCC",
     fontSize: 15,
     fontWeight: "800",
   },
@@ -142,9 +144,7 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     width: 94,
   },
-  pressed: {
-    opacity: 0.72,
-  },
+  pressed: { backgroundColor: "rgba(0, 122, 255, 0.06)" },
   title: {
     color: "#3F3F46",
     fontSize: 19,
