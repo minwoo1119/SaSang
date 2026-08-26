@@ -124,7 +124,6 @@ export function MapScreen() {
       >
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.brand}>사상</Text>
             <Text style={styles.recordCount}>{photoCount}개의 여행 기록</Text>
           </View>
           <MapModeTabs onChange={setMode} value={mode} />
@@ -292,12 +291,6 @@ export function MapScreen() {
 }
 
 const styles = StyleSheet.create({
-  brand: {
-    color: "#18181B",
-    fontSize: 24,
-    fontWeight: "800",
-    letterSpacing: -0.9,
-  },
   container: { backgroundColor: "#FAFAFA", flex: 1 },
   headerRow: {
     alignItems: "center",
@@ -321,7 +314,7 @@ const styles = StyleSheet.create({
   },
   photoButtonPressed: { backgroundColor: "#0068D9" },
   pressed: { opacity: 0.55 },
-  recordCount: { color: "#71717A", fontSize: 11, marginTop: 1 },
+  recordCount: { color: "#52525B", fontSize: 13, fontWeight: "700" },
   regionCode: { color: "#71717A", fontSize: 11, marginTop: 2 },
   regionControl: {
     alignItems: "center",
