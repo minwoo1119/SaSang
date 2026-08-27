@@ -1,4 +1,5 @@
 import {
+  Animated,
   Modal,
   Pressable,
   StyleSheet,
@@ -6,6 +7,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type AdPlaceholderModalProps = {
@@ -19,23 +21,60 @@ export function AdPlaceholderModal({
 }: AdPlaceholderModalProps) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
+  const [isMounted, setIsMounted] = useState(visible);
+  const translateY = useRef(new Animated.Value(visible ? 0 : 1)).current;
   const sheetMaxHeight = Math.max(240, height * 0.42);
   const adSlotHeight = Math.max(132, Math.min(220, height * 0.24));
 
+  useEffect(() => {
+    if (visible) {
+      setIsMounted(true);
+      translateY.setValue(1);
+      Animated.timing(translateY, {
+        duration: 220,
+        toValue: 0,
+        useNativeDriver: true,
+      }).start();
+      return;
+    }
+
+    Animated.timing(translateY, {
+      duration: 180,
+      toValue: 1,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) {
+        setIsMounted(false);
+      }
+    });
+  }, [translateY, visible]);
+
+  if (!isMounted) {
+    return null;
+  }
+
   return (
     <Modal
-      animationType="slide"
+      animationType="fade"
       onRequestClose={onClose}
       transparent
-      visible={visible}
+      visible={isMounted}
     >
       <View style={styles.backdrop}>
-        <View
+        <Animated.View
           style={[
             styles.sheet,
             {
               maxHeight: sheetMaxHeight,
               paddingBottom: Math.max(insets.bottom, 8) + 4,
+              transform: [
+                {
+                  translateY: translateY.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, sheetMaxHeight],
+                  }),
+                },
+              ],
             },
           ]}
         >
@@ -53,7 +92,7 @@ export function AdPlaceholderModal({
           >
             <Text style={styles.closeButtonText}>닫기</Text>
           </Pressable>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );
