@@ -8,6 +8,8 @@
   },
   "scripts": {
     "start": "pnpm --filter @sasang/app start",
+    "start:dev-client": "pnpm --filter @sasang/app start:dev-client",
+    "start:go": "pnpm --filter @sasang/app start:go",
     "dev": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
