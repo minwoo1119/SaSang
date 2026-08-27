@@ -53,7 +53,11 @@ export function LoginScreen() {
           />
         </View>
         <View style={styles.hero}>
-          <Text style={styles.brand}>사상</Text>
+          <Image
+            contentFit="contain"
+            source={require("../../assets/images/main-text-design.png")}
+            style={styles.brandImage}
+          />
           <Text style={styles.title}>사진으로 채우는 여행 지도</Text>
           <Text style={styles.description}>
             방문한 지역을 고르고, 그 경계 안에 내 사진을 담아보세요.
@@ -87,12 +91,9 @@ const styles = StyleSheet.create({
     height: 76,
     width: 76,
   },
-  brand: {
-    color: "#18181B",
-    fontSize: 34,
-    fontWeight: "800",
-    letterSpacing: 0,
-    textAlign: "center",
+  brandImage: {
+    height: 61,
+    width: 170,
   },
   container: {
     backgroundColor: "#FAFAFA",
