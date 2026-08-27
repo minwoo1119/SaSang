@@ -1,22 +1,22 @@
 import { router } from "expo-router";
 import { Image } from "expo-image";
-import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
+import { useEffect } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { SocialLoginButton } from "@/features/auth/components/SocialLoginButton";
-
-type LoginProvider = "Kakao" | "Google";
+import { useLocalSessionStore } from "@/features/auth/store/localSession.store";
+import { trackEvent, trackScreenView } from "@/services/analytics/analytics";
 
 export function LoginScreen() {
   const insets = useSafeAreaInsets();
+  const startSession = useLocalSessionStore((state) => state.start);
 
-  const showPendingLogin = (provider: LoginProvider) => {
-    Alert.alert(
-      `${provider} 로그인`,
-      "아직 로그인 연동 전입니다. 지금은 로그인 없이 이용하기를 사용할 수 있어요.",
-    );
-  };
+  useEffect(() => {
+    void trackScreenView("Login");
+  }, []);
 
-  const continueAsGuest = () => {
+  const startApp = () => {
+    startSession();
+    void trackEvent("start_app");
     router.replace("/map");
   };
 
@@ -45,26 +45,15 @@ export function LoginScreen() {
       </View>
 
       <View style={styles.actions}>
-        <SocialLoginButton
-          label="카카오 로그인"
-          onPress={() => showPendingLogin("Kakao")}
-          provider="kakao"
-        />
-        <SocialLoginButton
-          label="Google로 로그인"
-          onPress={() => showPendingLogin("Google")}
-          provider="google"
-        />
-
         <Pressable
           accessibilityRole="button"
-          onPress={continueAsGuest}
+          onPress={startApp}
           style={({ pressed }) => [
-            styles.guestButton,
+            styles.startButton,
             pressed && styles.pressed,
           ]}
         >
-          <Text style={styles.guestText}>로그인 없이 이용하기</Text>
+          <Text style={styles.startText}>시작하기</Text>
         </Pressable>
       </View>
     </View>
@@ -101,12 +90,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: "center",
   },
-  guestButton: {
+  startButton: {
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderColor: "rgba(0, 95, 204, 0.22)",
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 12,
+    backgroundColor: "#007AFF",
+    borderRadius: 16,
     flexDirection: "row",
     gap: 10,
     height: 56,
@@ -114,9 +101,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     width: "100%",
   },
-  guestText: {
-    color: "#005FCC",
-    fontSize: 15,
+  startText: {
+    color: "#FFFFFF",
+    fontSize: 16,
     fontWeight: "800",
   },
   hero: {
@@ -144,7 +131,7 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     width: 94,
   },
-  pressed: { backgroundColor: "rgba(0, 122, 255, 0.06)" },
+  pressed: { opacity: 0.78 },
   title: {
     color: "#3F3F46",
     fontSize: 19,

@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AdPlaceholderModal } from "@/features/ads/components/AdPlaceholderModal";
 import { InteractiveRegionMap } from "@/features/map/components/InteractiveRegionMap";
 import { MapGlassSurface } from "@/features/map/components/MapGlassSurface";
 import { MapModeTabs } from "@/features/map/components/MapModeTabs";
@@ -21,9 +22,12 @@ import {
   getRegionPhotoKey,
   useMapUiStore,
 } from "@/features/map/store/mapUi.store";
+import { trackEvent, trackScreenView } from "@/services/analytics/analytics";
+import { saveImageToDevice } from "@/services/storage/localImageStorage";
 
 export function MapScreen() {
   const insets = useSafeAreaInsets();
+  const [isAdModalVisible, setIsAdModalVisible] = useState(true);
   const [isPickingPhoto, setIsPickingPhoto] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const mode = useMapUiStore((state) => state.mode);
@@ -62,6 +66,10 @@ export function MapScreen() {
   const canSubmitSearch = searchResults.length > 0;
 
   useEffect(() => {
+    void trackScreenView("Map");
+  }, []);
+
+  useEffect(() => {
     setSearchQuery("");
   }, [mode]);
 
@@ -69,6 +77,10 @@ export function MapScreen() {
     selectRegion(code);
     setSearchQuery(name);
     Keyboard.dismiss();
+    void trackEvent("region_search_selected", {
+      map_mode: mode,
+      region_code: code,
+    });
   };
 
   const handleSearchSubmit = () => {
@@ -89,6 +101,11 @@ export function MapScreen() {
       });
       const asset = result.assets?.[0];
       if (!result.canceled && asset) {
+        const savedUri = await saveImageToDevice(
+          asset.uri,
+          "photos",
+          `${mode}-${selectedRegion.code}`,
+        );
         setRegionPhoto(mode, selectedRegion.code, {
           createdAt: new Date().toISOString(),
           height: asset.height,
@@ -96,8 +113,12 @@ export function MapScreen() {
           offsetX: 0,
           offsetY: 0,
           scale: 1,
-          uri: asset.uri,
+          uri: savedUri,
           width: asset.width,
+        });
+        void trackEvent("region_photo_saved", {
+          map_mode: mode,
+          region_code: selectedRegion.code,
         });
       }
     } catch (error: unknown) {
@@ -107,6 +128,20 @@ export function MapScreen() {
     } finally {
       setIsPickingPhoto(false);
     }
+  };
+
+  const handleRemovePhoto = () => {
+    if (!selectedRegion) return;
+    removeRegionPhoto(mode, selectedRegion.code);
+    void trackEvent("region_photo_removed", {
+      map_mode: mode,
+      region_code: selectedRegion.code,
+    });
+  };
+
+  const closeAdModal = () => {
+    setIsAdModalVisible(false);
+    void trackEvent("ad_placeholder_closed");
   };
 
   return (
@@ -249,7 +284,7 @@ export function MapScreen() {
               accessibilityLabel="선택 지역 사진 삭제"
               accessibilityRole="button"
               hitSlop={8}
-              onPress={() => removeRegionPhoto(mode, selectedRegion.code)}
+              onPress={handleRemovePhoto}
               style={({ pressed }) => [
                 styles.removeButton,
                 pressed && styles.pressed,
@@ -287,6 +322,7 @@ export function MapScreen() {
           </Text>
         </MapGlassSurface>
       )}
+      <AdPlaceholderModal onClose={closeAdModal} visible={isAdModalVisible} />
     </View>
   );
 }

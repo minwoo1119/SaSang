@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { appStorage } from "@/services/storage/appStorage";
 import type {
   MapMode,
   RegionCode,
@@ -21,23 +23,32 @@ type MapUiState = {
   ) => void;
   setMode: (mode: MapMode) => void;
 };
-export const useMapUiStore = create<MapUiState>((set) => ({
-  mode: "korea",
-  regionPhotos: {},
-  selectedRegionCode: null,
-  removeRegionPhoto: (mode, code) =>
-    set((state) => {
-      const regionPhotos = { ...state.regionPhotos };
-      delete regionPhotos[getRegionPhotoKey(mode, code)];
-      return { regionPhotos };
+export const useMapUiStore = create<MapUiState>()(
+  persist(
+    (set) => ({
+      mode: "korea",
+      regionPhotos: {},
+      selectedRegionCode: null,
+      removeRegionPhoto: (mode, code) =>
+        set((state) => {
+          const regionPhotos = { ...state.regionPhotos };
+          delete regionPhotos[getRegionPhotoKey(mode, code)];
+          return { regionPhotos };
+        }),
+      selectRegion: (selectedRegionCode) => set({ selectedRegionCode }),
+      setRegionPhoto: (mode, code, photo) =>
+        set((state) => ({
+          regionPhotos: {
+            ...state.regionPhotos,
+            [getRegionPhotoKey(mode, code)]: photo,
+          },
+        })),
+      setMode: (mode) => set({ mode, selectedRegionCode: null }),
     }),
-  selectRegion: (selectedRegionCode) => set({ selectedRegionCode }),
-  setRegionPhoto: (mode, code, photo) =>
-    set((state) => ({
-      regionPhotos: {
-        ...state.regionPhotos,
-        [getRegionPhotoKey(mode, code)]: photo,
-      },
-    })),
-  setMode: (mode) => set({ mode, selectedRegionCode: null }),
-}));
+    {
+      name: "sasang-map-ui",
+      partialize: (state) => ({ regionPhotos: state.regionPhotos }),
+      storage: createJSONStorage(() => appStorage),
+    },
+  ),
+);

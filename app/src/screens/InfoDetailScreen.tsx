@@ -1,12 +1,18 @@
 import { router, useLocalSearchParams } from "expo-router";
+import { useEffect } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { findInfoItem } from "@/features/more/models/infoContent";
+import { trackScreenView } from "@/services/analytics/analytics";
 
 export function InfoDetailScreen() {
   const insets = useSafeAreaInsets();
   const { type } = useLocalSearchParams<{ type?: string }>();
   const info = findInfoItem(type);
+
+  useEffect(() => {
+    void trackScreenView(`Info_${info.id}`);
+  }, [info.id]);
 
   return (
     <ScrollView

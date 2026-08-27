@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -12,16 +12,27 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useLocalSessionStore } from "@/features/auth/store/localSession.store";
 import { INFO_ITEMS, type InfoType } from "@/features/more/models/infoContent";
-
-type LoginProvider = "Kakao" | "Google";
+import { useProfileStore } from "@/features/profile/store/profile.store";
+import { trackEvent, trackScreenView } from "@/services/analytics/analytics";
+import { saveImageToDevice } from "@/services/storage/localImageStorage";
 
 export function MoreScreen() {
   const insets = useSafeAreaInsets();
   const [isEditingName, setIsEditingName] = useState(false);
-  const [name, setName] = useState("여행자");
+  const name = useProfileStore((state) => state.name);
+  const profileImageUri = useProfileStore((state) => state.profileImageUri);
+  const setName = useProfileStore((state) => state.setName);
+  const setProfileImageUri = useProfileStore(
+    (state) => state.setProfileImageUri,
+  );
+  const resetSession = useLocalSessionStore((state) => state.reset);
   const [draftName, setDraftName] = useState(name);
-  const [profileImageUri, setProfileImageUri] = useState<string | null>(null);
+
+  useEffect(() => {
+    void trackScreenView("More");
+  }, []);
 
   const pickProfileImage = async () => {
     try {
@@ -33,7 +44,13 @@ export function MoreScreen() {
       });
       const asset = result.assets?.[0];
       if (!result.canceled && asset) {
-        setProfileImageUri(asset.uri);
+        const savedUri = await saveImageToDevice(
+          asset.uri,
+          "profile",
+          "profile-image",
+        );
+        setProfileImageUri(savedUri);
+        void trackEvent("profile_image_updated");
       }
     } catch (error: unknown) {
       const message =
@@ -57,24 +74,26 @@ export function MoreScreen() {
     }
     setName(nextName);
     setIsEditingName(false);
+    void trackEvent("profile_name_updated");
   };
 
   const openInfoPage = (type: InfoType) => {
     router.push({ pathname: "/info/[type]", params: { type } });
   };
 
-  const showPendingTransfer = (provider: LoginProvider) => {
-    Alert.alert(
-      `${provider} 데이터 내보내기`,
-      "아직 로그인 및 서버 동기화 연동 전입니다. 연동 후에는 이 기기에 저장된 여행 기록을 계정으로 내보냅니다.",
-    );
-  };
-
-  const showPendingLogout = () => {
-    Alert.alert(
-      "로그아웃",
-      "아직 로그인 연동 전이라 로그아웃할 계정이 없습니다.",
-    );
+  const logout = () => {
+    Alert.alert("로그아웃", "기기에 저장된 여행 기록과 프로필은 유지됩니다.", [
+      { text: "취소", style: "cancel" },
+      {
+        onPress: () => {
+          resetSession();
+          void trackEvent("local_session_logged_out");
+          router.replace("/");
+        },
+        style: "destructive",
+        text: "로그아웃",
+      },
+    ]);
   };
 
   return (
@@ -152,28 +171,6 @@ export function MoreScreen() {
       </View>
 
       <View style={styles.infoSection}>
-        <Text style={styles.infoTitle}>데이터 내보내기</Text>
-        <View style={styles.exportCard}>
-          <Text style={styles.exportText}>
-            기기에 저장된 여행 기록을 계정으로 옮겨 다른 기기에서도 이어서
-            사용할 수 있어요.
-          </Text>
-          <View style={styles.exportActions}>
-            <ExportButton
-              label="Kakao"
-              onPress={() => showPendingTransfer("Kakao")}
-              tone="kakao"
-            />
-            <ExportButton
-              label="Google"
-              onPress={() => showPendingTransfer("Google")}
-              tone="google"
-            />
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.infoSection}>
         <Text style={styles.infoTitle}>약관 및 정보</Text>
         <View style={styles.infoList}>
           {INFO_ITEMS.map((item) => (
@@ -188,7 +185,7 @@ export function MoreScreen() {
 
       <Pressable
         accessibilityRole="button"
-        onPress={showPendingLogout}
+        onPress={logout}
         style={({ pressed }) => [
           styles.logoutButton,
           pressed && styles.logoutButtonPressed,
@@ -214,40 +211,6 @@ function MoreRow({ label, onPress }: { label: string; onPress: () => void }) {
         {label}
       </Text>
       <Text style={styles.infoChevron}>›</Text>
-    </Pressable>
-  );
-}
-
-function ExportButton({
-  label,
-  onPress,
-  tone,
-}: {
-  label: string;
-  onPress: () => void;
-  tone: "google" | "kakao";
-}) {
-  return (
-    <Pressable
-      accessibilityLabel={`${label}로 로그인하여 내보내기`}
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.exportButton,
-        tone === "kakao" ? styles.exportKakaoButton : styles.exportGoogleButton,
-        pressed && styles.exportButtonPressed,
-      ]}
-    >
-      <Text
-        style={[
-          styles.exportButtonText,
-          tone === "kakao"
-            ? styles.exportKakaoButtonText
-            : styles.exportGoogleButtonText,
-        ]}
-      >
-        {label}
-      </Text>
     </Pressable>
   );
 }
@@ -289,50 +252,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 13,
     fontWeight: "800",
-  },
-  exportActions: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  exportButton: {
-    alignItems: "center",
-    borderRadius: 14,
-    flex: 1,
-    height: 44,
-    justifyContent: "center",
-  },
-  exportButtonPressed: {
-    opacity: 0.72,
-  },
-  exportButtonText: {
-    fontSize: 14,
-    fontWeight: "800",
-  },
-  exportCard: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "rgba(0, 0, 0, 0.07)",
-    borderRadius: 18,
-    borderWidth: StyleSheet.hairlineWidth,
-    gap: 14,
-    padding: 14,
-  },
-  exportGoogleButton: {
-    backgroundColor: "#F2F2F2",
-  },
-  exportGoogleButtonText: {
-    color: "#1F1F1F",
-  },
-  exportKakaoButton: {
-    backgroundColor: "#FEE500",
-  },
-  exportKakaoButtonText: {
-    color: "rgba(0, 0, 0, 0.85)",
-  },
-  exportText: {
-    color: "#52525B",
-    fontSize: 13,
-    fontWeight: "600",
-    lineHeight: 19,
   },
   infoSection: {
     gap: 12,

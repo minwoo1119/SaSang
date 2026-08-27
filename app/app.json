@@ -8,13 +8,15 @@
     "scheme": "sasang",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/images/icon.png"
+      "icon": "./assets/images/icon.png",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
+      "googleServicesFile": "./google-services.json",
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -31,6 +33,8 @@
           "imageWidth": 76
         }
       ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/analytics",
       "expo-font",
       "expo-web-browser",
       [

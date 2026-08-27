@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MAP_ASSETS } from "@/features/map/models/mapAssets";
@@ -9,6 +9,7 @@ import type {
   RegionPhoto,
 } from "@/features/map/models/map.types";
 import { useMapUiStore } from "@/features/map/store/mapUi.store";
+import { trackScreenView } from "@/services/analytics/analytics";
 
 type PlaceFilter = "korea" | "world";
 
@@ -87,6 +88,10 @@ export function PlacesScreen() {
   const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState<PlaceFilter>("korea");
   const regionPhotos = useMapUiStore((state) => state.regionPhotos);
+
+  useEffect(() => {
+    void trackScreenView("Places");
+  }, []);
 
   const cards = useMemo(() => {
     const photoCards = Object.entries(regionPhotos)
