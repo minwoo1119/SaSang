@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { withDangerousMod } = require("@expo/config-plugins");
 
 const googleServicesPlist = "./GoogleService-Info.plist";
 const googleServicesJson = "./google-services.json";
@@ -16,8 +17,29 @@ function fileExists(relativePath) {
 const hasFirebaseConfig =
   fileExists(googleServicesPlist) && fileExists(googleServicesJson);
 
-module.exports = {
-  expo: {
+function withRNFirebaseDisableSPM(config) {
+  return withDangerousMod(config, [
+    "ios",
+    async (config) => {
+      const podfilePath = path.join(
+        config.modRequest.platformProjectRoot,
+        "Podfile"
+      );
+      if (fs.existsSync(podfilePath)) {
+        let content = fs.readFileSync(podfilePath, "utf8");
+        if (!content.includes("use_modular_headers!")) {
+          content = `use_modular_headers!\n$RNFirebaseDisableSPM = true\n\n` + content;
+          fs.writeFileSync(podfilePath, content, "utf8");
+        }
+      }
+      return config;
+    },
+  ]);
+}
+
+module.exports = ({ config }) => {
+  const baseConfig = {
+    ...config,
     name: "사상",
     slug: "sasang",
     version: "1.0.0",
@@ -58,7 +80,15 @@ module.exports = {
         },
       ],
       ...(hasFirebaseConfig
-        ? ["@react-native-firebase/app", "@react-native-firebase/analytics"]
+        ? [
+            [
+              "@react-native-firebase/app",
+              {
+                disableSPM: true,
+              },
+            ],
+            "@react-native-firebase/analytics",
+          ]
         : []),
       [
         "react-native-google-mobile-ads",
@@ -71,6 +101,14 @@ module.exports = {
       ],
       "expo-font",
       "expo-web-browser",
+      [
+        "expo-build-properties",
+        {
+          ios: {
+            useFrameworks: "static",
+          },
+        },
+      ],
       [
         "expo-image-picker",
         {
@@ -85,9 +123,13 @@ module.exports = {
       typedRoutes: true,
       reactCompiler: true,
     },
-  },
-  "react-native-google-mobile-ads": {
-    android_app_id: admobAppIds.android,
-    ios_app_id: admobAppIds.ios,
-  },
+  };
+
+  return {
+    expo: withRNFirebaseDisableSPM(baseConfig),
+    "react-native-google-mobile-ads": {
+      android_app_id: admobAppIds.android,
+      ios_app_id: admobAppIds.ios,
+    },
+  };
 };
