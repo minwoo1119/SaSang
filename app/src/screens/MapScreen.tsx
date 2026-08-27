@@ -165,11 +165,11 @@ export function MapScreen() {
               style={styles.brandIcon}
             />
             <View style={styles.brandCopy}>
-              <View style={styles.brandNameRow}>
-                <Text style={styles.brandNamePrimary}>사</Text>
-                <Text style={styles.brandNameDivider}>:</Text>
-                <Text style={styles.brandNameAccent}>상</Text>
-              </View>
+              <Image
+                contentFit="contain"
+                source={require("../../assets/images/main-text-design.png")}
+                style={styles.brandTextImage}
+              />
               <Text style={styles.recordCount}>{photoCount}개의 여행 기록</Text>
             </View>
           </View>
@@ -352,31 +352,9 @@ const styles = StyleSheet.create({
   brandCopy: {
     gap: 1,
   },
-  brandNameAccent: {
-    color: "#007AFF",
-    fontFamily: "SUIT-Heavy",
-    fontSize: 20,
-    fontWeight: "800",
-    lineHeight: 22,
-  },
-  brandNameDivider: {
-    color: "#64748B",
-    fontFamily: "SUIT-Heavy",
-    fontSize: 18,
-    fontWeight: "800",
-    lineHeight: 22,
-    marginHorizontal: 2,
-  },
-  brandNamePrimary: {
-    color: "#0F172A",
-    fontFamily: "SUIT-Heavy",
-    fontSize: 20,
-    fontWeight: "800",
-    lineHeight: 22,
-  },
-  brandNameRow: {
-    alignItems: "baseline",
-    flexDirection: "row",
+  brandTextImage: {
+    height: 27,
+    width: 82,
   },
   container: { backgroundColor: "#FAFAFA", flex: 1 },
   headerRow: {
