@@ -3,6 +3,7 @@ const path = require("path");
 
 const googleServicesPlist = "./GoogleService-Info.plist";
 const googleServicesJson = "./google-services.json";
+const appIdentifier = "com.sasang.app";
 
 function fileExists(relativePath) {
   return fs.existsSync(path.join(__dirname, relativePath));
@@ -21,6 +22,7 @@ module.exports = {
     scheme: "sasang",
     userInterfaceStyle: "automatic",
     ios: {
+      bundleIdentifier: appIdentifier,
       icon: "./assets/images/icon.png",
       ...(hasFirebaseConfig
         ? { googleServicesFile: googleServicesPlist }
@@ -31,6 +33,7 @@ module.exports = {
         backgroundColor: "#FFFFFF",
         foregroundImage: "./assets/images/android-icon-foreground.png",
       },
+      package: appIdentifier,
       ...(hasFirebaseConfig
         ? { googleServicesFile: googleServicesJson }
         : {}),
