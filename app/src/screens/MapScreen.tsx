@@ -158,9 +158,16 @@ export function MapScreen() {
         style={[styles.topOverlay, { top: insets.top + 8 }]}
       >
         <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.brand}>SaSang</Text>
-            <Text style={styles.recordCount}>{photoCount}개의 여행 기록</Text>
+          <View style={styles.brandBlock}>
+            <Image
+              contentFit="cover"
+              source={require("../../assets/images/icon.png")}
+              style={styles.brandIcon}
+            />
+            <View>
+              <Text style={styles.brandName}>Sasang</Text>
+              <Text style={styles.recordCount}>{photoCount}개의 여행 기록</Text>
+            </View>
           </View>
           <MapModeTabs onChange={setMode} value={mode} />
         </View>
@@ -328,13 +335,21 @@ export function MapScreen() {
 }
 
 const styles = StyleSheet.create({
-  brand: {
+  brandBlock: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 9,
+  },
+  brandIcon: {
+    borderRadius: 10,
+    height: 34,
+    width: 34,
+  },
+  brandName: {
     color: "#18181B",
-    fontFamily: "serif",
-    fontSize: 24,
-    fontStyle: "italic",
-    fontWeight: "700",
-    letterSpacing: 0,
+    fontSize: 16,
+    fontWeight: "800",
+    lineHeight: 19,
   },
   container: { backgroundColor: "#FAFAFA", flex: 1 },
   headerRow: {
