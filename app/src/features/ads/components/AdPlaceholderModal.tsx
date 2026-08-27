@@ -35,7 +35,7 @@ export function AdPlaceholderModal({
             styles.sheet,
             {
               maxHeight: sheetMaxHeight,
-              paddingBottom: Math.max(insets.bottom, 10) + 12,
+              paddingBottom: Math.max(insets.bottom, 8) + 4,
             },
           ]}
         >
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     height: 42,
     justifyContent: "center",
-    marginTop: 14,
+    marginTop: 8,
     paddingHorizontal: 16,
   },
   closeButtonPressed: {
