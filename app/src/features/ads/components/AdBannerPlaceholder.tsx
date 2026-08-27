@@ -1,4 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
+import { ADMOB_AD_UNIT_IDS } from "../models/adMobUnits";
+import { AdMobBanner } from "./AdMobBanner";
 
 type AdBannerPlaceholderProps = {
   label?: string;
@@ -8,10 +10,16 @@ export function AdBannerPlaceholder({
   label = "AdMob Banner",
 }: AdBannerPlaceholderProps) {
   return (
-    <View accessibilityLabel={label} style={styles.container}>
-      <View style={styles.mark} />
-      <Text style={styles.label}>{label}</Text>
-    </View>
+    <AdMobBanner
+      fallback={
+        <View accessibilityLabel={label} style={styles.container}>
+          <View style={styles.mark} />
+          <Text style={styles.label}>{label}</Text>
+        </View>
+      }
+      size="ANCHORED_ADAPTIVE_BANNER"
+      unitId={ADMOB_AD_UNIT_IDS.moreBanner}
+    />
   );
 }
 

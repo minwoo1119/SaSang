@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ADMOB_AD_UNIT_IDS } from "../models/adMobUnits";
+import { AdMobBanner } from "./AdMobBanner";
 
 type AdPlaceholderModalProps = {
   onClose: () => void;
@@ -78,10 +80,16 @@ export function AdPlaceholderModal({
             },
           ]}
         >
-          <View style={[styles.adSlot, { height: adSlotHeight }]}>
-            <Text style={styles.adLabel}>AdMob</Text>
-            <Text style={styles.adText}>광고 영역</Text>
-          </View>
+          <AdMobBanner
+            fallback={
+              <View style={[styles.adSlot, { height: adSlotHeight }]}>
+                <Text style={styles.adLabel}>AdMob</Text>
+                <Text style={styles.adText}>광고 영역</Text>
+              </View>
+            }
+            size="ANCHORED_ADAPTIVE_BANNER"
+            unitId={ADMOB_AD_UNIT_IDS.home}
+          />
           <Pressable
             accessibilityRole="button"
             onPress={onClose}

@@ -1,20 +1,30 @@
 import { StyleSheet, Text, View } from "react-native";
+import { ADMOB_AD_UNIT_IDS } from "../models/adMobUnits";
+import { AdMobBanner } from "./AdMobBanner";
 
 export function AdNativeCardPlaceholder() {
   return (
-    <View accessibilityLabel="AdMob Native" style={styles.container}>
-      <View style={styles.thumbnail}>
-        <View style={styles.pin} />
-      </View>
-      <View style={styles.body}>
-        <View style={styles.labelRow}>
-          <Text style={styles.title}>여행에 어울리는 추천</Text>
-          <Text style={styles.badge}>AD</Text>
-        </View>
-        <Text numberOfLines={1} style={styles.description}>
-          Sasang이 고른 여행 정보
-        </Text>
-      </View>
+    <View style={styles.wrapper}>
+      <AdMobBanner
+        fallback={
+          <View accessibilityLabel="AdMob Native" style={styles.container}>
+            <View style={styles.thumbnail}>
+              <View style={styles.pin} />
+            </View>
+            <View style={styles.body}>
+              <View style={styles.labelRow}>
+                <Text style={styles.title}>여행에 어울리는 추천</Text>
+                <Text style={styles.badge}>AD</Text>
+              </View>
+              <Text numberOfLines={1} style={styles.description}>
+                Sasang이 고른 여행 정보
+              </Text>
+            </View>
+          </View>
+        }
+        size="INLINE_ADAPTIVE_BANNER"
+        unitId={ADMOB_AD_UNIT_IDS.places}
+      />
     </View>
   );
 }
@@ -71,5 +81,12 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: "center",
     width: 50,
+  },
+  wrapper: {
+    backgroundColor: "#FFFFFF",
+    borderColor: "rgba(0, 0, 0, 0.07)",
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    overflow: "hidden",
   },
 });

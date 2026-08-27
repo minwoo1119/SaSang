@@ -4,6 +4,10 @@ const path = require("path");
 const googleServicesPlist = "./GoogleService-Info.plist";
 const googleServicesJson = "./google-services.json";
 const appIdentifier = "com.sasang.app";
+const admobAppIds = {
+  android: "ca-app-pub-6638972080325593~4249870188",
+  ios: "ca-app-pub-6638972080325593~4398983341",
+};
 
 function fileExists(relativePath) {
   return fs.existsSync(path.join(__dirname, relativePath));
@@ -56,6 +60,15 @@ module.exports = {
       ...(hasFirebaseConfig
         ? ["@react-native-firebase/app", "@react-native-firebase/analytics"]
         : []),
+      [
+        "react-native-google-mobile-ads",
+        {
+          androidAppId: admobAppIds.android,
+          iosAppId: admobAppIds.ios,
+          userTrackingUsageDescription:
+            "맞춤형 광고 제공을 위해 기기 식별자가 사용될 수 있습니다.",
+        },
+      ],
       "expo-font",
       "expo-web-browser",
       [
@@ -72,5 +85,9 @@ module.exports = {
       typedRoutes: true,
       reactCompiler: true,
     },
+  },
+  "react-native-google-mobile-ads": {
+    android_app_id: admobAppIds.android,
+    ios_app_id: admobAppIds.ios,
   },
 };
