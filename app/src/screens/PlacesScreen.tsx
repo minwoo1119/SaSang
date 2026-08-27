@@ -17,73 +17,9 @@ type PlaceFilter = "korea" | "world";
 type PlaceCard = {
   id: string;
   mode: MapMode;
-  photo?: RegionPhoto;
+  photo: RegionPhoto;
   region: MapRegion;
 };
-
-function findSampleRegion(mode: MapMode, code: string) {
-  const region = MAP_ASSETS[mode].regions.find((item) => item.code === code);
-  if (!region) {
-    throw new Error(`Sample region not found: ${mode}:${code}`);
-  }
-  return region;
-}
-
-function samplePhoto(id: string, uri: string, createdAt: string): RegionPhoto {
-  return {
-    createdAt,
-    height: 1000,
-    id,
-    offsetX: 0,
-    offsetY: 0,
-    scale: 1,
-    uri,
-    width: 1200,
-  };
-}
-
-const sampleCards: PlaceCard[] = [
-  {
-    id: "sample-korea-seoul",
-    mode: "korea",
-    photo: samplePhoto(
-      "sample-photo-seoul",
-      "https://picsum.photos/id/1011/1200/1000",
-      "2026-08-20T09:00:00.000Z",
-    ),
-    region: findSampleRegion("korea", "11000"),
-  },
-  {
-    id: "sample-korea-daegu",
-    mode: "korea",
-    photo: samplePhoto(
-      "sample-photo-daegu",
-      "https://picsum.photos/id/1043/1200/1000",
-      "2026-08-18T09:00:00.000Z",
-    ),
-    region: findSampleRegion("korea", "27000"),
-  },
-  {
-    id: "sample-world-japan",
-    mode: "world",
-    photo: samplePhoto(
-      "sample-photo-japan",
-      "https://picsum.photos/id/1036/1200/1000",
-      "2026-08-16T09:00:00.000Z",
-    ),
-    region: findSampleRegion("world", "JP"),
-  },
-  {
-    id: "sample-world-france",
-    mode: "world",
-    photo: samplePhoto(
-      "sample-photo-france",
-      "https://picsum.photos/id/1067/1200/1000",
-      "2026-08-14T09:00:00.000Z",
-    ),
-    region: findSampleRegion("world", "FR"),
-  },
-];
 
 export function PlacesScreen() {
   const insets = useSafeAreaInsets();
@@ -95,7 +31,7 @@ export function PlacesScreen() {
   }, []);
 
   const cards = useMemo(() => {
-    const photoCards = Object.entries(regionPhotos)
+    return Object.entries(regionPhotos)
       .reduce<PlaceCard[]>((items, [key, photo]) => {
         const [mode, regionCode] = key.split(":") as [MapMode, string];
         const region = MAP_ASSETS[mode]?.regions.find(
@@ -108,13 +44,10 @@ export function PlacesScreen() {
       }, [])
       .sort(
         (a, b) =>
-          new Date(b.photo?.createdAt ?? 0).getTime() -
-          new Date(a.photo?.createdAt ?? 0).getTime(),
-      );
-
-    return [...photoCards, ...sampleCards].filter(
-      ({ mode }) => mode === filter,
-    );
+          new Date(b.photo.createdAt).getTime() -
+          new Date(a.photo.createdAt).getTime(),
+      )
+      .filter(({ mode }) => mode === filter);
   }, [filter, regionPhotos]);
 
   return (
@@ -147,12 +80,22 @@ export function PlacesScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {cards.map((card, index) => (
-          <View key={card.id} style={styles.listItem}>
-            <PlacePhotoCard card={card} />
-            {index === 0 ? <AdNativeCardPlaceholder /> : null}
+        {cards.length > 0 ? (
+          cards.map((card, index) => (
+            <View key={card.id} style={styles.listItem}>
+              <PlacePhotoCard card={card} />
+              {index === 0 ? <AdNativeCardPlaceholder /> : null}
+            </View>
+          ))
+        ) : (
+          <View style={styles.emptySection}>
+            <Text style={styles.emptyTitle}>아직 기록한 장소가 없어요</Text>
+            <Text style={styles.emptyText}>
+              지도에서 지역을 선택하고 사진을 추가하면 이곳에 모입니다.
+            </Text>
+            <AdNativeCardPlaceholder />
           </View>
-        ))}
+        )}
       </ScrollView>
     </View>
   );
@@ -184,13 +127,11 @@ function FilterButton({
 function PlacePhotoCard({ card }: { card: PlaceCard }) {
   const locationLabel =
     card.region.provinceName ?? (card.mode === "korea" ? "대한민국" : "해외");
-  const dateLabel = card.photo
-    ? new Intl.DateTimeFormat("ko-KR", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }).format(new Date(card.photo.createdAt))
-    : "예시 카드";
+  const dateLabel = new Intl.DateTimeFormat("ko-KR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(card.photo.createdAt));
 
   return (
     <Pressable
@@ -198,16 +139,7 @@ function PlacePhotoCard({ card }: { card: PlaceCard }) {
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
       <View style={styles.imageFrame}>
-        {card.photo ? (
-          <Image source={{ uri: card.photo.uri }} style={styles.cardImage} />
-        ) : (
-          <View style={styles.sampleImage}>
-            <View style={styles.sampleMarker} />
-            <Text numberOfLines={1} style={styles.sampleImageText}>
-              {card.region.name}
-            </Text>
-          </View>
-        )}
+        <Image source={{ uri: card.photo.uri }} style={styles.cardImage} />
       </View>
       <View style={styles.cardDivider} />
       <View style={styles.cardBody}>
@@ -291,6 +223,20 @@ const styles = StyleSheet.create({
     color: "#007AFF",
     fontWeight: "800",
   },
+  emptySection: {
+    gap: 14,
+  },
+  emptyText: {
+    color: "#71717A",
+    fontSize: 14,
+    fontWeight: "600",
+    lineHeight: 20,
+  },
+  emptyTitle: {
+    color: "#18181B",
+    fontSize: 18,
+    fontWeight: "800",
+  },
   header: {
     paddingBottom: 18,
     paddingHorizontal: 16,
@@ -335,29 +281,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: "800",
-  },
-  sampleImage: {
-    alignItems: "center",
-    backgroundColor: "#F8FBFF",
-    gap: 10,
-    height: "100%",
-    justifyContent: "center",
-    overflow: "hidden",
-    paddingHorizontal: 18,
-    width: "100%",
-  },
-  sampleImageText: {
-    color: "#007AFF",
-    fontSize: 20,
-    fontWeight: "800",
-    maxWidth: "100%",
-  },
-  sampleMarker: {
-    backgroundColor: "#007AFF",
-    borderRadius: 18,
-    height: 36,
-    opacity: 0.16,
-    width: 36,
   },
   segmentedControl: {
     backgroundColor: "#FFFFFF",
