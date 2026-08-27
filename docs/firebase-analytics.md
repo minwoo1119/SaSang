@@ -10,8 +10,12 @@ specific:
 - `app/google-services.json`
 
 After creating iOS and Android apps in the Firebase console, download those two
-files into the paths above. React Native Firebase uses custom native code, so
-Analytics runs in an Expo development build or EAS build, not Expo Go.
+files into the paths above. `app/app.config.js` only enables the React Native
+Firebase config plugins when both files exist, so local Expo startup is not
+blocked before Firebase setup is ready.
+
+React Native Firebase uses custom native code, so Analytics runs in an Expo
+development build or EAS build, not Expo Go.
 
 Tracked events currently include:
 
