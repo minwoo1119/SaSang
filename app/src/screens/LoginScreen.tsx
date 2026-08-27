@@ -1,7 +1,7 @@
 import { router } from "expo-router";
 import { Image } from "expo-image";
 import { useEffect } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSessionStore } from "@/features/auth/store/localSession.store";
 import { trackEvent, trackScreenView } from "@/services/analytics/analytics";
@@ -14,10 +14,27 @@ export function LoginScreen() {
     void trackScreenView("Login");
   }, []);
 
-  const startApp = () => {
+  const confirmStart = () => {
     startSession();
-    void trackEvent("start_app");
+    void trackEvent("start_app", { local_storage_agreed: true });
     router.replace("/map");
+  };
+
+  const startApp = () => {
+    Alert.alert(
+      "사진 저장 안내",
+      "이 앱에서 사용한 사진은 일체 서버로 전송되지 않으며, 기기 내부에 저장됩니다.",
+      [
+        {
+          style: "cancel",
+          text: "취소하기",
+        },
+        {
+          onPress: confirmStart,
+          text: "동의하고 시작하기",
+        },
+      ],
+    );
   };
 
   return (
