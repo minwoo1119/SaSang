@@ -353,8 +353,8 @@ const styles = StyleSheet.create({
     gap: 1,
   },
   brandTextImage: {
-    height: 27,
-    width: 82,
+    height: 30,
+    width: 84,
   },
   container: { backgroundColor: "#FAFAFA", flex: 1 },
   headerRow: {
