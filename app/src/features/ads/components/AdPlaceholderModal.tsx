@@ -1,4 +1,11 @@
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type AdPlaceholderModalProps = {
@@ -11,6 +18,9 @@ export function AdPlaceholderModal({
   visible,
 }: AdPlaceholderModalProps) {
   const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
+  const sheetMaxHeight = Math.max(240, height * 0.42);
+  const adSlotHeight = Math.max(132, Math.min(220, height * 0.24));
 
   return (
     <Modal
@@ -20,8 +30,16 @@ export function AdPlaceholderModal({
       visible={visible}
     >
       <View style={styles.backdrop}>
-        <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
-          <View style={styles.adSlot}>
+        <View
+          style={[
+            styles.sheet,
+            {
+              maxHeight: sheetMaxHeight,
+              paddingBottom: Math.max(insets.bottom, 10) + 12,
+            },
+          ]}
+        >
+          <View style={[styles.adSlot, { height: adSlotHeight }]}>
             <Text style={styles.adLabel}>AdMob</Text>
             <Text style={styles.adText}>광고 영역</Text>
           </View>
@@ -53,10 +71,8 @@ const styles = StyleSheet.create({
     borderColor: "rgba(0, 0, 0, 0.06)",
     borderRadius: 18,
     borderWidth: StyleSheet.hairlineWidth,
-    flex: 1,
     gap: 6,
     justifyContent: "center",
-    minHeight: 156,
     width: "100%",
   },
   adText: {
@@ -71,7 +87,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     alignItems: "center",
-    alignSelf: "flex-start",
+    alignSelf: "flex-end",
     borderRadius: 14,
     height: 42,
     justifyContent: "center",
