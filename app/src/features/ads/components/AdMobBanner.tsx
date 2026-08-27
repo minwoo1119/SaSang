@@ -1,5 +1,6 @@
 import Constants from "expo-constants";
 import type { ComponentType, ReactNode } from "react";
+import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 
 type AdMobBannerProps = {
@@ -10,6 +11,8 @@ type AdMobBannerProps = {
 
 type GoogleMobileAdsModule = {
   BannerAd: ComponentType<{
+    onAdFailedToLoad?: (error: unknown) => void;
+    onAdLoaded?: () => void;
     requestOptions?: { requestNonPersonalizedAdsOnly?: boolean };
     size: string;
     unitId: string;
@@ -34,9 +37,10 @@ function loadGoogleMobileAds() {
 }
 
 export function AdMobBanner({ fallback, size, unitId }: AdMobBannerProps) {
+  const [adFailed, setAdFailed] = useState(false);
   const googleMobileAds = loadGoogleMobileAds();
 
-  if (!googleMobileAds) {
+  if (!googleMobileAds || adFailed) {
     return <>{fallback}</>;
   }
 
@@ -46,6 +50,12 @@ export function AdMobBanner({ fallback, size, unitId }: AdMobBannerProps) {
   return (
     <View style={styles.container}>
       <BannerAd
+        onAdFailedToLoad={(error) => {
+          if (__DEV__) {
+            console.warn("[AdMob] Banner failed to load:", error);
+          }
+          setAdFailed(true);
+        }}
         requestOptions={{ requestNonPersonalizedAdsOnly: true }}
         size={BannerAdSize[size]}
         unitId={resolvedUnitId}
@@ -62,3 +72,4 @@ const styles = StyleSheet.create({
     width: "100%",
   },
 });
+
