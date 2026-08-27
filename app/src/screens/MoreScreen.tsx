@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AdBannerPlaceholder } from "@/features/ads/components/AdBannerPlaceholder";
 import { useLocalSessionStore } from "@/features/auth/store/localSession.store";
 import { INFO_ITEMS, type InfoType } from "@/features/more/models/infoContent";
 import { useProfileStore } from "@/features/profile/store/profile.store";
@@ -169,6 +170,8 @@ export function MoreScreen() {
           </Text>
         </Pressable>
       </View>
+
+      <AdBannerPlaceholder label="AdMob Banner" />
 
       <View style={styles.infoSection}>
         <Text style={styles.infoTitle}>약관 및 정보</Text>

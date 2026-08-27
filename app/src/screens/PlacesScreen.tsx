@@ -2,6 +2,7 @@ import { Image } from "expo-image";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AdNativeCardPlaceholder } from "@/features/ads/components/AdNativeCardPlaceholder";
 import { MAP_ASSETS } from "@/features/map/models/mapAssets";
 import type {
   MapMode,
@@ -146,8 +147,11 @@ export function PlacesScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {cards.map((card) => (
-          <PlacePhotoCard card={card} key={card.id} />
+        {cards.map((card, index) => (
+          <View key={card.id} style={styles.listItem}>
+            <PlacePhotoCard card={card} />
+            {index === 0 ? <AdNativeCardPlaceholder /> : null}
+          </View>
         ))}
       </ScrollView>
     </View>
@@ -304,6 +308,9 @@ const styles = StyleSheet.create({
   list: {
     gap: 20,
     paddingHorizontal: 16,
+  },
+  listItem: {
+    gap: 16,
   },
   locationText: {
     color: "#52525B",
