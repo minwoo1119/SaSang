@@ -56,6 +56,11 @@ module.exports = ({ config }) => {
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "sasang",
+    extra: {
+      eas: {
+        projectId: "61d86d82-2904-4975-bb79-7bdabb61f81a",
+      },
+    },
     userInterfaceStyle: "automatic",
     ios: {
       bundleIdentifier: appIdentifier,
