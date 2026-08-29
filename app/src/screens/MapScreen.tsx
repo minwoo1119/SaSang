@@ -172,7 +172,7 @@ export function MapScreen() {
 
       <View
         pointerEvents="box-none"
-        style={[styles.topOverlay, { top: insets.top + 8 }]}
+        style={[styles.topOverlay, { top: insets.top + 16 }]}
       >
         <View style={styles.headerRow}>
           <View style={styles.brandBlock}>
