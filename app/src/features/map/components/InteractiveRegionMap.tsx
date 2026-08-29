@@ -7,7 +7,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import Svg, { Path } from "react-native-svg";
+import Svg, { Path, Rect } from "react-native-svg";
 import { MAP_ASSETS } from "../models/mapAssets";
 import type { MapMode, MapRegion } from "../models/map.types";
 import { getRegionPhotoKey, useMapUiStore } from "../store/mapUi.store";
@@ -208,6 +208,14 @@ export function InteractiveRegionMap({
             viewBox={`0 0 ${map.viewBox.width} ${map.viewBox.height}`}
             width="100%"
           >
+            <Rect
+              fill="transparent"
+              height={map.viewBox.height}
+              onPress={() => selectRegion(null)}
+              width={map.viewBox.width}
+              x={0}
+              y={0}
+            />
             <RegionPhotoLayer
               mode={mode}
               regionPhotos={regionPhotos}
