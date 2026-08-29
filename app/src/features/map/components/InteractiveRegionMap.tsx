@@ -73,9 +73,9 @@ export function InteractiveRegionMap({
       let targetY = 0;
 
       if (targetMode === "world") {
-        targetScale = 2.3;
-        targetX = -w * 0.65;
-        targetY = h * 0.35;
+        targetScale = 3.4;
+        targetX = -w * 1.05;
+        targetY = h * 0.58;
       }
 
       if (animate) {
