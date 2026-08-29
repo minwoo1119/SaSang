@@ -54,24 +54,18 @@ export function PlacesScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
-        <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.title}>장소</Text>
-            <Text style={styles.subtitle}>최근 기록한 여행 사진</Text>
-          </View>
-          <View style={styles.segmentedControl}>
-            <FilterButton
-              label="국내"
-              onPress={() => setFilter("korea")}
-              selected={filter === "korea"}
-            />
-            <FilterButton
-              label="해외"
-              onPress={() => setFilter("world")}
-              selected={filter === "world"}
-            />
-          </View>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <View style={styles.segmentedControl}>
+          <FilterButton
+            label="국내"
+            onPress={() => setFilter("korea")}
+            selected={filter === "korea"}
+          />
+          <FilterButton
+            label="해외"
+            onPress={() => setFilter("world")}
+            selected={filter === "world"}
+          />
         </View>
       </View>
 
@@ -418,6 +412,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   segmentedControl: {
+    alignSelf: "flex-start",
     backgroundColor: "#FFFFFF",
     borderColor: "rgba(0, 0, 0, 0.08)",
     borderRadius: 22,
@@ -425,17 +420,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 4,
     padding: 4,
-  },
-  subtitle: {
-    color: "#71717A",
-    fontSize: 12,
-    fontWeight: "600",
-    marginTop: 2,
-  },
-  title: {
-    color: "#18181B",
-    fontSize: 28,
-    fontWeight: "800",
   },
 });
 

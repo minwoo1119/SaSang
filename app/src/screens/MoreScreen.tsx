@@ -106,8 +106,6 @@ export function MoreScreen() {
       ]}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.title}>더보기</Text>
-
       <View style={styles.profileSection}>
         <View style={styles.profileHeader}>
           <Pressable
