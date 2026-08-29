@@ -1,6 +1,5 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { MapMode } from "../models/map.types";
-import { MapGlassSurface } from "./MapGlassSurface";
 
 type Props = { value: MapMode; onChange: (mode: MapMode) => void };
 const OPTIONS: readonly { label: string; value: MapMode }[] = [
@@ -10,7 +9,7 @@ const OPTIONS: readonly { label: string; value: MapMode }[] = [
 
 export function MapModeTabs({ value, onChange }: Props) {
   return (
-    <MapGlassSurface style={styles.container}>
+    <View style={styles.container}>
       {OPTIONS.map((option) => {
         const selected = option.value === value;
         return (
@@ -31,7 +30,7 @@ export function MapModeTabs({ value, onChange }: Props) {
           </Pressable>
         );
       })}
-    </MapGlassSurface>
+    </View>
   );
 }
 
