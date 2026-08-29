@@ -84,9 +84,10 @@ module.exports = ({ config }) => {
       [
         "expo-splash-screen",
         {
-          backgroundColor: "#FFFFFF",
-          image: "./assets/images/splash-icon.png",
-          imageWidth: 76,
+          backgroundColor: "#FAFAFA",
+          image: "./assets/images/main-text-design.png",
+          imageWidth: 220,
+          resizeMode: "contain",
         },
       ],
       ...(hasFirebaseConfig

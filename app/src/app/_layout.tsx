@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
@@ -8,6 +9,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { initializeMobileAds } from "@/features/ads/services/mobileAds";
+
+void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [queryClient] = useState(() => new QueryClient());
@@ -17,12 +20,18 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontsLoaded) {
-      void initializeMobileAds();
+      void (async () => {
+        try {
+          await initializeMobileAds();
+        } finally {
+          await SplashScreen.hideAsync();
+        }
+      })();
     }
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return <View style={{ flex: 1 }} />;
+    return <View style={{ backgroundColor: "#FAFAFA", flex: 1 }} />;
   }
 
   return (
