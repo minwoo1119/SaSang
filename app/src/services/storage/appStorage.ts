@@ -7,6 +7,12 @@ function getStorageFile(name: string) {
 }
 
 export const appStorage = {
+  async clear() {
+    const directory = new Directory(Paths.document, "sasang", "state");
+    if (directory.exists) {
+      directory.delete();
+    }
+  },
   async getItem(name: string) {
     const file = getStorageFile(name);
     return file.exists ? file.text() : null;

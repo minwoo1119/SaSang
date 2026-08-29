@@ -11,6 +11,7 @@ export const getRegionPhotoKey = (mode: MapMode, code: RegionCode) =>
   `${mode}:${code}`;
 
 type MapUiState = {
+  clearAllData: () => void;
   mode: MapMode;
   regionPhotos: Record<string, RegionPhoto>;
   selectedRegionCode: RegionCode | null;
@@ -26,6 +27,8 @@ type MapUiState = {
 export const useMapUiStore = create<MapUiState>()(
   persist(
     (set) => ({
+      clearAllData: () =>
+        set({ mode: "korea", regionPhotos: {}, selectedRegionCode: null }),
       mode: "korea",
       regionPhotos: {},
       selectedRegionCode: null,

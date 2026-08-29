@@ -14,9 +14,11 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AdBannerPlaceholder } from "@/features/ads/components/AdBannerPlaceholder";
 import { useLocalSessionStore } from "@/features/auth/store/localSession.store";
+import { useMapUiStore } from "@/features/map/store/mapUi.store";
 import { INFO_ITEMS, type InfoType } from "@/features/more/models/infoContent";
 import { useProfileStore } from "@/features/profile/store/profile.store";
 import { trackEvent, trackScreenView } from "@/services/analytics/analytics";
+import { appStorage } from "@/services/storage/appStorage";
 import { saveImageToDevice } from "@/services/storage/localImageStorage";
 
 export function MoreScreen() {
@@ -95,6 +97,28 @@ export function MoreScreen() {
         text: "로그아웃",
       },
     ]);
+  };
+
+  const clearDataAndLogout = () => {
+    Alert.alert(
+      "데이터 지우고 로그아웃",
+      "기기에 저장된 모든 여행 사진과 프로필 기록이 완전히 삭제되고 초기화됩니다. 계속할까요?",
+      [
+        { text: "취소", style: "cancel" },
+        {
+          onPress: () => {
+            useProfileStore.getState().resetProfile();
+            useMapUiStore.getState().clearAllData();
+            void appStorage.clear();
+            resetSession();
+            void trackEvent("all_data_cleared_and_logged_out");
+            router.replace("/");
+          },
+          style: "destructive",
+          text: "데이터 지우고 로그아웃",
+        },
+      ],
+    );
   };
 
   return (
@@ -187,16 +211,30 @@ export function MoreScreen() {
         </View>
       </View>
 
-      <Pressable
-        accessibilityRole="button"
-        onPress={logout}
-        style={({ pressed }) => [
-          styles.logoutButton,
-          pressed && styles.logoutButtonPressed,
-        ]}
-      >
-        <Text style={styles.logoutButtonText}>로그아웃</Text>
-      </Pressable>
+      <View style={styles.actionButtonsGroup}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={logout}
+          style={({ pressed }) => [
+            styles.actionButton,
+            pressed && styles.actionButtonPressed,
+          ]}
+        >
+          <Text style={styles.logoutButtonText}>로그아웃</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          onPress={clearDataAndLogout}
+          style={({ pressed }) => [
+            styles.actionButton,
+            pressed && styles.clearButtonPressed,
+          ]}
+        >
+          <Text style={styles.clearButtonText}>
+            데이터 지우고 로그아웃하기
+          </Text>
+        </Pressable>
+      </View>
     </ScrollView>
   );
 }
@@ -346,26 +384,33 @@ const styles = StyleSheet.create({
     minWidth: 0,
     paddingRight: 12,
   },
-  logoutButton: {
+  actionButton: {
     alignItems: "center",
     alignSelf: "center",
     borderRadius: 14,
-    height: 42,
+    height: 40,
     justifyContent: "center",
     paddingHorizontal: 18,
   },
-  logoutButtonPressed: {
+  actionButtonPressed: {
     backgroundColor: "#F4F4F5",
   },
-  logoutButtonText: {
+  actionButtonsGroup: {
+    alignItems: "center",
+    gap: 4,
+    marginTop: 4,
+  },
+  clearButtonPressed: {
+    backgroundColor: "rgba(239, 68, 68, 0.08)",
+  },
+  clearButtonText: {
     color: "#EF4444",
     fontSize: 14,
     fontWeight: "800",
   },
-  title: {
-    color: "#18181B",
-    fontSize: 28,
-    fontWeight: "800",
-    letterSpacing: 0,
+  logoutButtonText: {
+    color: "#71717A",
+    fontSize: 14,
+    fontWeight: "700",
   },
 });
