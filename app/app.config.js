@@ -26,7 +26,10 @@ function withRNFirebaseDisableSPM(config) {
       if (fs.existsSync(podfilePath)) {
         let content = fs.readFileSync(podfilePath, "utf8");
         if (!content.includes("use_modular_headers!")) {
-          content = `use_modular_headers!\n$RNFirebaseDisableSPM = true\n\n` + content;
+          content = `ENV['PATH'] = "/bin:/usr/bin:/usr/local/bin:/opt/homebrew/bin:\#{ENV['PATH']}"\nuse_modular_headers!\n$RNFirebaseDisableSPM = true\n\n` + content;
+          fs.writeFileSync(podfilePath, content, "utf8");
+        } else if (!content.includes("ENV['PATH']")) {
+          content = `ENV['PATH'] = "/bin:/usr/bin:/usr/local/bin:/opt/homebrew/bin:\#{ENV['PATH']}"\n` + content;
           fs.writeFileSync(podfilePath, content, "utf8");
         }
       }
