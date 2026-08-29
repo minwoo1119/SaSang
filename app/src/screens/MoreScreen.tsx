@@ -171,7 +171,10 @@ export function MoreScreen() {
         </Pressable>
       </View>
 
-      <AdBannerPlaceholder label="AdMob Banner" />
+      <AdBannerPlaceholder
+        label="AdMob Banner"
+        style={styles.adBannerMargin}
+      />
 
       <View style={styles.infoSection}>
         <Text style={styles.infoTitle}>약관 및 정보</Text>
@@ -219,6 +222,9 @@ function MoreRow({ label, onPress }: { label: string; onPress: () => void }) {
 }
 
 const styles = StyleSheet.create({
+  adBannerMargin: {
+    marginVertical: 10,
+  },
   avatarButton: {
     alignItems: "center",
     backgroundColor: "#FFFFFF",

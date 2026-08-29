@@ -86,7 +86,9 @@ export function PlacesScreen() {
           cards.map((card, index) => (
             <View key={card.id} style={styles.listItem}>
               <PlacePhotoCard card={card} />
-              {index === 0 ? <AdNativeCardPlaceholder /> : null}
+              {index === 0 ? (
+                <AdNativeCardPlaceholder style={styles.adItemMargin} />
+              ) : null}
             </View>
           ))
         ) : (
@@ -150,7 +152,7 @@ function EmptyPlacesState({ filter }: { filter: PlaceFilter }) {
         </Pressable>
       </View>
 
-      <AdNativeCardPlaceholder />
+      <AdNativeCardPlaceholder style={styles.emptyAdMargin} />
     </View>
   );
 }
@@ -215,6 +217,10 @@ function PlacePhotoCard({ card }: { card: PlaceCard }) {
 }
 
 const styles = StyleSheet.create({
+  adItemMargin: {
+    marginBottom: 4,
+    marginTop: 12,
+  },
   card: {
     backgroundColor: "#FFFFFF",
     borderColor: "rgba(24, 24, 27, 0.1)",
@@ -299,6 +305,10 @@ const styles = StyleSheet.create({
   emptyContainer: {
     gap: 20,
     marginTop: 8,
+  },
+  emptyAdMargin: {
+    marginBottom: 8,
+    marginTop: 16,
   },
   emptyContent: {
     alignItems: "center",

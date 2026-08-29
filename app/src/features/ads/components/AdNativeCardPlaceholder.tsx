@@ -1,10 +1,15 @@
+import type { StyleProp, ViewStyle } from "react-native";
 import { StyleSheet, Text, View } from "react-native";
 import { ADMOB_AD_UNIT_IDS } from "../models/adMobUnits";
 import { AdMobBanner } from "./AdMobBanner";
 
-export function AdNativeCardPlaceholder() {
+type AdNativeCardPlaceholderProps = {
+  style?: StyleProp<ViewStyle>;
+};
+
+export function AdNativeCardPlaceholder({ style }: AdNativeCardPlaceholderProps = {}) {
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, style]}>
       <AdMobBanner
         fallback={
           <View accessibilityLabel="AdMob Native" style={styles.container}>
@@ -37,23 +42,24 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 1,
-    gap: 3,
+    gap: 4,
     minWidth: 0,
   },
   container: {
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderColor: "rgba(0, 0, 0, 0.07)",
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
-    gap: 12,
-    minHeight: 74,
-    padding: 12,
+    gap: 14,
+    minHeight: 88,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
   },
   description: {
     color: "#71717A",
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "600",
   },
   labelRow: {
@@ -64,28 +70,28 @@ const styles = StyleSheet.create({
   title: {
     color: "#18181B",
     flex: 1,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "800",
   },
   pin: {
     backgroundColor: "#007AFF",
     borderRadius: 10,
-    height: 20,
+    height: 22,
     opacity: 0.14,
-    width: 20,
+    width: 22,
   },
   thumbnail: {
     alignItems: "center",
     backgroundColor: "#F8FBFF",
-    borderRadius: 13,
-    height: 50,
+    borderRadius: 14,
+    height: 54,
     justifyContent: "center",
-    width: 50,
+    width: 54,
   },
   wrapper: {
     backgroundColor: "#FFFFFF",
     borderColor: "rgba(0, 0, 0, 0.07)",
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: StyleSheet.hairlineWidth,
     overflow: "hidden",
   },
