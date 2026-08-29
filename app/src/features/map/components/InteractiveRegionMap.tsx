@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
+  Easing,
   useAnimatedStyle,
   useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
 import { MAP_ASSETS } from "../models/mapAssets";
@@ -15,6 +17,7 @@ import { RegionPhotoLayer } from "./RegionPhotoLayer";
 
 const MIN_SCALE = 0.85;
 const MAX_SCALE = 5;
+const SMOOTH_CONFIG = { duration: 160, easing: Easing.out(Easing.quad) };
 
 function clamp(value: number, minimum: number, maximum: number) {
   "worklet";
@@ -62,31 +65,41 @@ export function InteractiveRegionMap({
   );
 
   const setInitialViewport = useCallback(
-    (targetMode: MapMode) => {
+    (targetMode: MapMode, animate = true) => {
       const w = viewportWidth.value || 360;
       const h = viewportHeight.value || 600;
 
+      let targetScale = 1;
+      let targetX = 0;
+      let targetY = 0;
+
       if (targetMode === "world") {
-        scale.value = 3.4;
-        translateX.value = -w * 0.85;
-        translateY.value = h * 0.15;
+        targetScale = 3.4;
+        targetX = -w * 0.85;
+        targetY = h * 0.15;
+      }
+
+      if (animate) {
+        scale.value = withTiming(targetScale, SMOOTH_CONFIG);
+        translateX.value = withTiming(targetX, SMOOTH_CONFIG);
+        translateY.value = withTiming(targetY, SMOOTH_CONFIG);
       } else {
-        scale.value = 1;
-        translateX.value = 0;
-        translateY.value = 0;
+        scale.value = targetScale;
+        translateX.value = targetX;
+        translateY.value = targetY;
       }
     },
     [scale, translateX, translateY, viewportWidth, viewportHeight],
   );
 
   const resetViewport = useCallback(() => {
-    scale.value = 1;
-    translateX.value = 0;
-    translateY.value = 0;
+    scale.value = withTiming(1, SMOOTH_CONFIG);
+    translateX.value = withTiming(0, SMOOTH_CONFIG);
+    translateY.value = withTiming(0, SMOOTH_CONFIG);
   }, [scale, translateX, translateY]);
 
   useEffect(() => {
-    setInitialViewport(mode);
+    setInitialViewport(mode, true);
   }, [mode, setInitialViewport]);
 
   const handlePress = useCallback(
@@ -116,9 +129,9 @@ export function InteractiveRegionMap({
     })
     .onEnd(() => {
       if (scale.value < 1) {
-        scale.value = 1;
-        translateX.value = 0;
-        translateY.value = 0;
+        scale.value = withTiming(1, SMOOTH_CONFIG);
+        translateX.value = withTiming(0, SMOOTH_CONFIG);
+        translateY.value = withTiming(0, SMOOTH_CONFIG);
       }
     });
 
@@ -134,10 +147,10 @@ export function InteractiveRegionMap({
   const zoomBy = useCallback(
     (amount: number) => {
       const nextScale = clamp(scale.value + amount, 1, MAX_SCALE);
-      scale.value = nextScale;
+      scale.value = withTiming(nextScale, SMOOTH_CONFIG);
       if (nextScale === 1) {
-        translateX.value = 0;
-        translateY.value = 0;
+        translateX.value = withTiming(0, SMOOTH_CONFIG);
+        translateY.value = withTiming(0, SMOOTH_CONFIG);
       }
     },
     [scale, translateX, translateY],
