@@ -188,6 +188,7 @@ export function InteractiveRegionMap({
               return (
                 <RegionPath
                   key={region.code}
+                  mode={mode}
                   onPress={handlePress}
                   photoFilled={photoFilled}
                   region={region}
@@ -203,7 +204,7 @@ export function InteractiveRegionMap({
                 pointerEvents="none"
                 stroke="#007AFF"
                 strokeLinejoin="round"
-                strokeWidth={1.45}
+                strokeWidth={mode === "world" ? 0.9 : 1.45}
                 vectorEffect="non-scaling-stroke"
               />
             ) : null}
