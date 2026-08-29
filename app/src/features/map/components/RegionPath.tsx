@@ -23,18 +23,18 @@ export const RegionPath = memo(function RegionPath({
 
   const strokeColor = photoFilled
     ? isWorld
-      ? "#8E8E93"
+      ? "#71717A"
       : "#71717A"
     : isWorld
-      ? "rgba(24, 24, 27, 0.14)"
-      : "rgba(24, 24, 27, 0.18)";
+      ? "#A1A1AA"
+      : "rgba(24, 24, 27, 0.22)";
 
   const strokeWidth = photoFilled
     ? isWorld
-      ? 0.16
+      ? 0.18
       : 0.55
     : isWorld
-      ? 0.11
+      ? 0.15
       : 0.45;
 
   return (
