@@ -177,18 +177,11 @@ export function MapScreen() {
         <View style={styles.headerRow}>
           <View style={styles.brandBlock}>
             <Image
-              contentFit="cover"
-              source={require("../../assets/images/icon.png")}
-              style={styles.brandIcon}
+              contentFit="contain"
+              source={require("../../assets/images/main-text-design.png")}
+              style={styles.brandTextImage}
             />
-            <View style={styles.brandCopy}>
-              <Image
-                contentFit="contain"
-                source={require("../../assets/images/main-text-design.png")}
-                style={styles.brandTextImage}
-              />
-              <Text style={styles.recordCount}>{photoCount}개의 여행 기록</Text>
-            </View>
+            <Text style={styles.recordCount}>{photoCount}개의 여행 기록</Text>
           </View>
           <MapModeTabs onChange={setMode} value={mode} />
         </View>
@@ -357,21 +350,12 @@ export function MapScreen() {
 
 const styles = StyleSheet.create({
   brandBlock: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 9,
-  },
-  brandIcon: {
-    borderRadius: 8,
-    height: 32,
-    width: 32,
-  },
-  brandCopy: {
-    gap: 1,
+    gap: 2,
+    justifyContent: "center",
   },
   brandTextImage: {
-    height: 27,
-    width: 44,
+    height: 30,
+    width: 49,
   },
   container: { backgroundColor: "#FAFAFA", flex: 1 },
   headerRow: {
