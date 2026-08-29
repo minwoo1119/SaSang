@@ -132,11 +132,28 @@ export function MapScreen() {
 
   const handleRemovePhoto = () => {
     if (!selectedRegion) return;
-    removeRegionPhoto(mode, selectedRegion.code);
-    void trackEvent("region_photo_removed", {
-      map_mode: mode,
-      region_code: selectedRegion.code,
-    });
+
+    Alert.alert(
+      "사진 삭제",
+      `'${selectedRegion.name}'에 등록된 여행 사진을 삭제할까요?`,
+      [
+        {
+          style: "cancel",
+          text: "취소",
+        },
+        {
+          onPress: () => {
+            removeRegionPhoto(mode, selectedRegion.code);
+            void trackEvent("region_photo_removed", {
+              map_mode: mode,
+              region_code: selectedRegion.code,
+            });
+          },
+          style: "destructive",
+          text: "삭제",
+        },
+      ],
+    );
   };
 
   const closeAdModal = () => {
