@@ -123,9 +123,19 @@ export function InteractiveRegionMap({
   const pinchGesture = Gesture.Pinch()
     .onBegin(() => {
       startScale.value = scale.value;
+      startX.value = translateX.value;
+      startY.value = translateY.value;
     })
     .onUpdate((event) => {
-      scale.value = clamp(startScale.value * event.scale, MIN_SCALE, MAX_SCALE);
+      const nextScale = clamp(
+        startScale.value * event.scale,
+        MIN_SCALE,
+        MAX_SCALE,
+      );
+      const factor = startScale.value > 0 ? nextScale / startScale.value : 1;
+      scale.value = nextScale;
+      translateX.value = startX.value * factor;
+      translateY.value = startY.value * factor;
     })
     .onEnd(() => {
       if (scale.value < 1) {
@@ -146,14 +156,33 @@ export function InteractiveRegionMap({
 
   const zoomBy = useCallback(
     (amount: number) => {
-      const nextScale = clamp(scale.value + amount, 1, MAX_SCALE);
-      scale.value = withTiming(nextScale, SMOOTH_CONFIG);
+      const currentScale = scale.value;
+      const nextScale = clamp(currentScale + amount, 1, MAX_SCALE);
+      if (nextScale === currentScale) return;
+
       if (nextScale === 1) {
+        scale.value = withTiming(1, SMOOTH_CONFIG);
         translateX.value = withTiming(0, SMOOTH_CONFIG);
         translateY.value = withTiming(0, SMOOTH_CONFIG);
+      } else {
+        const factor = nextScale / currentScale;
+        const rawNextX = translateX.value * factor;
+        const rawNextY = translateY.value * factor;
+        const maxX = viewportWidth.value * Math.max(nextScale - 0.65, 0.24);
+        const maxY = viewportHeight.value * Math.max(nextScale - 0.65, 0.24);
+
+        scale.value = withTiming(nextScale, SMOOTH_CONFIG);
+        translateX.value = withTiming(
+          clamp(rawNextX, -maxX, maxX),
+          SMOOTH_CONFIG,
+        );
+        translateY.value = withTiming(
+          clamp(rawNextY, -maxY, maxY),
+          SMOOTH_CONFIG,
+        );
       }
     },
-    [scale, translateX, translateY],
+    [scale, translateX, translateY, viewportWidth, viewportHeight],
   );
 
   return (
