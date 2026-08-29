@@ -1,4 +1,6 @@
 import { Image } from "expo-image";
+import { router } from "expo-router";
+import { SymbolView } from "expo-symbols";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -88,15 +90,67 @@ export function PlacesScreen() {
             </View>
           ))
         ) : (
-          <View style={styles.emptySection}>
-            <Text style={styles.emptyTitle}>아직 기록한 장소가 없어요</Text>
-            <Text style={styles.emptyText}>
-              지도에서 지역을 선택하고 사진을 추가하면 이곳에 모입니다.
-            </Text>
-            <AdNativeCardPlaceholder />
-          </View>
+          <EmptyPlacesState filter={filter} />
         )}
       </ScrollView>
+    </View>
+  );
+}
+
+function EmptyPlacesState({ filter }: { filter: PlaceFilter }) {
+  const isKorea = filter === "korea";
+  const subtitleText = isKorea
+    ? "지도에서 원하는 시·군·구를 선택하고\n사진을 채워 나만의 여행 지도를 만들어보세요."
+    : "지도에서 다녀온 국가를 선택하고\n사진을 채워 세계 여행을 기록해보세요.";
+
+  return (
+    <View style={styles.emptyContainer}>
+      <View style={styles.emptyCard}>
+        <View style={styles.iconOuterRing}>
+          <View style={styles.iconInnerBadge}>
+            <SymbolView
+              fallback={<Text style={styles.iconFallback}>🗺️</Text>}
+              name="photo.stack.fill"
+              size={30}
+              tintColor="#007AFF"
+            />
+          </View>
+          <View style={styles.miniPinBadge}>
+            <SymbolView
+              fallback={<Text style={styles.miniFallback}>📍</Text>}
+              name="location.fill"
+              size={11}
+              tintColor="#FFFFFF"
+            />
+          </View>
+        </View>
+
+        <View style={styles.emptyContent}>
+          <Text style={styles.emptyTitle}>
+            {isKorea ? "국내 여행 기록이 없어요" : "해외 여행 기록이 없어요"}
+          </Text>
+          <Text style={styles.emptyDescription}>{subtitleText}</Text>
+        </View>
+
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push("/map")}
+          style={({ pressed }) => [
+            styles.ctaButton,
+            pressed && styles.ctaButtonPressed,
+          ]}
+        >
+          <SymbolView
+            fallback={<Text style={styles.ctaFallback}>⌖</Text>}
+            name="map.fill"
+            size={16}
+            tintColor="#FFFFFF"
+          />
+          <Text style={styles.ctaButtonText}>지도에서 사진 추가하기</Text>
+        </Pressable>
+      </View>
+
+      <AdNativeCardPlaceholder />
     </View>
   );
 }
@@ -198,10 +252,70 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAFAFA",
     flex: 1,
   },
+  ctaButton: {
+    alignItems: "center",
+    backgroundColor: "#007AFF",
+    borderRadius: 22,
+    boxShadow: "0 4px 14px rgba(0, 122, 255, 0.28)",
+    elevation: 3,
+    flexDirection: "row",
+    gap: 8,
+    height: 46,
+    justifyContent: "center",
+    marginTop: 4,
+    paddingHorizontal: 22,
+  },
+  ctaButtonPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
+  },
+  ctaButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  ctaFallback: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "800",
+  },
   dateText: {
     color: "#71717A",
     fontSize: 12,
     fontWeight: "600",
+  },
+  emptyCard: {
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderColor: "rgba(24, 24, 27, 0.08)",
+    borderRadius: 24,
+    borderWidth: 1,
+    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.04)",
+    elevation: 2,
+    gap: 18,
+    paddingHorizontal: 24,
+    paddingVertical: 36,
+  },
+  emptyContainer: {
+    gap: 20,
+    marginTop: 8,
+  },
+  emptyContent: {
+    alignItems: "center",
+    gap: 8,
+  },
+  emptyDescription: {
+    color: "#71717A",
+    fontSize: 14,
+    fontWeight: "600",
+    lineHeight: 21,
+    textAlign: "center",
+  },
+  emptyTitle: {
+    color: "#18181B",
+    fontSize: 18,
+    fontWeight: "800",
+    textAlign: "center",
   },
   filterButton: {
     alignItems: "center",
@@ -223,33 +337,39 @@ const styles = StyleSheet.create({
     color: "#007AFF",
     fontWeight: "800",
   },
-  emptySection: {
-    gap: 14,
-  },
-  emptyText: {
-    color: "#71717A",
-    fontSize: 14,
-    fontWeight: "600",
-    lineHeight: 20,
-  },
-  emptyTitle: {
-    color: "#18181B",
-    fontSize: 18,
-    fontWeight: "800",
-  },
   header: {
     paddingBottom: 18,
     paddingHorizontal: 16,
-  },
-  imageFrame: {
-    aspectRatio: 1.18,
-    backgroundColor: "#F4F4F5",
-    width: "100%",
   },
   headerRow: {
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  iconFallback: {
+    fontSize: 24,
+  },
+  iconInnerBadge: {
+    alignItems: "center",
+    backgroundColor: "rgba(0, 122, 255, 0.12)",
+    borderRadius: 30,
+    height: 60,
+    justifyContent: "center",
+    width: 60,
+  },
+  iconOuterRing: {
+    alignItems: "center",
+    backgroundColor: "rgba(0, 122, 255, 0.06)",
+    borderRadius: 44,
+    height: 88,
+    justifyContent: "center",
+    position: "relative",
+    width: 88,
+  },
+  imageFrame: {
+    aspectRatio: 1.18,
+    backgroundColor: "#F4F4F5",
+    width: "100%",
   },
   list: {
     gap: 20,
@@ -262,6 +382,22 @@ const styles = StyleSheet.create({
     color: "#52525B",
     fontSize: 14,
     fontWeight: "600",
+  },
+  miniFallback: {
+    fontSize: 10,
+  },
+  miniPinBadge: {
+    alignItems: "center",
+    backgroundColor: "#007AFF",
+    borderColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 2,
+    bottom: 2,
+    height: 24,
+    justifyContent: "center",
+    position: "absolute",
+    right: 2,
+    width: 24,
   },
   modeLabel: {
     backgroundColor: "rgba(0, 122, 255, 0.1)",
@@ -303,3 +439,4 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
 });
+
