@@ -9,28 +9,27 @@ type AdNativeCardPlaceholderProps = {
 
 export function AdNativeCardPlaceholder({ style }: AdNativeCardPlaceholderProps = {}) {
   return (
-    <View style={[styles.wrapper, style]}>
-      <AdMobBanner
-        fallback={
-          <View accessibilityLabel="AdMob Native" style={styles.container}>
-            <View style={styles.thumbnail}>
-              <View style={styles.pin} />
-            </View>
-            <View style={styles.body}>
-              <View style={styles.labelRow}>
-                <Text style={styles.title}>여행에 어울리는 추천</Text>
-                <Text style={styles.badge}>AD</Text>
-              </View>
-              <Text numberOfLines={1} style={styles.description}>
-                Sasang이 고른 여행 정보
-              </Text>
-            </View>
+    <AdMobBanner
+      fallback={
+        <View accessibilityLabel="AdMob Native" style={[styles.container, style]}>
+          <View style={styles.thumbnail}>
+            <View style={styles.pin} />
           </View>
-        }
-        size="INLINE_ADAPTIVE_BANNER"
-        unitId={ADMOB_AD_UNIT_IDS.places}
-      />
-    </View>
+          <View style={styles.body}>
+            <View style={styles.labelRow}>
+              <Text style={styles.title}>여행에 어울리는 추천</Text>
+              <Text style={styles.badge}>AD</Text>
+            </View>
+            <Text numberOfLines={1} style={styles.description}>
+              Sasang이 고른 여행 정보
+            </Text>
+          </View>
+        </View>
+      }
+      size="INLINE_ADAPTIVE_BANNER"
+      style={[styles.container, style]}
+      unitId={ADMOB_AD_UNIT_IDS.places}
+    />
   );
 }
 
@@ -54,8 +53,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 14,
     minHeight: 88,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
+    overflow: "hidden",
+    paddingHorizontal: 20,
+    paddingVertical: 18,
   },
   description: {
     color: "#71717A",
@@ -87,12 +87,5 @@ const styles = StyleSheet.create({
     height: 54,
     justifyContent: "center",
     width: 54,
-  },
-  wrapper: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "rgba(0, 0, 0, 0.07)",
-    borderRadius: 18,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: "hidden",
   },
 });

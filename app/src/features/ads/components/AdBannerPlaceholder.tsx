@@ -13,18 +13,17 @@ export function AdBannerPlaceholder({
   style,
 }: AdBannerPlaceholderProps) {
   return (
-    <View style={style}>
-      <AdMobBanner
-        fallback={
-          <View accessibilityLabel={label} style={styles.container}>
-            <View style={styles.mark} />
-            <Text style={styles.label}>{label}</Text>
-          </View>
-        }
-        size="ANCHORED_ADAPTIVE_BANNER"
-        unitId={ADMOB_AD_UNIT_IDS.moreBanner}
-      />
-    </View>
+    <AdMobBanner
+      fallback={
+        <View accessibilityLabel={label} style={[styles.container, style]}>
+          <View style={styles.mark} />
+          <Text style={styles.label}>{label}</Text>
+        </View>
+      }
+      size="ANCHORED_ADAPTIVE_BANNER"
+      style={[styles.container, style]}
+      unitId={ADMOB_AD_UNIT_IDS.moreBanner}
+    />
   );
 }
 
@@ -38,10 +37,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
     justifyContent: "center",
-    minHeight: 72,
+    minHeight: 76,
     overflow: "hidden",
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 18,
   },
   label: {
     color: "#71717A",

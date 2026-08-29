@@ -1,11 +1,13 @@
 import Constants from "expo-constants";
 import type { ComponentType, ReactNode } from "react";
 import { useState } from "react";
+import type { StyleProp, ViewStyle } from "react-native";
 import { StyleSheet, View } from "react-native";
 
 type AdMobBannerProps = {
   fallback: ReactNode;
   size: "ANCHORED_ADAPTIVE_BANNER" | "BANNER" | "INLINE_ADAPTIVE_BANNER";
+  style?: StyleProp<ViewStyle>;
   unitId: string;
 };
 
@@ -36,7 +38,7 @@ function loadGoogleMobileAds() {
   }
 }
 
-export function AdMobBanner({ fallback, size, unitId }: AdMobBannerProps) {
+export function AdMobBanner({ fallback, size, style, unitId }: AdMobBannerProps) {
   const [adFailed, setAdFailed] = useState(false);
   const googleMobileAds = loadGoogleMobileAds();
 
@@ -48,7 +50,7 @@ export function AdMobBanner({ fallback, size, unitId }: AdMobBannerProps) {
   const resolvedUnitId = __DEV__ ? TestIds.ADAPTIVE_BANNER : unitId;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <BannerAd
         onAdFailedToLoad={(error) => {
           if (__DEV__) {
