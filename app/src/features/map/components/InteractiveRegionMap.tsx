@@ -4,7 +4,6 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
 } from "react-native-reanimated";
 import Svg, { Path } from "react-native-svg";
 import { MAP_ASSETS } from "../models/mapAssets";
@@ -16,7 +15,6 @@ import { RegionPhotoLayer } from "./RegionPhotoLayer";
 
 const MIN_SCALE = 0.85;
 const MAX_SCALE = 5;
-const SPRING_CONFIG = { damping: 18, stiffness: 180 };
 
 function clamp(value: number, minimum: number, maximum: number) {
   "worklet";
@@ -64,41 +62,31 @@ export function InteractiveRegionMap({
   );
 
   const setInitialViewport = useCallback(
-    (targetMode: MapMode, animate = true) => {
+    (targetMode: MapMode) => {
       const w = viewportWidth.value || 360;
       const h = viewportHeight.value || 600;
 
-      let targetScale = 1;
-      let targetX = 0;
-      let targetY = 0;
-
       if (targetMode === "world") {
-        targetScale = 3.4;
-        targetX = -w * 0.85;
-        targetY = h * 0.15;
-      }
-
-      if (animate) {
-        scale.value = withSpring(targetScale, SPRING_CONFIG);
-        translateX.value = withSpring(targetX, SPRING_CONFIG);
-        translateY.value = withSpring(targetY, SPRING_CONFIG);
+        scale.value = 3.4;
+        translateX.value = -w * 0.85;
+        translateY.value = h * 0.15;
       } else {
-        scale.value = targetScale;
-        translateX.value = targetX;
-        translateY.value = targetY;
+        scale.value = 1;
+        translateX.value = 0;
+        translateY.value = 0;
       }
     },
     [scale, translateX, translateY, viewportWidth, viewportHeight],
   );
 
   const resetViewport = useCallback(() => {
-    scale.value = withSpring(1, SPRING_CONFIG);
-    translateX.value = withSpring(0, SPRING_CONFIG);
-    translateY.value = withSpring(0, SPRING_CONFIG);
+    scale.value = 1;
+    translateX.value = 0;
+    translateY.value = 0;
   }, [scale, translateX, translateY]);
 
   useEffect(() => {
-    setInitialViewport(mode, false);
+    setInitialViewport(mode);
   }, [mode, setInitialViewport]);
 
   const handlePress = useCallback(
@@ -128,9 +116,9 @@ export function InteractiveRegionMap({
     })
     .onEnd(() => {
       if (scale.value < 1) {
-        scale.value = withSpring(1, SPRING_CONFIG);
-        translateX.value = withSpring(0, SPRING_CONFIG);
-        translateY.value = withSpring(0, SPRING_CONFIG);
+        scale.value = 1;
+        translateX.value = 0;
+        translateY.value = 0;
       }
     });
 
@@ -146,10 +134,10 @@ export function InteractiveRegionMap({
   const zoomBy = useCallback(
     (amount: number) => {
       const nextScale = clamp(scale.value + amount, 1, MAX_SCALE);
-      scale.value = withSpring(nextScale, SPRING_CONFIG);
+      scale.value = nextScale;
       if (nextScale === 1) {
-        translateX.value = withSpring(0, SPRING_CONFIG);
-        translateY.value = withSpring(0, SPRING_CONFIG);
+        translateX.value = 0;
+        translateY.value = 0;
       }
     },
     [scale, translateX, translateY],
@@ -162,7 +150,7 @@ export function InteractiveRegionMap({
         viewportWidth.value = nativeEvent.layout.width;
         viewportHeight.value = nativeEvent.layout.height;
         if (isFirst) {
-          setInitialViewport(mode, false);
+          setInitialViewport(mode);
         }
       }}
       style={styles.container}
