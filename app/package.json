@@ -4,12 +4,12 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/metro-runtime": "6.1.2",
-    "@react-native-firebase/analytics": "^26.3.2",
-    "@react-native-firebase/app": "^26.3.2",
+    "@react-native-firebase/analytics": "^21.14.0",
+    "@react-native-firebase/app": "^21.14.0",
     "@sasang/shared": "workspace:*",
     "@tanstack/react-query": "^5.101.4",
     "expo": "~54.0.37",
-    "expo-build-properties": "^57.0.15",
+    "expo-build-properties": "^1.0.10",
     "expo-constants": "~18.0.14",
     "expo-dev-client": "~6.0.21",
     "expo-device": "~8.0.10",
@@ -39,7 +39,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
-    "@expo/config-plugins": "~10.0.0",
+    "@expo/config-plugins": "~54.0.5",
     "@types/react": "~19.1.17",
     "eslint": "^9.34.0",
     "eslint-config-expo": "~10.0.0",
