@@ -102,7 +102,7 @@ export function MoreScreen() {
       style={styles.container}
       contentContainerStyle={[
         styles.content,
-        { paddingBottom: insets.bottom + 112, paddingTop: insets.top + 28 },
+        { paddingBottom: insets.bottom + 112, paddingTop: insets.top + 20 },
       ]}
       showsVerticalScrollIndicator={false}
     >

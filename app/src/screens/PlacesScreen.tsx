@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#18181B",
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: "800",
   },
 });
