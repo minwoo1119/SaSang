@@ -92,8 +92,8 @@ const styles = StyleSheet.create({
     width: 76,
   },
   brandImage: {
-    height: 61,
-    width: 170,
+    height: 75,
+    width: 210,
   },
   container: {
     backgroundColor: "#FAFAFA",

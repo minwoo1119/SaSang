@@ -362,16 +362,16 @@ const styles = StyleSheet.create({
     gap: 9,
   },
   brandIcon: {
-    borderRadius: 10,
-    height: 34,
-    width: 34,
+    borderRadius: 8,
+    height: 32,
+    width: 32,
   },
   brandCopy: {
     gap: 1,
   },
   brandTextImage: {
-    height: 30,
-    width: 84,
+    height: 25,
+    width: 70,
   },
   container: { backgroundColor: "#FAFAFA", flex: 1 },
   headerRow: {
