@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   segmentedControl: {
-    alignSelf: "flex-start",
+    alignSelf: "flex-end",
     backgroundColor: "#FFFFFF",
     borderColor: "rgba(0, 0, 0, 0.08)",
     borderRadius: 22,
