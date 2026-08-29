@@ -63,6 +63,34 @@ export function InteractiveRegionMap({
     [map.regions, selectedRegionCode],
   );
 
+  const setInitialViewport = useCallback(
+    (targetMode: MapMode, animate = true) => {
+      const w = viewportWidth.value || 360;
+      const h = viewportHeight.value || 600;
+
+      let targetScale = 1;
+      let targetX = 0;
+      let targetY = 0;
+
+      if (targetMode === "world") {
+        targetScale = 2.3;
+        targetX = -w * 0.65;
+        targetY = h * 0.35;
+      }
+
+      if (animate) {
+        scale.value = withSpring(targetScale, SPRING_CONFIG);
+        translateX.value = withSpring(targetX, SPRING_CONFIG);
+        translateY.value = withSpring(targetY, SPRING_CONFIG);
+      } else {
+        scale.value = targetScale;
+        translateX.value = targetX;
+        translateY.value = targetY;
+      }
+    },
+    [scale, translateX, translateY, viewportWidth, viewportHeight],
+  );
+
   const resetViewport = useCallback(() => {
     scale.value = withSpring(1, SPRING_CONFIG);
     translateX.value = withSpring(0, SPRING_CONFIG);
@@ -70,8 +98,8 @@ export function InteractiveRegionMap({
   }, [scale, translateX, translateY]);
 
   useEffect(() => {
-    resetViewport();
-  }, [mode, resetViewport]);
+    setInitialViewport(mode, true);
+  }, [mode, setInitialViewport]);
 
   const handlePress = useCallback(
     (region: MapRegion) => selectRegion(region.code),
@@ -130,8 +158,12 @@ export function InteractiveRegionMap({
   return (
     <View
       onLayout={({ nativeEvent }) => {
+        const isFirst = viewportWidth.value === 0;
         viewportWidth.value = nativeEvent.layout.width;
         viewportHeight.value = nativeEvent.layout.height;
+        if (isFirst) {
+          setInitialViewport(mode, false);
+        }
       }}
       style={styles.container}
     >
