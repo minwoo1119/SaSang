@@ -142,12 +142,6 @@ function EmptyPlacesState({ filter }: { filter: PlaceFilter }) {
             pressed && styles.ctaButtonPressed,
           ]}
         >
-          <SymbolView
-            fallback={<Text style={styles.ctaFallback}>⌖</Text>}
-            name="map.fill"
-            size={16}
-            tintColor="#FFFFFF"
-          />
           <Text style={styles.ctaButtonText}>지도에서 사진 추가하기</Text>
         </Pressable>
       </View>
@@ -276,11 +270,6 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.98 }],
   },
   ctaButtonText: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "800",
-  },
-  ctaFallback: {
     color: "#FFFFFF",
     fontSize: 14,
     fontWeight: "800",
