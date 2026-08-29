@@ -47,9 +47,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-    borderColor: "rgba(0, 0, 0, 0.07)",
     borderRadius: 18,
-    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
     gap: 14,
     minHeight: 88,
