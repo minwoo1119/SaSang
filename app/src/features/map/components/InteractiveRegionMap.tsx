@@ -98,7 +98,7 @@ export function InteractiveRegionMap({
   }, [scale, translateX, translateY]);
 
   useEffect(() => {
-    setInitialViewport(mode, true);
+    setInitialViewport(mode, false);
   }, [mode, setInitialViewport]);
 
   const handlePress = useCallback(
