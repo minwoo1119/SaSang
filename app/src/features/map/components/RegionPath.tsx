@@ -31,11 +31,11 @@ export const RegionPath = memo(function RegionPath({
 
   const strokeWidth = photoFilled
     ? isWorld
-      ? 0.42
-      : 0.6
+      ? 0.16
+      : 0.55
     : isWorld
-      ? 0.32
-      : 0.48;
+      ? 0.11
+      : 0.45;
 
   return (
     <Path

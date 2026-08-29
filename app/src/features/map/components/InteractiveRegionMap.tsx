@@ -234,7 +234,7 @@ export function InteractiveRegionMap({
                 pointerEvents="none"
                 stroke="#007AFF"
                 strokeLinejoin="round"
-                strokeWidth={mode === "world" ? 0.55 : 1.2}
+                strokeWidth={mode === "world" ? 0.32 : 1.1}
                 vectorEffect="non-scaling-stroke"
               />
             ) : null}
