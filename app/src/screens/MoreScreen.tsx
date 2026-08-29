@@ -128,7 +128,7 @@ export function MoreScreen() {
             ) : (
               <Image
                 contentFit="cover"
-                source={require("../../assets/images/default-profile.png")}
+                source={require("../../assets/images/default-profile.jpg")}
                 style={styles.avatarImage}
               />
             )}
