@@ -4,8 +4,6 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/metro-runtime": "6.1.2",
-    "@react-native-firebase/analytics": "^21.14.0",
-    "@react-native-firebase/app": "^21.14.0",
     "@sasang/shared": "workspace:*",
     "@tanstack/react-query": "^5.101.4",
     "expo": "~54.0.37",
