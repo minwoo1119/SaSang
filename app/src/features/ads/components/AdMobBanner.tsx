@@ -47,7 +47,18 @@ export function AdMobBanner({ fallback, size, style, unitId }: AdMobBannerProps)
   }
 
   const { BannerAd, BannerAdSize, TestIds } = googleMobileAds;
-  const resolvedUnitId = __DEV__ ? TestIds.ADAPTIVE_BANNER : unitId;
+  const testBannerId =
+    TestIds?.BANNER ||
+    (TestIds as Record<string, string> | undefined)?.ADAPTIVE_BANNER ||
+    "ca-app-pub-3940256099942544/6300978111";
+
+  const resolvedUnitId = __DEV__ ? testBannerId : unitId || testBannerId;
+  const resolvedSize =
+    BannerAdSize && BannerAdSize[size] ? BannerAdSize[size] : "BANNER";
+
+  if (!resolvedUnitId) {
+    return <>{fallback}</>;
+  }
 
   return (
     <View style={[styles.container, style]}>
@@ -59,7 +70,7 @@ export function AdMobBanner({ fallback, size, style, unitId }: AdMobBannerProps)
           setAdFailed(true);
         }}
         requestOptions={{ requestNonPersonalizedAdsOnly: true }}
-        size={BannerAdSize[size]}
+        size={resolvedSize}
         unitId={resolvedUnitId}
       />
     </View>
