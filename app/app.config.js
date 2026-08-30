@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-const { withDangerousMod } = require("@expo/config-plugins");
 
 const googleServicesPlist = "./GoogleService-Info.plist";
 const googleServicesJson = "./google-services.json";
@@ -15,37 +14,6 @@ function fileExists(relativePath) {
 }
 
 const hasFirebaseConfig = false;
-
-function withRNFirebaseDisableSPM(config) {
-  return withDangerousMod(config, [
-    "ios",
-    async (config) => {
-      const iosRoot = config.modRequest.platformProjectRoot;
-      const podfilePath = path.join(iosRoot, "Podfile");
-      if (fs.existsSync(podfilePath)) {
-        let content = fs.readFileSync(podfilePath, "utf8");
-        if (!content.includes("ENV['PATH']")) {
-          content =
-            `ENV['PATH'] = "/bin:/usr/bin:/usr/local/bin:/opt/homebrew/bin:\#{ENV['PATH']}"\n` +
-            content;
-          fs.writeFileSync(podfilePath, content, "utf8");
-        }
-      }
-
-      const xcodeEnvPath = path.join(iosRoot, ".xcode.env");
-      if (fs.existsSync(xcodeEnvPath)) {
-        let envContent = fs.readFileSync(xcodeEnvPath, "utf8");
-        if (!envContent.includes("export PATH=")) {
-          envContent =
-            `export PATH="/bin:/usr/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"\n` +
-            envContent;
-          fs.writeFileSync(xcodeEnvPath, envContent, "utf8");
-        }
-      }
-      return config;
-    },
-  ]);
-}
 
 module.exports = ({ config }) => {
   const baseConfig = {
@@ -133,7 +101,7 @@ module.exports = ({ config }) => {
   };
 
   return {
-    expo: withRNFirebaseDisableSPM(baseConfig),
+    expo: baseConfig,
     "react-native-google-mobile-ads": {
       android_app_id: admobAppIds.android,
       ios_app_id: admobAppIds.ios,
