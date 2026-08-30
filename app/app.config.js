@@ -14,8 +14,7 @@ function fileExists(relativePath) {
   return fs.existsSync(path.join(__dirname, relativePath));
 }
 
-const hasFirebaseConfig =
-  fileExists(googleServicesPlist) && fileExists(googleServicesJson);
+const hasFirebaseConfig = false;
 
 function withRNFirebaseDisableSPM(config) {
   return withDangerousMod(config, [
