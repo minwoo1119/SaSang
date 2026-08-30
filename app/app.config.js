@@ -25,33 +25,12 @@ function withRNFirebaseDisableSPM(config) {
       const podfilePath = path.join(iosRoot, "Podfile");
       if (fs.existsSync(podfilePath)) {
         let content = fs.readFileSync(podfilePath, "utf8");
-        if (!content.includes("CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES")) {
-          const postInstallSnippet = `
-    installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |config|
-        config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
-      end
-    end
-`;
-          if (content.includes("post_install do |installer|")) {
-            content = content.replace(
-              "post_install do |installer|",
-              "post_install do |installer|" + postInstallSnippet,
-            );
-          } else {
-            content += `\npost_install do |installer|${postInstallSnippet}end\n`;
-          }
-        }
-        if (!content.includes("use_modular_headers!")) {
-          content =
-            `ENV['PATH'] = "/bin:/usr/bin:/usr/local/bin:/opt/homebrew/bin:\#{ENV['PATH']}"\nuse_modular_headers!\n$RNFirebaseDisableSPM = true\n\n` +
-            content;
-        } else if (!content.includes("ENV['PATH']")) {
+        if (!content.includes("ENV['PATH']")) {
           content =
             `ENV['PATH'] = "/bin:/usr/bin:/usr/local/bin:/opt/homebrew/bin:\#{ENV['PATH']}"\n` +
             content;
+          fs.writeFileSync(podfilePath, content, "utf8");
         }
-        fs.writeFileSync(podfilePath, content, "utf8");
       }
 
       const xcodeEnvPath = path.join(iosRoot, ".xcode.env");
@@ -138,14 +117,6 @@ module.exports = ({ config }) => {
       ],
       "expo-font",
       "expo-web-browser",
-      [
-        "expo-build-properties",
-        {
-          ios: {
-            useFrameworks: "static",
-          },
-        },
-      ],
       [
         "expo-image-picker",
         {
