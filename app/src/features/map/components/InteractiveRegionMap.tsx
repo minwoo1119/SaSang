@@ -209,10 +209,12 @@ export function InteractiveRegionMap({
       const mapPoint = {
         x:
           centerX +
-          (basePoint.x - centerX - viewBoxTranslateX) / scale.value,
+          (basePoint.x - centerX) / scale.value -
+          viewBoxTranslateX,
         y:
           centerY +
-          (basePoint.y - centerY - viewBoxTranslateY) / scale.value,
+          (basePoint.y - centerY) / scale.value -
+          viewBoxTranslateY,
       };
 
       const match = regionPolygons.find(
@@ -284,9 +286,9 @@ export function InteractiveRegionMap({
   const animatedMapStyle = useAnimatedStyle(() => {
     return {
       transform: [
-        { scale: scale.value },
         { translateX: translateX.value },
         { translateY: translateY.value },
+        { scale: scale.value },
       ],
     };
   });
