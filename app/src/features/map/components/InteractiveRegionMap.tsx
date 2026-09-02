@@ -95,6 +95,8 @@ function getSvgFitScale(
   mapWidth: number,
   mapHeight: number,
 ) {
+  "worklet";
+
   const widthScale = viewportWidth / mapWidth;
   const heightScale = viewportHeight / mapHeight;
 
