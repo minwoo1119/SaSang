@@ -12,8 +12,8 @@ export function MapGlassSurface({ children, style }: MapGlassSurfaceProps) {
 
 const styles = StyleSheet.create({
   surface: {
-    backgroundColor: "rgba(255, 255, 255, 0.08)",
-    borderColor: "rgba(255, 255, 255, 0.36)",
+    backgroundColor: "rgba(255, 255, 255, 0.72)",
+    borderColor: "rgba(255, 255, 255, 0.82)",
     borderWidth: StyleSheet.hairlineWidth,
     overflow: "hidden",
     shadowColor: "#111827",
