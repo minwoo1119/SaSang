@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Svg, { G, Path, Rect } from "react-native-svg";
 import { MAP_ASSETS } from "../models/mapAssets";
@@ -400,7 +400,7 @@ export function InteractiveRegionMap({
         frame,
       );
       const matchedRegion =
-        mode === "korea"
+        mode === "korea" && Platform.OS === "android"
           ? findKoreaRegionFromTapArea(
               { x, y },
               currentViewBox,
