@@ -221,7 +221,6 @@ export function InteractiveRegionMap({
   });
   const viewBoxRef = useRef(viewBox);
   const startViewBoxRef = useRef(viewBox);
-  const viewportSizeRef = useRef(viewportSize);
 
   const updateViewBox = useCallback((nextViewBox: ViewBox) => {
     viewBoxRef.current = nextViewBox;
@@ -448,15 +447,6 @@ export function InteractiveRegionMap({
           height: nativeEvent.layout.height,
           width: nativeEvent.layout.width,
         };
-        const currentViewportSize = viewportSizeRef.current;
-        if (
-          currentViewportSize.height === nextViewportSize.height &&
-          currentViewportSize.width === nextViewportSize.width
-        ) {
-          return;
-        }
-
-        viewportSizeRef.current = nextViewportSize;
         setViewportSize(nextViewportSize);
         updateViewBox(
           getInitialViewBox(
