@@ -1,28 +1,19 @@
-import { GlassView } from "expo-glass-effect";
 import type { PropsWithChildren } from "react";
 import type { StyleProp, ViewStyle } from "react-native";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 type MapGlassSurfaceProps = PropsWithChildren<{
   style?: StyleProp<ViewStyle>;
 }>;
 
 export function MapGlassSurface({ children, style }: MapGlassSurfaceProps) {
-  return (
-    <GlassView
-      glassEffectStyle="regular"
-      style={[styles.surface, style]}
-      tintColor="#FFFFFF8C"
-    >
-      {children}
-    </GlassView>
-  );
+  return <View style={[styles.surface, style]}>{children}</View>;
 }
 
 const styles = StyleSheet.create({
   surface: {
-    backgroundColor: "rgba(255, 255, 255, 0.48)",
-    borderColor: "rgba(255, 255, 255, 0.82)",
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    borderColor: "rgba(255, 255, 255, 0.36)",
     borderWidth: StyleSheet.hairlineWidth,
     overflow: "hidden",
     shadowColor: "#111827",

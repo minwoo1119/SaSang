@@ -49,7 +49,7 @@ export function MapScreen() {
   ).length;
   const tabBarOffset = insets.bottom + 92;
   const mapTopOffset = insets.top + 130;
-  const mapBottomOffset = tabBarOffset + 76;
+  const mapBottomOffset = tabBarOffset + 104;
   const trimmedSearchQuery = searchQuery.trim().toLowerCase();
   const searchResults = useMemo(() => {
     if (trimmedSearchQuery.length === 0) return [];
@@ -405,12 +405,12 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     flexDirection: "row",
     gap: 11,
-    left: 12,
+    left: 24,
     minHeight: 64,
     paddingHorizontal: 10,
     paddingVertical: 9,
     position: "absolute",
-    right: 12,
+    right: 24,
   },
   regionCopy: { flex: 1, minWidth: 0 },
   regionMarker: {
