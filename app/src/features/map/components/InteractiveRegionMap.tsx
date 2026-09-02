@@ -14,8 +14,16 @@ const MAX_SCALE = 12;
 
 type Point = { x: number; y: number };
 type Polygon = Point[];
+type RegionPolygons = { polygons: Polygon[]; region: MapRegion };
 type ViewBox = { height: number; width: number; x: number; y: number };
 type ViewportSize = { height: number; width: number };
+type RenderedMapFrame = {
+  fittedScale: number;
+  offsetX: number;
+  offsetY: number;
+  renderedHeight: number;
+  renderedWidth: number;
+};
 
 function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(Math.max(value, minimum), maximum);
@@ -128,7 +136,10 @@ function getViewBoxForScale(
   );
 }
 
-function getRenderedMapFrame(viewBox: ViewBox, viewport: ViewportSize) {
+function getRenderedMapFrame(
+  viewBox: ViewBox,
+  viewport: ViewportSize,
+): RenderedMapFrame | null {
   if (viewport.width <= 0 || viewport.height <= 0) return null;
 
   const fittedScale = Math.min(
@@ -204,6 +215,77 @@ function isInsideBounds(region: MapRegion, point: Point) {
     point.y >= region.bounds.y &&
     point.y <= region.bounds.y + region.bounds.height
   );
+}
+
+function findRegionAtPoint(
+  point: Point,
+  regionPolygons: readonly RegionPolygons[],
+) {
+  return regionPolygons.find(
+    ({ polygons, region }) =>
+      isInsideBounds(region, point) &&
+      polygons.some((polygon) => containsPoint(polygon, point)),
+  );
+}
+
+function getMapPointFromScreenPoint(
+  point: Point,
+  viewBox: ViewBox,
+  frame: RenderedMapFrame,
+) {
+  return {
+    x: viewBox.x + (point.x - frame.offsetX) / frame.fittedScale,
+    y: viewBox.y + (point.y - frame.offsetY) / frame.fittedScale,
+  };
+}
+
+function getKoreaTapSampleOffsets() {
+  return [
+    { weight: 5, x: 0, y: 0 },
+    { weight: 2, x: 5, y: 0 },
+    { weight: 2, x: -5, y: 0 },
+    { weight: 2, x: 0, y: 5 },
+    { weight: 2, x: 0, y: -5 },
+    { weight: 1, x: 8, y: 8 },
+    { weight: 1, x: 8, y: -8 },
+    { weight: 1, x: -8, y: 8 },
+    { weight: 1, x: -8, y: -8 },
+  ] as const;
+}
+
+function findKoreaRegionFromTapArea(
+  point: Point,
+  viewBox: ViewBox,
+  frame: RenderedMapFrame,
+  regionPolygons: readonly RegionPolygons[],
+) {
+  const scores = new Map<string, { region: MapRegion; score: number }>();
+
+  for (const offset of getKoreaTapSampleOffsets()) {
+    const mapPoint = getMapPointFromScreenPoint(
+      { x: point.x + offset.x, y: point.y + offset.y },
+      viewBox,
+      frame,
+    );
+    const match = findRegionAtPoint(mapPoint, regionPolygons);
+
+    if (!match) continue;
+
+    const current = scores.get(match.region.code);
+    scores.set(match.region.code, {
+      region: match.region,
+      score: (current?.score ?? 0) + offset.weight,
+    });
+  }
+
+  let bestMatch: { region: MapRegion; score: number } | undefined;
+  for (const match of scores.values()) {
+    if (!bestMatch || match.score > bestMatch.score) {
+      bestMatch = match;
+    }
+  }
+
+  return bestMatch?.region;
 }
 
 type InteractiveRegionMapProps = {
@@ -312,20 +394,24 @@ export function InteractiveRegionMap({
         return;
       }
 
-      const mapPoint = {
-        x: currentViewBox.x + contentX / frame.fittedScale,
-        y: currentViewBox.y + contentY / frame.fittedScale,
-      };
-
-      const match = regionPolygons.find(
-        ({ polygons, region }) =>
-          isInsideBounds(region, mapPoint) &&
-          polygons.some((polygon) => containsPoint(polygon, mapPoint)),
+      const mapPoint = getMapPointFromScreenPoint(
+        { x, y },
+        currentViewBox,
+        frame,
       );
+      const matchedRegion =
+        mode === "korea"
+          ? findKoreaRegionFromTapArea(
+              { x, y },
+              currentViewBox,
+              frame,
+              regionPolygons,
+            )
+          : findRegionAtPoint(mapPoint, regionPolygons)?.region;
 
-      selectRegion(match?.region.code ?? null);
+      selectRegion(matchedRegion?.code ?? null);
     },
-    [regionPolygons, selectRegion],
+    [mode, regionPolygons, selectRegion],
   );
 
   const panGesture = Gesture.Pan()
