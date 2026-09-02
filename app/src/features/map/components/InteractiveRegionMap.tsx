@@ -17,14 +17,6 @@ type Polygon = Point[];
 type RegionPolygons = { polygons: Polygon[]; region: MapRegion };
 type ViewBox = { height: number; width: number; x: number; y: number };
 type ViewportSize = { height: number; width: number };
-type ViewportFrame = ViewportSize & { pageX: number; pageY: number };
-type RenderedMapFrame = {
-  fittedScale: number;
-  offsetX: number;
-  offsetY: number;
-  renderedHeight: number;
-  renderedWidth: number;
-};
 
 function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(Math.max(value, minimum), maximum);
@@ -49,14 +41,39 @@ function getRegionCenter(region: MapRegion | undefined, fallback: ViewBox) {
 }
 
 function clampViewBox(viewBox: ViewBox, mapWidth: number, mapHeight: number) {
-  const width = Math.min(viewBox.width, mapWidth);
-  const height = Math.min(viewBox.height, mapHeight);
+  const width = viewBox.width;
+  const height = viewBox.height;
+  const minX = width >= mapWidth ? (mapWidth - width) / 2 : 0;
+  const maxX = width >= mapWidth ? minX : mapWidth - width;
+  const minY = height >= mapHeight ? (mapHeight - height) / 2 : 0;
+  const maxY = height >= mapHeight ? minY : mapHeight - height;
 
   return {
     height,
     width,
-    x: clamp(viewBox.x, 0, mapWidth - width),
-    y: clamp(viewBox.y, 0, mapHeight - height),
+    x: clamp(viewBox.x, minX, maxX),
+    y: clamp(viewBox.y, minY, maxY),
+  };
+}
+
+function expandViewBoxToAspect(viewBox: ViewBox, aspectRatio: number) {
+  const currentAspectRatio = viewBox.width / viewBox.height;
+  if (!Number.isFinite(aspectRatio) || aspectRatio <= 0) return viewBox;
+
+  if (currentAspectRatio < aspectRatio) {
+    const width = viewBox.height * aspectRatio;
+    return {
+      ...viewBox,
+      width,
+      x: viewBox.x - (width - viewBox.width) / 2,
+    };
+  }
+
+  const height = viewBox.width / aspectRatio;
+  return {
+    ...viewBox,
+    height,
+    y: viewBox.y - (height - viewBox.height) / 2,
   };
 }
 
@@ -69,7 +86,6 @@ function getInitialViewBox(
 ) {
   const fullViewBox = getFullViewBox(mapWidth, mapHeight);
   if (
-    mode !== "world" ||
     viewport.width <= 0 ||
     viewport.height <= 0 ||
     mapWidth <= 0 ||
@@ -79,6 +95,14 @@ function getInitialViewBox(
   }
 
   const viewportRatio = viewport.width / viewport.height;
+  if (mode !== "world") {
+    return clampViewBox(
+      expandViewBoxToAspect(fullViewBox, viewportRatio),
+      mapWidth,
+      mapHeight,
+    );
+  }
+
   const mapRatio = mapWidth / mapHeight;
   const center = getRegionCenter(initialRegion, fullViewBox);
 
@@ -135,28 +159,6 @@ function getViewBoxForScale(
     mapWidth,
     mapHeight,
   );
-}
-
-function getRenderedMapFrame(
-  viewBox: ViewBox,
-  viewport: ViewportSize,
-): RenderedMapFrame | null {
-  if (viewport.width <= 0 || viewport.height <= 0) return null;
-
-  const fittedScale = Math.min(
-    viewport.width / viewBox.width,
-    viewport.height / viewBox.height,
-  );
-  const renderedWidth = viewBox.width * fittedScale;
-  const renderedHeight = viewBox.height * fittedScale;
-
-  return {
-    fittedScale,
-    offsetX: (viewport.width - renderedWidth) / 2,
-    offsetY: (viewport.height - renderedHeight) / 2,
-    renderedHeight,
-    renderedWidth,
-  };
 }
 
 function parsePathPolygons(path: string): Polygon[] {
@@ -232,11 +234,11 @@ function findRegionAtPoint(
 function getMapPointFromScreenPoint(
   point: Point,
   viewBox: ViewBox,
-  frame: RenderedMapFrame,
+  viewport: ViewportSize,
 ) {
   return {
-    x: viewBox.x + (point.x - frame.offsetX) / frame.fittedScale,
-    y: viewBox.y + (point.y - frame.offsetY) / frame.fittedScale,
+    x: viewBox.x + (point.x / viewport.width) * viewBox.width,
+    y: viewBox.y + (point.y / viewport.height) * viewBox.height,
   };
 }
 
@@ -257,7 +259,7 @@ function getKoreaTapSampleOffsets() {
 function findKoreaRegionFromTapArea(
   point: Point,
   viewBox: ViewBox,
-  frame: RenderedMapFrame,
+  viewport: ViewportSize,
   regionPolygons: readonly RegionPolygons[],
 ) {
   const scores = new Map<string, { region: MapRegion; score: number }>();
@@ -266,7 +268,7 @@ function findKoreaRegionFromTapArea(
     const mapPoint = getMapPointFromScreenPoint(
       { x: point.x + offset.x, y: point.y + offset.y },
       viewBox,
-      frame,
+      viewport,
     );
     const match = findRegionAtPoint(mapPoint, regionPolygons);
 
@@ -301,7 +303,6 @@ export function InteractiveRegionMap({
   zoomControlsBottom = 24,
 }: InteractiveRegionMapProps) {
   const map = MAP_ASSETS[mode];
-  const containerRef = useRef<View>(null);
   const selectedRegionCode = useMapUiStore((state) => state.selectedRegionCode);
   const selectRegion = useMapUiStore((state) => state.selectRegion);
   const regionPhotos = useMapUiStore((state) => state.regionPhotos);
@@ -313,12 +314,6 @@ export function InteractiveRegionMap({
     getFullViewBox(map.viewBox.width, map.viewBox.height),
   );
   const viewportSizeRef = useRef(viewportSize);
-  const viewportFrameRef = useRef<ViewportFrame>({
-    height: 0,
-    pageX: 0,
-    pageY: 0,
-    width: 0,
-  });
   const viewBoxRef = useRef(viewBox);
   const startViewBoxRef = useRef(viewBox);
 
@@ -372,23 +367,6 @@ export function InteractiveRegionMap({
     setViewBox(nextViewBox);
   }, []);
 
-  const syncViewportFrame = useCallback((nextViewportSize: ViewportSize) => {
-    viewportSizeRef.current = nextViewportSize;
-    viewportFrameRef.current = {
-      ...viewportFrameRef.current,
-      ...nextViewportSize,
-    };
-
-    containerRef.current?.measureInWindow((pageX, pageY, width, height) => {
-      viewportFrameRef.current = {
-        height: height || nextViewportSize.height,
-        pageX,
-        pageY,
-        width: width || nextViewportSize.width,
-      };
-    });
-  }, []);
-
   const resetViewport = useCallback(() => {
     updateViewBox(initialViewBox);
   }, [initialViewBox, updateViewBox]);
@@ -398,44 +376,32 @@ export function InteractiveRegionMap({
   }, [initialViewBox, updateViewBox]);
 
   const handleMapTap = useCallback(
-    (absoluteX: number, absoluteY: number) => {
-      const viewportFrame = viewportFrameRef.current;
-      const x = absoluteX - viewportFrame.pageX;
-      const y = absoluteY - viewportFrame.pageY;
-      const currentViewBox = viewBoxRef.current;
-      const frame = getRenderedMapFrame(
-        currentViewBox,
-        {
-          height: viewportFrame.height,
-          width: viewportFrame.width,
-        },
-      );
-      if (!frame) return;
-
-      const contentX = x - frame.offsetX;
-      const contentY = y - frame.offsetY;
-
+    (x: number, y: number) => {
+      const viewport = viewportSizeRef.current;
       if (
-        contentX < 0 ||
-        contentX > frame.renderedWidth ||
-        contentY < 0 ||
-        contentY > frame.renderedHeight
+        viewport.width <= 0 ||
+        viewport.height <= 0 ||
+        x < 0 ||
+        x > viewport.width ||
+        y < 0 ||
+        y > viewport.height
       ) {
         selectRegion(null);
         return;
       }
 
+      const currentViewBox = viewBoxRef.current;
       const mapPoint = getMapPointFromScreenPoint(
         { x, y },
         currentViewBox,
-        frame,
+        viewport,
       );
       const matchedRegion =
         mode === "korea" && Platform.OS === "android"
           ? findKoreaRegionFromTapArea(
               { x, y },
               currentViewBox,
-              frame,
+              viewport,
               regionPolygons,
             )
           : findRegionAtPoint(mapPoint, regionPolygons)?.region;
@@ -453,15 +419,19 @@ export function InteractiveRegionMap({
     })
     .onUpdate((event) => {
       const startViewBox = startViewBoxRef.current;
-      const frame = getRenderedMapFrame(startViewBox, viewportSizeRef.current);
-      if (!frame) return;
+      const viewport = viewportSizeRef.current;
+      if (viewport.width <= 0 || viewport.height <= 0) return;
 
       updateViewBox(
         clampViewBox(
           {
             ...startViewBox,
-            x: startViewBox.x - event.translationX / frame.fittedScale,
-            y: startViewBox.y - event.translationY / frame.fittedScale,
+            x:
+              startViewBox.x -
+              (event.translationX / viewport.width) * startViewBox.width,
+            y:
+              startViewBox.y -
+              (event.translationY / viewport.height) * startViewBox.height,
           },
           map.viewBox.width,
           map.viewBox.height,
@@ -498,7 +468,7 @@ export function InteractiveRegionMap({
     .runOnJS(true)
     .onEnd((event, success) => {
       if (success) {
-        handleMapTap(event.absoluteX, event.absoluteY);
+        handleMapTap(event.x, event.y);
       }
     });
   const mapGesture = Gesture.Simultaneous(panGesture, pinchGesture, tapGesture);
@@ -530,7 +500,6 @@ export function InteractiveRegionMap({
 
   return (
     <View
-      ref={containerRef}
       onLayout={({ nativeEvent }) => {
         const nextViewportSize = {
           height: nativeEvent.layout.height,
@@ -544,7 +513,7 @@ export function InteractiveRegionMap({
           return;
         }
 
-        syncViewportFrame(nextViewportSize);
+        viewportSizeRef.current = nextViewportSize;
         setViewportSize(nextViewportSize);
       }}
       style={styles.container}
@@ -556,7 +525,7 @@ export function InteractiveRegionMap({
               mode === "korea" ? "대한민국 시군구 지도" : "세계 국가 지도"
             }
             height="100%"
-            preserveAspectRatio="xMidYMid meet"
+            preserveAspectRatio="none"
             viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
             width="100%"
           >
