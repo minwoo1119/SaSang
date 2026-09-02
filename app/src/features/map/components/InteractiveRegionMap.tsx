@@ -124,6 +124,8 @@ export function InteractiveRegionMap({
   );
   const startViewBoxRef = useRef(viewBox);
   const viewBoxRef = useRef(viewBox);
+  const mapContainerRef = useRef<View>(null);
+  const mapOriginRef = useRef({ x: 0, y: 0 });
 
   const updateViewBox = useCallback((nextViewBox: ViewBox) => {
     viewBoxRef.current = nextViewBox;
@@ -193,6 +195,17 @@ export function InteractiveRegionMap({
     [map.viewBox.height, map.viewBox.width, updateViewBox, viewportSize],
   );
 
+  const updateMapLayout = useCallback(
+    (size: ViewportSize) => {
+      setViewportSize(size);
+      setInitialViewport(mode, size);
+      mapContainerRef.current?.measureInWindow((x, y) => {
+        mapOriginRef.current = { x, y };
+      });
+    },
+    [mode, setInitialViewport],
+  );
+
   const resetViewport = useCallback(() => {
     updateViewBox(getFullViewBox(map.viewBox.width, map.viewBox.height));
   }, [map.viewBox.height, map.viewBox.width, updateViewBox]);
@@ -202,10 +215,12 @@ export function InteractiveRegionMap({
   }, [mode, setInitialViewport]);
 
   const handleMapTap = useCallback(
-    (x: number, y: number) => {
+    (absoluteX: number, absoluteY: number) => {
       const { height, width } = viewportSize;
       if (width <= 0 || height <= 0) return;
 
+      const x = absoluteX - mapOriginRef.current.x;
+      const y = absoluteY - mapOriginRef.current.y;
       const currentViewBox = viewBoxRef.current;
       const fittedScale = Math.min(
         width / currentViewBox.width,
@@ -311,7 +326,7 @@ export function InteractiveRegionMap({
     .maxDistance(8)
     .onEnd((event, success) => {
       if (success) {
-        handleMapTap(event.x, event.y);
+        handleMapTap(event.absoluteX, event.absoluteY);
       }
     });
   const mapGesture = Gesture.Simultaneous(panGesture, pinchGesture, tapGesture);
@@ -350,13 +365,12 @@ export function InteractiveRegionMap({
 
   return (
     <View
+      ref={mapContainerRef}
       onLayout={({ nativeEvent }) => {
-        const nextViewportSize = {
+        updateMapLayout({
           height: nativeEvent.layout.height,
           width: nativeEvent.layout.width,
-        };
-        setViewportSize(nextViewportSize);
-        setInitialViewport(mode, nextViewportSize);
+        });
       }}
       style={styles.container}
     >
