@@ -185,10 +185,12 @@ export function MapScreen() {
         />
       </View>
 
-      <View
-        pointerEvents="box-none"
-        style={[styles.topOverlay, { top: insets.top + 16 }]}
-      >
+      <View style={[styles.topOverlay, { top: insets.top + 16 }]}>
+        <Pressable
+          accessibilityLabel="검색 영역 배경"
+          onPress={Keyboard.dismiss}
+          style={StyleSheet.absoluteFill}
+        />
         <View style={styles.headerRow}>
           <View style={styles.brandBlock}>
             <Image
