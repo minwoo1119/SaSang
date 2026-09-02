@@ -293,12 +293,14 @@ function findKoreaRegionFromTapArea(
 
 type InteractiveRegionMapProps = {
   mode: MapMode;
+  onMapInteraction?: () => void;
   visitedRegionCodes?: ReadonlySet<string>;
   zoomControlsBottom?: number;
 };
 
 export function InteractiveRegionMap({
   mode,
+  onMapInteraction,
   visitedRegionCodes = new Set(),
   zoomControlsBottom = 24,
 }: InteractiveRegionMapProps) {
@@ -377,6 +379,7 @@ export function InteractiveRegionMap({
 
   const handleMapTap = useCallback(
     (x: number, y: number) => {
+      onMapInteraction?.();
       const viewport = viewportSizeRef.current;
       if (
         viewport.width <= 0 ||
@@ -408,13 +411,14 @@ export function InteractiveRegionMap({
 
       selectRegion(matchedRegion?.code ?? null);
     },
-    [mode, regionPolygons, selectRegion],
+    [mode, onMapInteraction, regionPolygons, selectRegion],
   );
 
   const panGesture = Gesture.Pan()
     .minDistance(5)
     .runOnJS(true)
     .onBegin(() => {
+      onMapInteraction?.();
       startViewBoxRef.current = viewBoxRef.current;
     })
     .onUpdate((event) => {
@@ -442,6 +446,7 @@ export function InteractiveRegionMap({
   const pinchGesture = Gesture.Pinch()
     .runOnJS(true)
     .onBegin(() => {
+      onMapInteraction?.();
       startViewBoxRef.current = viewBoxRef.current;
     })
     .onUpdate((event) => {

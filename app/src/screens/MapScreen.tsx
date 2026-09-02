@@ -86,6 +86,7 @@ export function MapScreen() {
   };
 
   const handleSearchSubmit = () => {
+    Keyboard.dismiss();
     const [firstResult] = searchResults;
     if (!firstResult) return;
     handleSearchResultPress(firstResult.code, firstResult.name);
@@ -163,6 +164,11 @@ export function MapScreen() {
     void trackEvent("ad_placeholder_closed");
   };
 
+  const handleModeChange = (nextMode: typeof mode) => {
+    Keyboard.dismiss();
+    setMode(nextMode);
+  };
+
   return (
     <View style={styles.container}>
       <View
@@ -171,7 +177,11 @@ export function MapScreen() {
           { bottom: mapBottomOffset, top: mapTopOffset },
         ]}
       >
-        <InteractiveRegionMap mode={mode} zoomControlsBottom={12} />
+        <InteractiveRegionMap
+          mode={mode}
+          onMapInteraction={Keyboard.dismiss}
+          zoomControlsBottom={12}
+        />
       </View>
 
       <View
@@ -187,7 +197,7 @@ export function MapScreen() {
             />
             <Text style={styles.recordCount}>{photoCount}개의 여행 기록</Text>
           </View>
-          <MapModeTabs onChange={setMode} value={mode} />
+          <MapModeTabs onChange={handleModeChange} value={mode} />
         </View>
         <MapGlassSurface style={styles.searchBar}>
           <TextInput
