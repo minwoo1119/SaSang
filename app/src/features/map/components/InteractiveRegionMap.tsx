@@ -284,9 +284,9 @@ export function InteractiveRegionMap({
   const animatedMapStyle = useAnimatedStyle(() => {
     return {
       transform: [
+        { scale: scale.value },
         { translateX: translateX.value },
         { translateY: translateY.value },
-        { scale: scale.value },
       ],
     };
   });
