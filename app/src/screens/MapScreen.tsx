@@ -48,6 +48,8 @@ export function MapScreen() {
     ({ code }) => regionPhotos[getRegionPhotoKey(mode, code)],
   ).length;
   const tabBarOffset = insets.bottom + 92;
+  const mapTopOffset = insets.top + 130;
+  const mapBottomOffset = tabBarOffset + 76;
   const trimmedSearchQuery = searchQuery.trim().toLowerCase();
   const searchResults = useMemo(() => {
     if (trimmedSearchQuery.length === 0) return [];
@@ -163,11 +165,13 @@ export function MapScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.mapViewport}>
-        <InteractiveRegionMap
-          mode={mode}
-          zoomControlsBottom={tabBarOffset + 78}
-        />
+      <View
+        style={[
+          styles.mapViewport,
+          { bottom: mapBottomOffset, top: mapTopOffset },
+        ]}
+      >
+        <InteractiveRegionMap mode={mode} zoomControlsBottom={12} />
       </View>
 
       <View
@@ -363,7 +367,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  mapViewport: StyleSheet.absoluteFillObject,
+  mapViewport: {
+    left: 0,
+    position: "absolute",
+    right: 0,
+  },
   photoButton: {
     alignItems: "center",
     backgroundColor: "#007AFF",

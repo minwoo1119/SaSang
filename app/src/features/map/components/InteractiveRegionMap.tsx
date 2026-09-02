@@ -10,7 +10,7 @@ import { RegionPath } from "./RegionPath";
 import { RegionPhotoLayer } from "./RegionPhotoLayer";
 
 const WORLD_INITIAL_REGION_CODE = "KR";
-const MAX_SCALE = 5;
+const MAX_SCALE = 12;
 
 type Point = { x: number; y: number };
 type Polygon = Point[];
