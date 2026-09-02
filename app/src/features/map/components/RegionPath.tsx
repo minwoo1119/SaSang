@@ -4,7 +4,6 @@ import type { MapMode, MapRegion } from "../models/map.types";
 
 type RegionPathProps = {
   mode: MapMode;
-  onPress: (region: MapRegion) => void;
   photoFilled: boolean;
   region: MapRegion;
   selected: boolean;
@@ -13,7 +12,6 @@ type RegionPathProps = {
 
 export const RegionPath = memo(function RegionPath({
   mode,
-  onPress,
   photoFilled,
   region,
   selected,
@@ -50,7 +48,7 @@ export const RegionPath = memo(function RegionPath({
               ? "#F8FAFC"
               : "#FFFFFF"
       }
-      onPress={() => onPress(region)}
+      pointerEvents="none"
       stroke={strokeColor}
       strokeLinejoin="round"
       strokeWidth={strokeWidth}

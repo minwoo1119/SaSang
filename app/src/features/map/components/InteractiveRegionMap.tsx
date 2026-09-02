@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Easing,
+  runOnJS,
   useAnimatedProps,
   useSharedValue,
   withTiming,
@@ -20,9 +21,71 @@ const MAX_SCALE = 5;
 const SMOOTH_CONFIG = { duration: 160, easing: Easing.out(Easing.quad) };
 const AnimatedG = Animated.createAnimatedComponent(G);
 
+type Point = { x: number; y: number };
+type Polygon = Point[];
+
 function clamp(value: number, minimum: number, maximum: number) {
   "worklet";
   return Math.min(Math.max(value, minimum), maximum);
+}
+
+function parsePathPolygons(path: string): Polygon[] {
+  const tokens = path.match(/[MLZ]|-?\d+(?:\.\d+)?/g) ?? [];
+  const polygons: Polygon[] = [];
+  let current: Polygon = [];
+  let index = 0;
+
+  while (index < tokens.length) {
+    const token = tokens[index++];
+
+    if (token === "M" || token === "L") {
+      const x = Number(tokens[index++]);
+      const y = Number(tokens[index++]);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+
+      if (token === "M" && current.length > 0) {
+        polygons.push(current);
+        current = [];
+      }
+      current.push({ x, y });
+    } else if (token === "Z" && current.length > 0) {
+      polygons.push(current);
+      current = [];
+    }
+  }
+
+  if (current.length > 0) {
+    polygons.push(current);
+  }
+
+  return polygons.filter((polygon) => polygon.length >= 3);
+}
+
+function containsPoint(polygon: Polygon, point: Point) {
+  let inside = false;
+
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const pi = polygon[i];
+    const pj = polygon[j];
+    const crosses =
+      pi.y > point.y !== pj.y > point.y &&
+      point.x < ((pj.x - pi.x) * (point.y - pi.y)) / (pj.y - pi.y) + pi.x;
+
+    if (crosses) {
+      inside = !inside;
+    }
+  }
+
+  return inside;
+}
+
+function isInsideBounds(region: MapRegion, point: Point) {
+  return (
+    point.x >= region.bounds.x &&
+    point.x <= region.bounds.x + region.bounds.width &&
+    point.y >= region.bounds.y &&
+    point.y <= region.bounds.y + region.bounds.height
+  );
 }
 
 type InteractiveRegionMapProps = {
@@ -48,6 +111,7 @@ export function InteractiveRegionMap({
   const startY = useSharedValue(0);
   const viewportWidth = useSharedValue(0);
   const viewportHeight = useSharedValue(0);
+  const [viewportSize, setViewportSize] = useState({ height: 0, width: 0 });
 
   const photoRegionCodes = useMemo(
     () =>
@@ -63,6 +127,14 @@ export function InteractiveRegionMap({
   const selectedRegion = useMemo(
     () => map.regions.find(({ code }) => code === selectedRegionCode),
     [map.regions, selectedRegionCode],
+  );
+  const regionPolygons = useMemo(
+    () =>
+      map.regions.map((region) => ({
+        polygons: parsePathPolygons(region.path),
+        region,
+      })),
+    [map.regions],
   );
 
   const setInitialViewport = useCallback(
@@ -103,9 +175,65 @@ export function InteractiveRegionMap({
     setInitialViewport(mode, true);
   }, [mode, setInitialViewport]);
 
-  const handlePress = useCallback(
-    (region: MapRegion) => selectRegion(region.code),
-    [selectRegion],
+  const handleMapTap = useCallback(
+    (x: number, y: number) => {
+      const { height, width } = viewportSize;
+      if (width <= 0 || height <= 0) return;
+
+      const fittedScale = Math.min(
+        width / map.viewBox.width,
+        height / map.viewBox.height,
+      );
+      const renderedWidth = map.viewBox.width * fittedScale;
+      const renderedHeight = map.viewBox.height * fittedScale;
+      const contentX = x - (width - renderedWidth) / 2;
+      const contentY = y - (height - renderedHeight) / 2;
+
+      if (
+        contentX < 0 ||
+        contentX > renderedWidth ||
+        contentY < 0 ||
+        contentY > renderedHeight
+      ) {
+        selectRegion(null);
+        return;
+      }
+
+      const centerX = map.viewBox.width / 2;
+      const centerY = map.viewBox.height / 2;
+      const viewBoxTranslateX = translateX.value / fittedScale;
+      const viewBoxTranslateY = translateY.value / fittedScale;
+      const basePoint = {
+        x: contentX / fittedScale,
+        y: contentY / fittedScale,
+      };
+      const mapPoint = {
+        x:
+          centerX +
+          (basePoint.x - centerX - viewBoxTranslateX) / scale.value,
+        y:
+          centerY +
+          (basePoint.y - centerY - viewBoxTranslateY) / scale.value,
+      };
+
+      const match = regionPolygons.find(
+        ({ polygons, region }) =>
+          isInsideBounds(region, mapPoint) &&
+          polygons.some((polygon) => containsPoint(polygon, mapPoint)),
+      );
+
+      selectRegion(match?.region.code ?? null);
+    },
+    [
+      map.viewBox.height,
+      map.viewBox.width,
+      regionPolygons,
+      scale,
+      selectRegion,
+      translateX,
+      translateY,
+      viewportSize,
+    ],
   );
 
   const panGesture = Gesture.Pan()
@@ -146,7 +274,14 @@ export function InteractiveRegionMap({
       }
     });
 
-  const mapGesture = Gesture.Simultaneous(panGesture, pinchGesture);
+  const tapGesture = Gesture.Tap()
+    .maxDistance(8)
+    .onEnd((event, success) => {
+      if (success) {
+        runOnJS(handleMapTap)(event.x, event.y);
+      }
+    });
+  const mapGesture = Gesture.Simultaneous(panGesture, pinchGesture, tapGesture);
   const animatedMapProps = useAnimatedProps(() => {
     const fittedScale = Math.min(
       viewportWidth.value / map.viewBox.width || 1,
@@ -199,6 +334,10 @@ export function InteractiveRegionMap({
         const isFirst = viewportWidth.value === 0;
         viewportWidth.value = nativeEvent.layout.width;
         viewportHeight.value = nativeEvent.layout.height;
+        setViewportSize({
+          height: nativeEvent.layout.height,
+          width: nativeEvent.layout.width,
+        });
         if (isFirst) {
           setInitialViewport(mode);
         }
@@ -220,7 +359,7 @@ export function InteractiveRegionMap({
               <Rect
                 fill="transparent"
                 height={map.viewBox.height}
-                onPress={() => selectRegion(null)}
+                pointerEvents="none"
                 width={map.viewBox.width}
                 x={0}
                 y={0}
@@ -236,7 +375,6 @@ export function InteractiveRegionMap({
                   <RegionPath
                     key={region.code}
                     mode={mode}
-                    onPress={handlePress}
                     photoFilled={photoFilled}
                     region={region}
                     selected={selectedRegionCode === region.code}
