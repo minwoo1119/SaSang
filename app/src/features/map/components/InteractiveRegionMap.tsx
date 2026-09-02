@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ComponentType } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -9,6 +10,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { G, Path, Rect } from "react-native-svg";
+import type { GProps } from "react-native-svg";
 import { MAP_ASSETS } from "../models/mapAssets";
 import type { MapMode, MapRegion } from "../models/map.types";
 import { getRegionPhotoKey, useMapUiStore } from "../store/mapUi.store";
@@ -19,7 +21,11 @@ import { RegionPhotoLayer } from "./RegionPhotoLayer";
 const MIN_SCALE = 0.85;
 const MAX_SCALE = 5;
 const SMOOTH_CONFIG = { duration: 160, easing: Easing.out(Easing.quad) };
-const AnimatedG = Animated.createAnimatedComponent(G);
+type SvgMatrix = [number, number, number, number, number, number];
+type MatrixGProps = GProps & { matrix?: SvgMatrix };
+const AnimatedG = Animated.createAnimatedComponent(
+  G as ComponentType<MatrixGProps>,
+);
 
 type Point = { x: number; y: number };
 type Polygon = Point[];
@@ -284,7 +290,7 @@ export function InteractiveRegionMap({
     const viewBoxTranslateY = translateY.value / fittedScale;
     const offsetX = centerX * (1 - scale.value) + viewBoxTranslateX;
     const offsetY = centerY * (1 - scale.value) + viewBoxTranslateY;
-    const transform: [number, number, number, number, number, number] = [
+    const matrix: SvgMatrix = [
       scale.value,
       0,
       0,
@@ -294,7 +300,7 @@ export function InteractiveRegionMap({
     ];
 
     return {
-      transform,
+      matrix,
     };
   });
 
