@@ -282,15 +282,19 @@ export function InteractiveRegionMap({
     const centerY = map.viewBox.height / 2;
     const viewBoxTranslateX = translateX.value / fittedScale;
     const viewBoxTranslateY = translateY.value / fittedScale;
+    const offsetX = centerX * (1 - scale.value) + viewBoxTranslateX;
+    const offsetY = centerY * (1 - scale.value) + viewBoxTranslateY;
+    const transform: [number, number, number, number, number, number] = [
+      scale.value,
+      0,
+      0,
+      scale.value,
+      offsetX,
+      offsetY,
+    ];
 
     return {
-      transform: [
-        { translateX: centerX + viewBoxTranslateX },
-        { translateY: centerY + viewBoxTranslateY },
-        { scale: scale.value },
-        { translateX: -centerX },
-        { translateY: -centerY },
-      ],
+      transform,
     };
   });
 
