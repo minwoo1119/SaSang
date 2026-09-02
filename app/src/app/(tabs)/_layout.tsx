@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
 import { SymbolView } from "expo-symbols";
+import { Images, Map, MoreHorizontal } from "lucide-react-native";
 import type { ComponentProps } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -85,7 +86,10 @@ function TabIcon({
   name: TabMeta["symbol"];
 }) {
   if (Platform.OS === "android") {
-    return <Text style={[styles.fallbackIcon, { color }]}>{fallback}</Text>;
+    const Icon =
+      name === "map" ? Map : name === "photo.stack" ? Images : MoreHorizontal;
+
+    return <Icon color={color} size={23} strokeWidth={2.35} />;
   }
 
   return (
