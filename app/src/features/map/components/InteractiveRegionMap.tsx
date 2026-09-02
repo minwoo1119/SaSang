@@ -139,18 +139,9 @@ export function InteractiveRegionMap({
 
   const setInitialViewport = useCallback(
     (targetMode: MapMode, animate = true) => {
-      const w = viewportWidth.value || 360;
-      const h = viewportHeight.value || 600;
-
       let targetScale = 1;
       let targetX = 0;
       let targetY = 0;
-
-      if (targetMode === "world") {
-        targetScale = 3.4;
-        targetX = -w * 1.17;
-        targetY = h * 0.21;
-      }
 
       if (animate) {
         scale.value = withTiming(targetScale, SMOOTH_CONFIG);
@@ -162,7 +153,7 @@ export function InteractiveRegionMap({
         translateY.value = targetY;
       }
     },
-    [scale, translateX, translateY, viewportWidth, viewportHeight],
+    [scale, translateX, translateY],
   );
 
   const resetViewport = useCallback(() => {
