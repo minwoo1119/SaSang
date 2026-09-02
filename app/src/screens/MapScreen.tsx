@@ -402,7 +402,10 @@ const styles = StyleSheet.create({
   regionCode: { color: "#71717A", fontSize: 11, marginTop: 2 },
   regionControl: {
     alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.96)",
+    borderColor: "rgba(0, 0, 0, 0.08)",
     borderRadius: 30,
+    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
     gap: 11,
     left: 24,
@@ -429,7 +432,10 @@ const styles = StyleSheet.create({
   removeText: { color: "#71717A", fontSize: 12, fontWeight: "600" },
   selectionHint: {
     alignSelf: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.96)",
+    borderColor: "rgba(0, 0, 0, 0.08)",
     borderRadius: 22,
+    borderWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 17,
     paddingVertical: 12,
     position: "absolute",
