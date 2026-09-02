@@ -10,6 +10,7 @@ import { RegionPath } from "./RegionPath";
 import { RegionPhotoLayer } from "./RegionPhotoLayer";
 
 const WORLD_INITIAL_REGION_CODE = "KR";
+const WORLD_INITIAL_ZOOM_OUT = 1.18;
 const MAX_SCALE = 12;
 
 type Point = { x: number; y: number };
@@ -74,6 +75,18 @@ function expandViewBoxToAspect(viewBox: ViewBox, aspectRatio: number) {
   return {
     ...viewBox,
     height,
+    y: viewBox.y - (height - viewBox.height) / 2,
+  };
+}
+
+function scaleViewBoxFromCenter(viewBox: ViewBox, scale: number) {
+  const width = viewBox.width * scale;
+  const height = viewBox.height * scale;
+
+  return {
+    height,
+    width,
+    x: viewBox.x - (width - viewBox.width) / 2,
     y: viewBox.y - (height - viewBox.height) / 2,
   };
 }
@@ -174,12 +187,15 @@ function getInitialViewBox(
   if (viewportRatio < mapRatio) {
     const width = mapHeight * viewportRatio;
     const viewBox = clampViewBox(
-      {
-        height: mapHeight,
-        width,
-        x: center.x - width / 2,
-        y: 0,
-      },
+      scaleViewBoxFromCenter(
+        {
+          height: mapHeight,
+          width,
+          x: center.x - width / 2,
+          y: 0,
+        },
+        WORLD_INITIAL_ZOOM_OUT,
+      ),
       mapWidth,
       mapHeight,
     );
@@ -196,12 +212,15 @@ function getInitialViewBox(
 
   const height = mapWidth / viewportRatio;
   const viewBox = clampViewBox(
-    {
-      height,
-      width: mapWidth,
-      x: 0,
-      y: center.y - height / 2,
-    },
+    scaleViewBoxFromCenter(
+      {
+        height,
+        width: mapWidth,
+        x: 0,
+        y: center.y - height / 2,
+      },
+      WORLD_INITIAL_ZOOM_OUT,
+    ),
     mapWidth,
     mapHeight,
   );
