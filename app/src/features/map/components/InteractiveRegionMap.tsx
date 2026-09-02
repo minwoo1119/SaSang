@@ -42,13 +42,42 @@ function getRegionCenter(region: MapRegion | undefined, fallback: ViewBox) {
   };
 }
 
-function clampViewBox(viewBox: ViewBox, mapWidth: number, mapHeight: number) {
+function getVerticalInsetOverflow(
+  viewBox: ViewBox,
+  viewport: ViewportSize | undefined,
+  insets: ViewportInsets | undefined,
+) {
+  if (
+    !viewport ||
+    !insets ||
+    viewport.width <= 0 ||
+    viewport.height <= 0
+  ) {
+    return { bottom: 0, top: 0 };
+  }
+
+  return {
+    bottom: (insets.bottom / viewport.height) * viewBox.height,
+    top: (insets.top / viewport.height) * viewBox.height,
+  };
+}
+
+function clampViewBox(
+  viewBox: ViewBox,
+  mapWidth: number,
+  mapHeight: number,
+  viewport?: ViewportSize,
+  insets?: ViewportInsets,
+) {
   const width = viewBox.width;
   const height = viewBox.height;
+  const verticalOverflow = getVerticalInsetOverflow(viewBox, viewport, insets);
   const minX = width >= mapWidth ? mapWidth - width : 0;
   const maxX = width >= mapWidth ? 0 : mapWidth - width;
-  const minY = height >= mapHeight ? mapHeight - height : 0;
-  const maxY = height >= mapHeight ? 0 : mapHeight - height;
+  const minY =
+    (height >= mapHeight ? mapHeight - height : 0) - verticalOverflow.top;
+  const maxY =
+    (height >= mapHeight ? 0 : mapHeight - height) + verticalOverflow.bottom;
 
   return {
     height,
@@ -119,6 +148,8 @@ function alignViewBoxToFocusInsets(
     },
     mapWidth,
     mapHeight,
+    viewport,
+    focusInsets,
   );
 }
 
@@ -245,6 +276,8 @@ function getViewBoxForScale(
   scale: number,
   mapWidth: number,
   mapHeight: number,
+  viewport?: ViewportSize,
+  insets?: ViewportInsets,
 ) {
   const aspectRatio = sourceViewBox.width / sourceViewBox.height;
   const width = mapWidth / scale;
@@ -261,6 +294,8 @@ function getViewBoxForScale(
     },
     mapWidth,
     mapHeight,
+    viewport,
+    insets,
   );
 }
 
@@ -546,6 +581,8 @@ export function InteractiveRegionMap({
           },
           map.viewBox.width,
           map.viewBox.height,
+          viewport,
+          initialFocusInsets,
         ),
       );
     });
@@ -571,6 +608,8 @@ export function InteractiveRegionMap({
           nextScale,
           map.viewBox.width,
           map.viewBox.height,
+          viewportSizeRef.current,
+          initialFocusInsets,
         ),
       );
     });
@@ -599,10 +638,13 @@ export function InteractiveRegionMap({
           nextScale,
           map.viewBox.width,
           map.viewBox.height,
+          viewportSizeRef.current,
+          initialFocusInsets,
         ),
       );
     },
     [
+      initialFocusInsets,
       initialViewBox,
       map.viewBox.height,
       map.viewBox.width,
