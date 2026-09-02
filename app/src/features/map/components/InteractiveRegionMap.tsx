@@ -17,6 +17,7 @@ type Polygon = Point[];
 type RegionPolygons = { polygons: Polygon[]; region: MapRegion };
 type ViewBox = { height: number; width: number; x: number; y: number };
 type ViewportSize = { height: number; width: number };
+type ViewportInsets = { bottom: number; top: number };
 
 function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(Math.max(value, minimum), maximum);
@@ -77,11 +78,66 @@ function expandViewBoxToAspect(viewBox: ViewBox, aspectRatio: number) {
   };
 }
 
+function alignViewBoxToFocusInsets(
+  viewBox: ViewBox,
+  focusPoint: Point,
+  viewport: ViewportSize,
+  focusInsets: ViewportInsets | undefined,
+  mapWidth: number,
+  mapHeight: number,
+) {
+  if (
+    !focusInsets ||
+    viewport.width <= 0 ||
+    viewport.height <= 0 ||
+    focusInsets.top + focusInsets.bottom >= viewport.height
+  ) {
+    return viewBox;
+  }
+
+  const focusCenterY =
+    focusInsets.top + (viewport.height - focusInsets.top - focusInsets.bottom) / 2;
+
+  return clampViewBox(
+    {
+      ...viewBox,
+      y: focusPoint.y - (focusCenterY / viewport.height) * viewBox.height,
+    },
+    mapWidth,
+    mapHeight,
+  );
+}
+
+function getFocusedInitialViewBox(
+  viewBox: ViewBox,
+  mode: MapMode,
+  viewport: ViewportSize,
+  focusInsets: ViewportInsets | undefined,
+  mapWidth: number,
+  mapHeight: number,
+  initialRegion?: MapRegion,
+) {
+  const focusPoint =
+    mode === "world"
+      ? getRegionCenter(initialRegion, getFullViewBox(mapWidth, mapHeight))
+      : { x: mapWidth / 2, y: mapHeight / 2 };
+
+  return alignViewBoxToFocusInsets(
+    viewBox,
+    focusPoint,
+    viewport,
+    focusInsets,
+    mapWidth,
+    mapHeight,
+  );
+}
+
 function getInitialViewBox(
   mode: MapMode,
   mapWidth: number,
   mapHeight: number,
   viewport: ViewportSize,
+  focusInsets?: ViewportInsets,
   initialRegion?: MapRegion,
 ) {
   const fullViewBox = getFullViewBox(mapWidth, mapHeight);
@@ -96,10 +152,19 @@ function getInitialViewBox(
 
   const viewportRatio = viewport.width / viewport.height;
   if (mode !== "world") {
-    return clampViewBox(
+    const viewBox = clampViewBox(
       expandViewBoxToAspect(fullViewBox, viewportRatio),
       mapWidth,
       mapHeight,
+    );
+    return getFocusedInitialViewBox(
+      viewBox,
+      mode,
+      viewport,
+      focusInsets,
+      mapWidth,
+      mapHeight,
+      initialRegion,
     );
   }
 
@@ -108,7 +173,7 @@ function getInitialViewBox(
 
   if (viewportRatio < mapRatio) {
     const width = mapHeight * viewportRatio;
-    return clampViewBox(
+    const viewBox = clampViewBox(
       {
         height: mapHeight,
         width,
@@ -118,10 +183,19 @@ function getInitialViewBox(
       mapWidth,
       mapHeight,
     );
+    return getFocusedInitialViewBox(
+      viewBox,
+      mode,
+      viewport,
+      focusInsets,
+      mapWidth,
+      mapHeight,
+      initialRegion,
+    );
   }
 
   const height = mapWidth / viewportRatio;
-  return clampViewBox(
+  const viewBox = clampViewBox(
     {
       height,
       width: mapWidth,
@@ -130,6 +204,15 @@ function getInitialViewBox(
     },
     mapWidth,
     mapHeight,
+  );
+  return getFocusedInitialViewBox(
+    viewBox,
+    mode,
+    viewport,
+    focusInsets,
+    mapWidth,
+    mapHeight,
+    initialRegion,
   );
 }
 
@@ -292,6 +375,7 @@ function findKoreaRegionFromTapArea(
 }
 
 type InteractiveRegionMapProps = {
+  initialFocusInsets?: ViewportInsets;
   mode: MapMode;
   onMapInteraction?: () => void;
   visitedRegionCodes?: ReadonlySet<string>;
@@ -299,6 +383,7 @@ type InteractiveRegionMapProps = {
 };
 
 export function InteractiveRegionMap({
+  initialFocusInsets,
   mode,
   onMapInteraction,
   visitedRegionCodes = new Set(),
@@ -345,12 +430,14 @@ export function InteractiveRegionMap({
         map.viewBox.width,
         map.viewBox.height,
         viewportSize,
+        initialFocusInsets,
         worldInitialRegion,
       ),
     [
       map.viewBox.height,
       map.viewBox.width,
       mode,
+      initialFocusInsets,
       viewportSize,
       worldInitialRegion,
     ],

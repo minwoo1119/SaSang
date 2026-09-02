@@ -48,8 +48,13 @@ export function MapScreen() {
     ({ code }) => regionPhotos[getRegionPhotoKey(mode, code)],
   ).length;
   const tabBarOffset = insets.bottom + 92;
-  const mapTopOffset = insets.top + 130;
-  const mapBottomOffset = tabBarOffset + 104;
+  const mapFocusInsets = useMemo(
+    () => ({
+      bottom: tabBarOffset + 104,
+      top: insets.top + 130,
+    }),
+    [insets.top, tabBarOffset],
+  );
   const trimmedSearchQuery = searchQuery.trim().toLowerCase();
   const searchResults = useMemo(() => {
     if (trimmedSearchQuery.length === 0) return [];
@@ -171,16 +176,12 @@ export function MapScreen() {
 
   return (
     <View style={styles.container}>
-      <View
-        style={[
-          styles.mapViewport,
-          { bottom: mapBottomOffset, top: mapTopOffset },
-        ]}
-      >
+      <View style={styles.mapViewport}>
         <InteractiveRegionMap
+          initialFocusInsets={mapFocusInsets}
           mode={mode}
           onMapInteraction={Keyboard.dismiss}
-          zoomControlsBottom={12}
+          zoomControlsBottom={tabBarOffset + 78}
         />
       </View>
 
@@ -377,11 +378,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  mapViewport: {
-    left: 0,
-    position: "absolute",
-    right: 0,
-  },
+  mapViewport: StyleSheet.absoluteFillObject,
   photoButton: {
     alignItems: "center",
     backgroundColor: "#007AFF",
@@ -402,7 +399,7 @@ const styles = StyleSheet.create({
   regionCode: { color: "#71717A", fontSize: 11, marginTop: 2 },
   regionControl: {
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.96)",
+    backgroundColor: "rgba(255, 255, 255, 0.88)",
     borderColor: "rgba(0, 0, 0, 0.08)",
     borderRadius: 30,
     borderWidth: StyleSheet.hairlineWidth,
@@ -432,7 +429,7 @@ const styles = StyleSheet.create({
   removeText: { color: "#71717A", fontSize: 12, fontWeight: "600" },
   selectionHint: {
     alignSelf: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.96)",
+    backgroundColor: "rgba(255, 255, 255, 0.88)",
     borderColor: "rgba(0, 0, 0, 0.08)",
     borderRadius: 22,
     borderWidth: StyleSheet.hairlineWidth,
@@ -464,7 +461,7 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.96)",
+    backgroundColor: "rgba(255, 255, 255, 0.88)",
     borderColor: "rgba(0, 0, 0, 0.08)",
     borderRadius: 23,
     borderWidth: StyleSheet.hairlineWidth,
@@ -530,7 +527,7 @@ const styles = StyleSheet.create({
   },
   searchResultPressed: { backgroundColor: "rgba(0, 122, 255, 0.08)" },
   searchResults: {
-    backgroundColor: "rgba(255, 255, 255, 0.97)",
+    backgroundColor: "rgba(255, 255, 255, 0.92)",
     borderColor: "rgba(0, 0, 0, 0.08)",
     borderRadius: 18,
     borderWidth: StyleSheet.hairlineWidth,
