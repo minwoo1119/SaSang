@@ -17,6 +17,7 @@ type Polygon = Point[];
 type RegionPolygons = { polygons: Polygon[]; region: MapRegion };
 type ViewBox = { height: number; width: number; x: number; y: number };
 type ViewportSize = { height: number; width: number };
+type ViewportFrame = ViewportSize & { pageX: number; pageY: number };
 type RenderedMapFrame = {
   fittedScale: number;
   offsetX: number;
@@ -300,6 +301,7 @@ export function InteractiveRegionMap({
   zoomControlsBottom = 24,
 }: InteractiveRegionMapProps) {
   const map = MAP_ASSETS[mode];
+  const containerRef = useRef<View>(null);
   const selectedRegionCode = useMapUiStore((state) => state.selectedRegionCode);
   const selectRegion = useMapUiStore((state) => state.selectRegion);
   const regionPhotos = useMapUiStore((state) => state.regionPhotos);
@@ -311,6 +313,12 @@ export function InteractiveRegionMap({
     getFullViewBox(map.viewBox.width, map.viewBox.height),
   );
   const viewportSizeRef = useRef(viewportSize);
+  const viewportFrameRef = useRef<ViewportFrame>({
+    height: 0,
+    pageX: 0,
+    pageY: 0,
+    width: 0,
+  });
   const viewBoxRef = useRef(viewBox);
   const startViewBoxRef = useRef(viewBox);
 
@@ -364,6 +372,23 @@ export function InteractiveRegionMap({
     setViewBox(nextViewBox);
   }, []);
 
+  const syncViewportFrame = useCallback((nextViewportSize: ViewportSize) => {
+    viewportSizeRef.current = nextViewportSize;
+    viewportFrameRef.current = {
+      ...viewportFrameRef.current,
+      ...nextViewportSize,
+    };
+
+    containerRef.current?.measureInWindow((pageX, pageY, width, height) => {
+      viewportFrameRef.current = {
+        height: height || nextViewportSize.height,
+        pageX,
+        pageY,
+        width: width || nextViewportSize.width,
+      };
+    });
+  }, []);
+
   const resetViewport = useCallback(() => {
     updateViewBox(initialViewBox);
   }, [initialViewBox, updateViewBox]);
@@ -373,11 +398,17 @@ export function InteractiveRegionMap({
   }, [initialViewBox, updateViewBox]);
 
   const handleMapTap = useCallback(
-    (x: number, y: number) => {
+    (absoluteX: number, absoluteY: number) => {
+      const viewportFrame = viewportFrameRef.current;
+      const x = absoluteX - viewportFrame.pageX;
+      const y = absoluteY - viewportFrame.pageY;
       const currentViewBox = viewBoxRef.current;
       const frame = getRenderedMapFrame(
         currentViewBox,
-        viewportSizeRef.current,
+        {
+          height: viewportFrame.height,
+          width: viewportFrame.width,
+        },
       );
       if (!frame) return;
 
@@ -467,7 +498,7 @@ export function InteractiveRegionMap({
     .runOnJS(true)
     .onEnd((event, success) => {
       if (success) {
-        handleMapTap(event.x, event.y);
+        handleMapTap(event.absoluteX, event.absoluteY);
       }
     });
   const mapGesture = Gesture.Simultaneous(panGesture, pinchGesture, tapGesture);
@@ -499,6 +530,7 @@ export function InteractiveRegionMap({
 
   return (
     <View
+      ref={containerRef}
       onLayout={({ nativeEvent }) => {
         const nextViewportSize = {
           height: nativeEvent.layout.height,
@@ -512,7 +544,7 @@ export function InteractiveRegionMap({
           return;
         }
 
-        viewportSizeRef.current = nextViewportSize;
+        syncViewportFrame(nextViewportSize);
         setViewportSize(nextViewportSize);
       }}
       style={styles.container}
