@@ -352,6 +352,12 @@ export function InteractiveRegionMap({
             viewBox={`0 0 ${map.viewBox.width} ${map.viewBox.height}`}
             width="100%"
           >
+            <RegionPhotoLayer
+              animatedProps={animatedMapProps}
+              mode={mode}
+              regionPhotos={regionPhotos}
+              regions={map.regions}
+            />
             <AnimatedG animatedProps={animatedMapProps}>
               <Rect
                 fill="transparent"
@@ -360,11 +366,6 @@ export function InteractiveRegionMap({
                 width={map.viewBox.width}
                 x={0}
                 y={0}
-              />
-              <RegionPhotoLayer
-                mode={mode}
-                regionPhotos={regionPhotos}
-                regions={map.regions}
               />
               {map.regions.map((region) => {
                 const photoFilled = photoRegionCodes.has(region.code);
