@@ -88,6 +88,21 @@ function isInsideBounds(region: MapRegion, point: Point) {
   );
 }
 
+function getSvgFitScale(
+  mode: MapMode,
+  viewportWidth: number,
+  viewportHeight: number,
+  mapWidth: number,
+  mapHeight: number,
+) {
+  const widthScale = viewportWidth / mapWidth;
+  const heightScale = viewportHeight / mapHeight;
+
+  return mode === "world"
+    ? Math.max(widthScale, heightScale)
+    : Math.min(widthScale, heightScale);
+}
+
 type InteractiveRegionMapProps = {
   mode: MapMode;
   visitedRegionCodes?: ReadonlySet<string>;
@@ -171,9 +186,12 @@ export function InteractiveRegionMap({
       const { height, width } = viewportSize;
       if (width <= 0 || height <= 0) return;
 
-      const fittedScale = Math.min(
-        width / map.viewBox.width,
-        height / map.viewBox.height,
+      const fittedScale = getSvgFitScale(
+        mode,
+        width,
+        height,
+        map.viewBox.width,
+        map.viewBox.height,
       );
       const renderedWidth = map.viewBox.width * fittedScale;
       const renderedHeight = map.viewBox.height * fittedScale;
@@ -218,6 +236,7 @@ export function InteractiveRegionMap({
     [
       map.viewBox.height,
       map.viewBox.width,
+      mode,
       regionPolygons,
       scale,
       selectRegion,
@@ -274,9 +293,12 @@ export function InteractiveRegionMap({
     });
   const mapGesture = Gesture.Simultaneous(panGesture, pinchGesture, tapGesture);
   const animatedMapProps = useAnimatedProps(() => {
-    const fittedScale = Math.min(
-      viewportWidth.value / map.viewBox.width || 1,
-      viewportHeight.value / map.viewBox.height || 1,
+    const fittedScale = getSvgFitScale(
+      mode,
+      viewportWidth.value || map.viewBox.width,
+      viewportHeight.value || map.viewBox.height,
+      map.viewBox.width,
+      map.viewBox.height,
     );
     const centerX = map.viewBox.width / 2;
     const centerY = map.viewBox.height / 2;
@@ -348,7 +370,9 @@ export function InteractiveRegionMap({
               mode === "korea" ? "대한민국 시군구 지도" : "세계 국가 지도"
             }
             height="100%"
-            preserveAspectRatio="xMidYMid meet"
+            preserveAspectRatio={
+              mode === "world" ? "xMaxYMid slice" : "xMidYMid meet"
+            }
             viewBox={`0 0 ${map.viewBox.width} ${map.viewBox.height}`}
             width="100%"
           >
