@@ -458,7 +458,6 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.96)",
     borderColor: "rgba(0, 0, 0, 0.08)",
     borderRadius: 23,
     borderWidth: StyleSheet.hairlineWidth,
@@ -524,7 +523,6 @@ const styles = StyleSheet.create({
   },
   searchResultPressed: { backgroundColor: "rgba(0, 122, 255, 0.08)" },
   searchResults: {
-    backgroundColor: "rgba(255, 255, 255, 0.97)",
     borderColor: "rgba(0, 0, 0, 0.08)",
     borderRadius: 18,
     borderWidth: StyleSheet.hairlineWidth,
