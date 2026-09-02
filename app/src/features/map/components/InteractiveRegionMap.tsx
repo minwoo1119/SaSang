@@ -20,7 +20,6 @@ const MIN_SCALE = 0.85;
 const MAX_SCALE = 5;
 const SMOOTH_CONFIG = { duration: 160, easing: Easing.out(Easing.quad) };
 const AnimatedG = Animated.createAnimatedComponent(G);
-const WORLD_INITIAL_REGION_CODE = "KR";
 
 type Point = { x: number; y: number };
 type Polygon = Point[];
@@ -89,32 +88,6 @@ function isInsideBounds(region: MapRegion, point: Point) {
   );
 }
 
-function getRegionCenter(region: MapRegion) {
-  return {
-    x: region.bounds.x + region.bounds.width / 2,
-    y: region.bounds.y + region.bounds.height / 2,
-  };
-}
-
-function getMinimumScale(
-  mode: MapMode,
-  viewportWidth: number,
-  viewportHeight: number,
-  mapWidth: number,
-  mapHeight: number,
-) {
-  "worklet";
-
-  if (mode !== "world" || viewportWidth <= 0 || viewportHeight <= 0) {
-    return 1;
-  }
-
-  const fittedScale = Math.min(viewportWidth / mapWidth, viewportHeight / mapHeight);
-  const heightFitScale = viewportHeight / (mapHeight * fittedScale);
-
-  return Math.min(Math.max(heightFitScale, 1), MAX_SCALE);
-}
-
 type InteractiveRegionMapProps = {
   mode: MapMode;
   visitedRegionCodes?: ReadonlySet<string>;
@@ -155,10 +128,6 @@ export function InteractiveRegionMap({
     () => map.regions.find(({ code }) => code === selectedRegionCode),
     [map.regions, selectedRegionCode],
   );
-  const worldInitialRegion = useMemo(
-    () => map.regions.find(({ code }) => code === WORLD_INITIAL_REGION_CODE),
-    [map.regions],
-  );
   const regionPolygons = useMemo(
     () =>
       map.regions.map((region) => ({
@@ -170,29 +139,9 @@ export function InteractiveRegionMap({
 
   const setInitialViewport = useCallback(
     (targetMode: MapMode, animate = true) => {
-      const viewportW = viewportWidth.value;
-      const viewportH = viewportHeight.value;
-      const fittedScale = Math.min(
-        viewportW / map.viewBox.width || 1,
-        viewportH / map.viewBox.height || 1,
-      );
-      let targetScale = getMinimumScale(
-        targetMode,
-        viewportW,
-        viewportH,
-        map.viewBox.width,
-        map.viewBox.height,
-      );
+      let targetScale = 1;
       let targetX = 0;
       let targetY = 0;
-
-      if (targetMode === "world" && worldInitialRegion) {
-        const centerX = map.viewBox.width / 2;
-        const centerY = map.viewBox.height / 2;
-        const targetCenter = getRegionCenter(worldInitialRegion);
-        targetX = (centerX - targetCenter.x) * fittedScale * targetScale;
-        targetY = (centerY - targetCenter.y) * fittedScale * targetScale;
-      }
 
       if (animate) {
         scale.value = withTiming(targetScale, SMOOTH_CONFIG);
@@ -204,21 +153,14 @@ export function InteractiveRegionMap({
         translateY.value = targetY;
       }
     },
-    [
-      map.viewBox.height,
-      map.viewBox.width,
-      scale,
-      translateX,
-      translateY,
-      viewportHeight,
-      viewportWidth,
-      worldInitialRegion,
-    ],
+    [scale, translateX, translateY],
   );
 
   const resetViewport = useCallback(() => {
-    setInitialViewport(mode, true);
-  }, [mode, setInitialViewport]);
+    scale.value = withTiming(1, SMOOTH_CONFIG);
+    translateX.value = withTiming(0, SMOOTH_CONFIG);
+    translateY.value = withTiming(0, SMOOTH_CONFIG);
+  }, [scale, translateX, translateY]);
 
   useEffect(() => {
     setInitialViewport(mode, true);
@@ -305,18 +247,9 @@ export function InteractiveRegionMap({
       startY.value = translateY.value;
     })
     .onUpdate((event) => {
-      const minimumScale = getMinimumScale(
-        mode,
-        viewportWidth.value,
-        viewportHeight.value,
-        map.viewBox.width,
-        map.viewBox.height,
-      );
-      const gestureMinimumScale =
-        mode === "world" ? minimumScale : MIN_SCALE;
       const nextScale = clamp(
         startScale.value * event.scale,
-        gestureMinimumScale,
+        MIN_SCALE,
         MAX_SCALE,
       );
       const factor = startScale.value > 0 ? nextScale / startScale.value : 1;
@@ -325,20 +258,10 @@ export function InteractiveRegionMap({
       translateY.value = startY.value * factor;
     })
     .onEnd(() => {
-      const minimumScale = getMinimumScale(
-        mode,
-        viewportWidth.value,
-        viewportHeight.value,
-        map.viewBox.width,
-        map.viewBox.height,
-      );
-
-      if (mode !== "world" && scale.value < 1) {
+      if (scale.value < 1) {
         scale.value = withTiming(1, SMOOTH_CONFIG);
         translateX.value = withTiming(0, SMOOTH_CONFIG);
         translateY.value = withTiming(0, SMOOTH_CONFIG);
-      } else if (mode === "world" && scale.value < minimumScale) {
-        scale.value = withTiming(minimumScale, SMOOTH_CONFIG);
       }
     });
 
@@ -374,18 +297,13 @@ export function InteractiveRegionMap({
   const zoomBy = useCallback(
     (amount: number) => {
       const currentScale = scale.value;
-      const minimumScale = getMinimumScale(
-        mode,
-        viewportWidth.value,
-        viewportHeight.value,
-        map.viewBox.width,
-        map.viewBox.height,
-      );
-      const nextScale = clamp(currentScale + amount, minimumScale, MAX_SCALE);
+      const nextScale = clamp(currentScale + amount, 1, MAX_SCALE);
       if (nextScale === currentScale) return;
 
-      if (nextScale === minimumScale) {
-        setInitialViewport(mode, true);
+      if (nextScale === 1) {
+        scale.value = withTiming(1, SMOOTH_CONFIG);
+        translateX.value = withTiming(0, SMOOTH_CONFIG);
+        translateY.value = withTiming(0, SMOOTH_CONFIG);
       } else {
         const factor = nextScale / currentScale;
         const rawNextX = translateX.value * factor;
@@ -404,17 +322,7 @@ export function InteractiveRegionMap({
         );
       }
     },
-    [
-      map.viewBox.height,
-      map.viewBox.width,
-      mode,
-      scale,
-      setInitialViewport,
-      translateX,
-      translateY,
-      viewportHeight,
-      viewportWidth,
-    ],
+    [scale, translateX, translateY, viewportWidth, viewportHeight],
   );
 
   return (
