@@ -1,6 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedProps,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import Svg, { G, Path, Rect } from "react-native-svg";
 import { MAP_ASSETS } from "../models/mapAssets";
 import type { MapMode, MapRegion } from "../models/map.types";
@@ -11,13 +18,14 @@ import { RegionPhotoLayer } from "./RegionPhotoLayer";
 
 const MIN_SCALE = 0.85;
 const MAX_SCALE = 5;
+const SMOOTH_CONFIG = { duration: 160, easing: Easing.out(Easing.quad) };
+const AnimatedG = Animated.createAnimatedComponent(G);
 
 type Point = { x: number; y: number };
 type Polygon = Point[];
-type ViewBox = { x: number; y: number; width: number; height: number };
-type ViewportSize = { height: number; width: number };
 
 function clamp(value: number, minimum: number, maximum: number) {
+  "worklet";
   return Math.min(Math.max(value, minimum), maximum);
 }
 
@@ -80,26 +88,6 @@ function isInsideBounds(region: MapRegion, point: Point) {
   );
 }
 
-function getFullViewBox(mapWidth: number, mapHeight: number): ViewBox {
-  return { height: mapHeight, width: mapWidth, x: 0, y: 0 };
-}
-
-function clampViewBox(viewBox: ViewBox, mapWidth: number, mapHeight: number) {
-  const width = Math.min(viewBox.width, mapWidth);
-  const height = Math.min(viewBox.height, mapHeight);
-
-  return {
-    height,
-    width,
-    x: clamp(viewBox.x, 0, mapWidth - width),
-    y: clamp(viewBox.y, 0, mapHeight - height),
-  };
-}
-
-function getViewBoxScale(viewBox: ViewBox, mapWidth: number) {
-  return mapWidth / viewBox.width;
-}
-
 type InteractiveRegionMapProps = {
   mode: MapMode;
   visitedRegionCodes?: ReadonlySet<string>;
@@ -115,22 +103,15 @@ export function InteractiveRegionMap({
   const selectedRegionCode = useMapUiStore((state) => state.selectedRegionCode);
   const selectRegion = useMapUiStore((state) => state.selectRegion);
   const regionPhotos = useMapUiStore((state) => state.regionPhotos);
-  const [viewportSize, setViewportSize] = useState<ViewportSize>({
-    height: 0,
-    width: 0,
-  });
-  const [viewBox, setViewBox] = useState(() =>
-    getFullViewBox(map.viewBox.width, map.viewBox.height),
-  );
-  const startViewBoxRef = useRef(viewBox);
-  const viewBoxRef = useRef(viewBox);
-  const mapContainerRef = useRef<View>(null);
-  const mapOriginRef = useRef({ x: 0, y: 0 });
-
-  const updateViewBox = useCallback((nextViewBox: ViewBox) => {
-    viewBoxRef.current = nextViewBox;
-    setViewBox(nextViewBox);
-  }, []);
+  const scale = useSharedValue(1);
+  const startScale = useSharedValue(1);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const startX = useSharedValue(0);
+  const startY = useSharedValue(0);
+  const viewportWidth = useSharedValue(0);
+  const viewportHeight = useSharedValue(0);
+  const [viewportSize, setViewportSize] = useState({ height: 0, width: 0 });
 
   const photoRegionCodes = useMemo(
     () =>
@@ -157,77 +138,54 @@ export function InteractiveRegionMap({
   );
 
   const setInitialViewport = useCallback(
-    (targetMode: MapMode, size = viewportSize) => {
-      const fullViewBox = getFullViewBox(map.viewBox.width, map.viewBox.height);
+    (targetMode: MapMode, animate = true) => {
+      const w = viewportWidth.value || 360;
+      const h = viewportHeight.value || 600;
 
-      if (targetMode !== "world" || size.width <= 0 || size.height <= 0) {
-        updateViewBox(fullViewBox);
-        return;
+      let targetScale = 1;
+      let targetX = 0;
+      let targetY = 0;
+
+      if (targetMode === "world") {
+        targetScale = 3.4;
+        targetX = -w * 1.17;
+        targetY = h * 0.21;
       }
 
-      const targetScale = 3.4;
-      const fittedScale = Math.min(
-        size.width / map.viewBox.width,
-        size.height / map.viewBox.height,
-      );
-      const targetX = -size.width * 1.17;
-      const targetY = size.height * 0.21;
-      const width = map.viewBox.width / targetScale;
-      const height = map.viewBox.height / targetScale;
-      const centerX =
-        map.viewBox.width / 2 - targetX / fittedScale / targetScale;
-      const centerY =
-        map.viewBox.height / 2 - targetY / fittedScale / targetScale;
-
-      updateViewBox(
-        clampViewBox(
-          {
-            height,
-            width,
-            x: centerX - width / 2,
-            y: centerY - height / 2,
-          },
-          map.viewBox.width,
-          map.viewBox.height,
-        ),
-      );
+      if (animate) {
+        scale.value = withTiming(targetScale, SMOOTH_CONFIG);
+        translateX.value = withTiming(targetX, SMOOTH_CONFIG);
+        translateY.value = withTiming(targetY, SMOOTH_CONFIG);
+      } else {
+        scale.value = targetScale;
+        translateX.value = targetX;
+        translateY.value = targetY;
+      }
     },
-    [map.viewBox.height, map.viewBox.width, updateViewBox, viewportSize],
-  );
-
-  const updateMapLayout = useCallback(
-    (size: ViewportSize) => {
-      setViewportSize(size);
-      setInitialViewport(mode, size);
-      mapContainerRef.current?.measureInWindow((x, y) => {
-        mapOriginRef.current = { x, y };
-      });
-    },
-    [mode, setInitialViewport],
+    [scale, translateX, translateY, viewportWidth, viewportHeight],
   );
 
   const resetViewport = useCallback(() => {
-    updateViewBox(getFullViewBox(map.viewBox.width, map.viewBox.height));
-  }, [map.viewBox.height, map.viewBox.width, updateViewBox]);
+    scale.value = withTiming(1, SMOOTH_CONFIG);
+    translateX.value = withTiming(0, SMOOTH_CONFIG);
+    translateY.value = withTiming(0, SMOOTH_CONFIG);
+  }, [scale, translateX, translateY]);
 
   useEffect(() => {
-    setInitialViewport(mode);
+    setInitialViewport(mode, true);
   }, [mode, setInitialViewport]);
 
   const handleMapTap = useCallback(
-    (absoluteX: number, absoluteY: number) => {
+    (x: number, y: number) => {
       const { height, width } = viewportSize;
       if (width <= 0 || height <= 0) return;
 
-      const x = absoluteX - mapOriginRef.current.x;
-      const y = absoluteY - mapOriginRef.current.y;
-      const currentViewBox = viewBoxRef.current;
       const fittedScale = Math.min(
-        width / currentViewBox.width,
-        height / currentViewBox.height,
+        width / map.viewBox.width,
+        height / map.viewBox.height,
       );
-      const renderedWidth = currentViewBox.width * fittedScale;
-      const renderedHeight = currentViewBox.height * fittedScale;
+      const renderedWidth = map.viewBox.width * fittedScale;
+      const renderedHeight = map.viewBox.height * fittedScale;
       const contentX = x - (width - renderedWidth) / 2;
       const contentY = y - (height - renderedHeight) / 2;
 
@@ -241,9 +199,21 @@ export function InteractiveRegionMap({
         return;
       }
 
+      const centerX = map.viewBox.width / 2;
+      const centerY = map.viewBox.height / 2;
+      const viewBoxTranslateX = translateX.value / fittedScale;
+      const viewBoxTranslateY = translateY.value / fittedScale;
+      const basePoint = {
+        x: contentX / fittedScale,
+        y: contentY / fittedScale,
+      };
       const mapPoint = {
-        x: currentViewBox.x + contentX / fittedScale,
-        y: currentViewBox.y + contentY / fittedScale,
+        x:
+          centerX +
+          (basePoint.x - centerX - viewBoxTranslateX) / scale.value,
+        y:
+          centerY +
+          (basePoint.y - centerY - viewBoxTranslateY) / scale.value,
       };
 
       const match = regionPolygons.find(
@@ -254,182 +224,178 @@ export function InteractiveRegionMap({
 
       selectRegion(match?.region.code ?? null);
     },
-    [regionPolygons, selectRegion, viewportSize],
+    [
+      map.viewBox.height,
+      map.viewBox.width,
+      regionPolygons,
+      scale,
+      selectRegion,
+      translateX,
+      translateY,
+      viewportSize,
+    ],
   );
 
   const panGesture = Gesture.Pan()
-    .runOnJS(true)
     .minDistance(5)
     .onBegin(() => {
-      startViewBoxRef.current = viewBoxRef.current;
+      startX.value = translateX.value;
+      startY.value = translateY.value;
     })
     .onUpdate((event) => {
-      const startViewBox = startViewBoxRef.current;
-      const fittedScale = Math.min(
-        viewportSize.width / startViewBox.width,
-        viewportSize.height / startViewBox.height,
-      );
-      if (!Number.isFinite(fittedScale) || fittedScale <= 0) return;
-
-      updateViewBox(
-        clampViewBox(
-          {
-            ...startViewBox,
-            x: startViewBox.x - event.translationX / fittedScale,
-            y: startViewBox.y - event.translationY / fittedScale,
-          },
-          map.viewBox.width,
-          map.viewBox.height,
-        ),
-      );
+      const maxX = viewportWidth.value * Math.max(scale.value - 0.65, 0.24);
+      const maxY = viewportHeight.value * Math.max(scale.value - 0.65, 0.24);
+      translateX.value = clamp(startX.value + event.translationX, -maxX, maxX);
+      translateY.value = clamp(startY.value + event.translationY, -maxY, maxY);
     });
 
   const pinchGesture = Gesture.Pinch()
-    .runOnJS(true)
     .onBegin(() => {
-      startViewBoxRef.current = viewBoxRef.current;
+      startScale.value = scale.value;
+      startX.value = translateX.value;
+      startY.value = translateY.value;
     })
     .onUpdate((event) => {
-      const startViewBox = startViewBoxRef.current;
-      const startScale = getViewBoxScale(startViewBox, map.viewBox.width);
       const nextScale = clamp(
-        startScale * event.scale,
+        startScale.value * event.scale,
         MIN_SCALE,
         MAX_SCALE,
       );
-      const centerX = startViewBox.x + startViewBox.width / 2;
-      const centerY = startViewBox.y + startViewBox.height / 2;
-      const width = map.viewBox.width / nextScale;
-      const height = map.viewBox.height / nextScale;
-
-      if (nextScale <= 1) {
-        updateViewBox(getFullViewBox(map.viewBox.width, map.viewBox.height));
-        return;
+      const factor = startScale.value > 0 ? nextScale / startScale.value : 1;
+      scale.value = nextScale;
+      translateX.value = startX.value * factor;
+      translateY.value = startY.value * factor;
+    })
+    .onEnd(() => {
+      if (scale.value < 1) {
+        scale.value = withTiming(1, SMOOTH_CONFIG);
+        translateX.value = withTiming(0, SMOOTH_CONFIG);
+        translateY.value = withTiming(0, SMOOTH_CONFIG);
       }
-
-      updateViewBox(
-        clampViewBox(
-          {
-            height,
-            width,
-            x: centerX - width / 2,
-            y: centerY - height / 2,
-          },
-          map.viewBox.width,
-          map.viewBox.height,
-        ),
-      );
     });
 
   const tapGesture = Gesture.Tap()
-    .runOnJS(true)
     .maxDistance(8)
     .onEnd((event, success) => {
       if (success) {
-        handleMapTap(event.absoluteX, event.absoluteY);
+        runOnJS(handleMapTap)(event.x, event.y);
       }
     });
   const mapGesture = Gesture.Simultaneous(panGesture, pinchGesture, tapGesture);
+  const animatedMapProps = useAnimatedProps(() => {
+    const fittedScale = Math.min(
+      viewportWidth.value / map.viewBox.width || 1,
+      viewportHeight.value / map.viewBox.height || 1,
+    );
+    const centerX = map.viewBox.width / 2;
+    const centerY = map.viewBox.height / 2;
+    const viewBoxTranslateX = translateX.value / fittedScale;
+    const viewBoxTranslateY = translateY.value / fittedScale;
+
+    return {
+      transform: `translate(${centerX + viewBoxTranslateX} ${centerY + viewBoxTranslateY}) scale(${scale.value}) translate(${-centerX} ${-centerY})`,
+    };
+  });
 
   const zoomBy = useCallback(
     (amount: number) => {
-      const currentViewBox = viewBoxRef.current;
-      const currentScale = getViewBoxScale(currentViewBox, map.viewBox.width);
+      const currentScale = scale.value;
       const nextScale = clamp(currentScale + amount, 1, MAX_SCALE);
       if (nextScale === currentScale) return;
 
       if (nextScale === 1) {
-        updateViewBox(getFullViewBox(map.viewBox.width, map.viewBox.height));
+        scale.value = withTiming(1, SMOOTH_CONFIG);
+        translateX.value = withTiming(0, SMOOTH_CONFIG);
+        translateY.value = withTiming(0, SMOOTH_CONFIG);
       } else {
-        const centerX = currentViewBox.x + currentViewBox.width / 2;
-        const centerY = currentViewBox.y + currentViewBox.height / 2;
-        const width = map.viewBox.width / nextScale;
-        const height = map.viewBox.height / nextScale;
+        const factor = nextScale / currentScale;
+        const rawNextX = translateX.value * factor;
+        const rawNextY = translateY.value * factor;
+        const maxX = viewportWidth.value * Math.max(nextScale - 0.65, 0.24);
+        const maxY = viewportHeight.value * Math.max(nextScale - 0.65, 0.24);
 
-        updateViewBox(
-          clampViewBox(
-            {
-              height,
-              width,
-              x: centerX - width / 2,
-              y: centerY - height / 2,
-            },
-            map.viewBox.width,
-            map.viewBox.height,
-          ),
+        scale.value = withTiming(nextScale, SMOOTH_CONFIG);
+        translateX.value = withTiming(
+          clamp(rawNextX, -maxX, maxX),
+          SMOOTH_CONFIG,
+        );
+        translateY.value = withTiming(
+          clamp(rawNextY, -maxY, maxY),
+          SMOOTH_CONFIG,
         );
       }
     },
-    [map.viewBox.height, map.viewBox.width, updateViewBox],
+    [scale, translateX, translateY, viewportWidth, viewportHeight],
   );
 
   return (
     <View
-      ref={mapContainerRef}
       onLayout={({ nativeEvent }) => {
-        updateMapLayout({
+        const isFirst = viewportWidth.value === 0;
+        viewportWidth.value = nativeEvent.layout.width;
+        viewportHeight.value = nativeEvent.layout.height;
+        setViewportSize({
           height: nativeEvent.layout.height,
           width: nativeEvent.layout.width,
         });
+        if (isFirst) {
+          setInitialViewport(mode);
+        }
       }}
       style={styles.container}
     >
       <GestureDetector gesture={mapGesture}>
-        <View style={styles.map}>
-          <View style={styles.mapContent}>
-            <Svg
-              accessibilityLabel={
-                mode === "korea" ? "대한민국 시군구 지도" : "세계 국가 지도"
-              }
-              height="100%"
-              preserveAspectRatio="xMidYMid meet"
-              viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
-              width="100%"
-            >
-              <G>
-                <Rect
-                  fill="transparent"
-                  height={map.viewBox.height}
-                  pointerEvents="none"
-                  width={map.viewBox.width}
-                  x={0}
-                  y={0}
-                />
-                <RegionPhotoLayer
-                  mode={mode}
-                  regionPhotos={regionPhotos}
-                  regions={map.regions}
-                />
-                {map.regions.map((region) => {
-                  const photoFilled = photoRegionCodes.has(region.code);
-                  return (
-                    <RegionPath
-                      key={region.code}
-                      mode={mode}
-                      photoFilled={photoFilled}
-                      region={region}
-                      selected={selectedRegionCode === region.code}
-                      visited={
-                        photoFilled || visitedRegionCodes.has(region.code)
-                      }
-                    />
-                  );
-                })}
-                {selectedRegion ? (
-                  <Path
-                    d={selectedRegion.path}
-                    fill="transparent"
-                    pointerEvents="none"
-                    stroke="#007AFF"
-                    strokeLinejoin="round"
-                    strokeWidth={mode === "world" ? 0.32 : 1.1}
-                    vectorEffect="non-scaling-stroke"
+        <Animated.View style={styles.map}>
+          <Svg
+            accessibilityLabel={
+              mode === "korea" ? "대한민국 시군구 지도" : "세계 국가 지도"
+            }
+            height="100%"
+            preserveAspectRatio="xMidYMid meet"
+            viewBox={`0 0 ${map.viewBox.width} ${map.viewBox.height}`}
+            width="100%"
+          >
+            <AnimatedG animatedProps={animatedMapProps}>
+              <Rect
+                fill="transparent"
+                height={map.viewBox.height}
+                pointerEvents="none"
+                width={map.viewBox.width}
+                x={0}
+                y={0}
+              />
+              <RegionPhotoLayer
+                mode={mode}
+                regionPhotos={regionPhotos}
+                regions={map.regions}
+              />
+              {map.regions.map((region) => {
+                const photoFilled = photoRegionCodes.has(region.code);
+                return (
+                  <RegionPath
+                    key={region.code}
+                    mode={mode}
+                    photoFilled={photoFilled}
+                    region={region}
+                    selected={selectedRegionCode === region.code}
+                    visited={photoFilled || visitedRegionCodes.has(region.code)}
                   />
-                ) : null}
-              </G>
-            </Svg>
-          </View>
-        </View>
+                );
+              })}
+              {selectedRegion ? (
+                <Path
+                  d={selectedRegion.path}
+                  fill="transparent"
+                  pointerEvents="none"
+                  stroke="#007AFF"
+                  strokeLinejoin="round"
+                  strokeWidth={mode === "world" ? 0.32 : 1.1}
+                  vectorEffect="non-scaling-stroke"
+                />
+              ) : null}
+            </AnimatedG>
+          </Svg>
+        </Animated.View>
       </GestureDetector>
 
       <MapGlassSurface
@@ -478,7 +444,6 @@ export function InteractiveRegionMap({
 const styles = StyleSheet.create({
   container: { flex: 1, overflow: "hidden", width: "100%" },
   map: { height: "100%", width: "100%" },
-  mapContent: { height: "100%", width: "100%" },
   pressed: { backgroundColor: "rgba(0, 122, 255, 0.08)" },
   resetText: { color: "#007AFF", fontSize: 11, fontWeight: "800" },
   separator: {
