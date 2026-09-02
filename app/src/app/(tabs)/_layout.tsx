@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import type { ComponentProps } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 type TabMeta = {
   fallback: string;
@@ -84,6 +84,10 @@ function TabIcon({
   fallback: string;
   name: TabMeta["symbol"];
 }) {
+  if (Platform.OS === "android") {
+    return <Text style={[styles.fallbackIcon, { color }]}>{fallback}</Text>;
+  }
+
   return (
     <SymbolView
       fallback={

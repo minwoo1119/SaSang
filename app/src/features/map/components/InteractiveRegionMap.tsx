@@ -3,11 +3,11 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Easing,
-  useAnimatedStyle,
+  useAnimatedProps,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import Svg, { Path, Rect } from "react-native-svg";
+import Svg, { G, Path, Rect } from "react-native-svg";
 import { MAP_ASSETS } from "../models/mapAssets";
 import type { MapMode, MapRegion } from "../models/map.types";
 import { getRegionPhotoKey, useMapUiStore } from "../store/mapUi.store";
@@ -18,6 +18,7 @@ import { RegionPhotoLayer } from "./RegionPhotoLayer";
 const MIN_SCALE = 0.85;
 const MAX_SCALE = 5;
 const SMOOTH_CONFIG = { duration: 160, easing: Easing.out(Easing.quad) };
+const AnimatedG = Animated.createAnimatedComponent(G);
 
 function clamp(value: number, minimum: number, maximum: number) {
   "worklet";
@@ -146,13 +147,20 @@ export function InteractiveRegionMap({
     });
 
   const mapGesture = Gesture.Simultaneous(panGesture, pinchGesture);
-  const animatedMapStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-      { scale: scale.value },
-    ],
-  }));
+  const animatedMapProps = useAnimatedProps(() => {
+    const fittedScale = Math.min(
+      viewportWidth.value / map.viewBox.width || 1,
+      viewportHeight.value / map.viewBox.height || 1,
+    );
+    const centerX = map.viewBox.width / 2;
+    const centerY = map.viewBox.height / 2;
+    const viewBoxTranslateX = translateX.value / fittedScale;
+    const viewBoxTranslateY = translateY.value / fittedScale;
+
+    return {
+      transform: `translate(${centerX + viewBoxTranslateX} ${centerY + viewBoxTranslateY}) scale(${scale.value}) translate(${-centerX} ${-centerY})`,
+    };
+  });
 
   const zoomBy = useCallback(
     (amount: number) => {
@@ -198,7 +206,7 @@ export function InteractiveRegionMap({
       style={styles.container}
     >
       <GestureDetector gesture={mapGesture}>
-        <Animated.View style={[styles.map, animatedMapStyle]}>
+        <Animated.View style={styles.map}>
           <Svg
             accessibilityLabel={
               mode === "korea" ? "대한민국 시군구 지도" : "세계 국가 지도"
@@ -208,44 +216,46 @@ export function InteractiveRegionMap({
             viewBox={`0 0 ${map.viewBox.width} ${map.viewBox.height}`}
             width="100%"
           >
-            <Rect
-              fill="transparent"
-              height={map.viewBox.height}
-              onPress={() => selectRegion(null)}
-              width={map.viewBox.width}
-              x={0}
-              y={0}
-            />
-            <RegionPhotoLayer
-              mode={mode}
-              regionPhotos={regionPhotos}
-              regions={map.regions}
-            />
-            {map.regions.map((region) => {
-              const photoFilled = photoRegionCodes.has(region.code);
-              return (
-                <RegionPath
-                  key={region.code}
-                  mode={mode}
-                  onPress={handlePress}
-                  photoFilled={photoFilled}
-                  region={region}
-                  selected={selectedRegionCode === region.code}
-                  visited={photoFilled || visitedRegionCodes.has(region.code)}
-                />
-              );
-            })}
-            {selectedRegion ? (
-              <Path
-                d={selectedRegion.path}
+            <AnimatedG animatedProps={animatedMapProps}>
+              <Rect
                 fill="transparent"
-                pointerEvents="none"
-                stroke="#007AFF"
-                strokeLinejoin="round"
-                strokeWidth={mode === "world" ? 0.32 : 1.1}
-                vectorEffect="non-scaling-stroke"
+                height={map.viewBox.height}
+                onPress={() => selectRegion(null)}
+                width={map.viewBox.width}
+                x={0}
+                y={0}
               />
-            ) : null}
+              <RegionPhotoLayer
+                mode={mode}
+                regionPhotos={regionPhotos}
+                regions={map.regions}
+              />
+              {map.regions.map((region) => {
+                const photoFilled = photoRegionCodes.has(region.code);
+                return (
+                  <RegionPath
+                    key={region.code}
+                    mode={mode}
+                    onPress={handlePress}
+                    photoFilled={photoFilled}
+                    region={region}
+                    selected={selectedRegionCode === region.code}
+                    visited={photoFilled || visitedRegionCodes.has(region.code)}
+                  />
+                );
+              })}
+              {selectedRegion ? (
+                <Path
+                  d={selectedRegion.path}
+                  fill="transparent"
+                  pointerEvents="none"
+                  stroke="#007AFF"
+                  strokeLinejoin="round"
+                  strokeWidth={mode === "world" ? 0.32 : 1.1}
+                  vectorEffect="non-scaling-stroke"
+                />
+              ) : null}
+            </AnimatedG>
           </Svg>
         </Animated.View>
       </GestureDetector>
