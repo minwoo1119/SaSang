@@ -284,7 +284,13 @@ export function InteractiveRegionMap({
     const viewBoxTranslateY = translateY.value / fittedScale;
 
     return {
-      transform: `translate(${centerX + viewBoxTranslateX} ${centerY + viewBoxTranslateY}) scale(${scale.value}) translate(${-centerX} ${-centerY})`,
+      transform: [
+        { translateX: centerX + viewBoxTranslateX },
+        { translateY: centerY + viewBoxTranslateY },
+        { scale: scale.value },
+        { translateX: -centerX },
+        { translateY: -centerY },
+      ],
     };
   });
 
