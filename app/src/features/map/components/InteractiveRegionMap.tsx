@@ -4,7 +4,7 @@ import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Easing,
   runOnJS,
-  useAnimatedProps,
+  useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
@@ -19,7 +19,6 @@ import { RegionPhotoLayer } from "./RegionPhotoLayer";
 const MIN_SCALE = 0.85;
 const MAX_SCALE = 5;
 const SMOOTH_CONFIG = { duration: 160, easing: Easing.out(Easing.quad) };
-const AnimatedG = Animated.createAnimatedComponent(G);
 
 type Point = { x: number; y: number };
 type Polygon = Point[];
@@ -282,18 +281,13 @@ export function InteractiveRegionMap({
       }
     });
   const mapGesture = Gesture.Simultaneous(panGesture, pinchGesture, tapGesture);
-  const animatedMapProps = useAnimatedProps(() => {
-    const fittedScale = Math.min(
-      viewportWidth.value / map.viewBox.width || 1,
-      viewportHeight.value / map.viewBox.height || 1,
-    );
-    const centerX = map.viewBox.width / 2;
-    const centerY = map.viewBox.height / 2;
-    const viewBoxTranslateX = translateX.value / fittedScale;
-    const viewBoxTranslateY = translateY.value / fittedScale;
-
+  const animatedMapStyle = useAnimatedStyle(() => {
     return {
-      transform: `translate(${centerX + viewBoxTranslateX} ${centerY + viewBoxTranslateY}) scale(${scale.value}) translate(${-centerX} ${-centerY})`,
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+        { scale: scale.value },
+      ],
     };
   });
 
@@ -345,57 +339,61 @@ export function InteractiveRegionMap({
       style={styles.container}
     >
       <GestureDetector gesture={mapGesture}>
-        <Animated.View style={styles.map}>
-          <Svg
-            accessibilityLabel={
-              mode === "korea" ? "대한민국 시군구 지도" : "세계 국가 지도"
-            }
-            height="100%"
-            preserveAspectRatio="xMidYMid meet"
-            viewBox={`0 0 ${map.viewBox.width} ${map.viewBox.height}`}
-            width="100%"
-          >
-            <AnimatedG animatedProps={animatedMapProps}>
-              <Rect
-                fill="transparent"
-                height={map.viewBox.height}
-                pointerEvents="none"
-                width={map.viewBox.width}
-                x={0}
-                y={0}
-              />
-              <RegionPhotoLayer
-                mode={mode}
-                regionPhotos={regionPhotos}
-                regions={map.regions}
-              />
-              {map.regions.map((region) => {
-                const photoFilled = photoRegionCodes.has(region.code);
-                return (
-                  <RegionPath
-                    key={region.code}
-                    mode={mode}
-                    photoFilled={photoFilled}
-                    region={region}
-                    selected={selectedRegionCode === region.code}
-                    visited={photoFilled || visitedRegionCodes.has(region.code)}
-                  />
-                );
-              })}
-              {selectedRegion ? (
-                <Path
-                  d={selectedRegion.path}
+        <View style={styles.map}>
+          <Animated.View style={[styles.mapContent, animatedMapStyle]}>
+            <Svg
+              accessibilityLabel={
+                mode === "korea" ? "대한민국 시군구 지도" : "세계 국가 지도"
+              }
+              height="100%"
+              preserveAspectRatio="xMidYMid meet"
+              viewBox={`0 0 ${map.viewBox.width} ${map.viewBox.height}`}
+              width="100%"
+            >
+              <G>
+                <Rect
                   fill="transparent"
+                  height={map.viewBox.height}
                   pointerEvents="none"
-                  stroke="#007AFF"
-                  strokeLinejoin="round"
-                  strokeWidth={mode === "world" ? 0.32 : 1.1}
-                  vectorEffect="non-scaling-stroke"
+                  width={map.viewBox.width}
+                  x={0}
+                  y={0}
                 />
-              ) : null}
-            </AnimatedG>
-          </Svg>
-        </Animated.View>
+                <RegionPhotoLayer
+                  mode={mode}
+                  regionPhotos={regionPhotos}
+                  regions={map.regions}
+                />
+                {map.regions.map((region) => {
+                  const photoFilled = photoRegionCodes.has(region.code);
+                  return (
+                    <RegionPath
+                      key={region.code}
+                      mode={mode}
+                      photoFilled={photoFilled}
+                      region={region}
+                      selected={selectedRegionCode === region.code}
+                      visited={
+                        photoFilled || visitedRegionCodes.has(region.code)
+                      }
+                    />
+                  );
+                })}
+                {selectedRegion ? (
+                  <Path
+                    d={selectedRegion.path}
+                    fill="transparent"
+                    pointerEvents="none"
+                    stroke="#007AFF"
+                    strokeLinejoin="round"
+                    strokeWidth={mode === "world" ? 0.32 : 1.1}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                ) : null}
+              </G>
+            </Svg>
+          </Animated.View>
+        </View>
       </GestureDetector>
 
       <MapGlassSurface
@@ -444,6 +442,7 @@ export function InteractiveRegionMap({
 const styles = StyleSheet.create({
   container: { flex: 1, overflow: "hidden", width: "100%" },
   map: { height: "100%", width: "100%" },
+  mapContent: { height: "100%", width: "100%" },
   pressed: { backgroundColor: "rgba(0, 122, 255, 0.08)" },
   resetText: { color: "#007AFF", fontSize: 11, fontWeight: "800" },
   separator: {
