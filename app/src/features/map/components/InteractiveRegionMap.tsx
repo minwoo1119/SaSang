@@ -45,10 +45,10 @@ function getRegionCenter(region: MapRegion | undefined, fallback: ViewBox) {
 function clampViewBox(viewBox: ViewBox, mapWidth: number, mapHeight: number) {
   const width = viewBox.width;
   const height = viewBox.height;
-  const minX = width >= mapWidth ? (mapWidth - width) / 2 : 0;
-  const maxX = width >= mapWidth ? minX : mapWidth - width;
-  const minY = height >= mapHeight ? (mapHeight - height) / 2 : 0;
-  const maxY = height >= mapHeight ? minY : mapHeight - height;
+  const minX = width >= mapWidth ? mapWidth - width : 0;
+  const maxX = width >= mapWidth ? 0 : mapWidth - width;
+  const minY = height >= mapHeight ? mapHeight - height : 0;
+  const maxY = height >= mapHeight ? 0 : mapHeight - height;
 
   return {
     height,
@@ -109,7 +109,8 @@ function alignViewBoxToFocusInsets(
   }
 
   const focusCenterY =
-    focusInsets.top + (viewport.height - focusInsets.top - focusInsets.bottom) / 2;
+    focusInsets.top +
+    (viewport.height - focusInsets.top - focusInsets.bottom) / 2;
 
   return clampViewBox(
     {
