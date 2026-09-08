@@ -10,6 +10,12 @@
 </p>
 
 <p align="center">
+  <a href="#다운로드"><img src="https://img.shields.io/badge/App_Store-출시_예정-black?style=for-the-badge&logo=apple" alt="App Store 출시 예정" /></a>
+  &nbsp;
+  <a href="#다운로드"><img src="https://img.shields.io/badge/Google_Play-출시_예정-0A84FF?style=for-the-badge&logo=google-play&logoColor=white" alt="Google Play 출시 예정" /></a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Expo-SDK%2054-000020?style=flat-square&logo=expo&logoColor=white" alt="Expo SDK 54" />
   <img src="https://img.shields.io/badge/React%20Native-0.81-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React Native 0.81" />
   <img src="https://img.shields.io/badge/TypeScript-5.9%20%2F%206.0-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
@@ -26,6 +32,20 @@
 사상(Sasang)은 방문한 행정 구역의 벡터 폴리곤 경계 안에 여행 사진을 정밀하게 클리핑하여 채워 넣는 개인 맞춤형 비주얼 여행 지도 애플리케이션입니다.
 
 기존의 내비게이션이나 핀 기반 지도와 달리, 사상은 행정 구역 경계선을 시각적 프레임(Container)으로 삼고 사용자의 사진을 핵심 콘텐츠로 배치합니다. 대한민국 250개 시·군·구부터 전 세계 국가까지, 여행의 발자취를 벡터 지도 위에 시각화합니다.
+
+---
+
+## 다운로드
+
+사상(Sasang)은 현재 공식 앱 마켓 출시 준비 단계입니다. 출시 후 아래 링크를 통해 바로 다운로드하실 수 있습니다.
+
+|                                                                                           App Store (iOS)                                                                                            |                                                                                        Google Play (Android)                                                                                        |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| <a href="#다운로드"><img src="https://img.shields.io/badge/Download_on_the-App_Store-black?style=for-the-badge&logo=apple&logoColor=white" alt="Download on the App Store" /></a><br />_(출시 예정)_ | <a href="#다운로드"><img src="https://img.shields.io/badge/Get_it_on-Google_Play-0A84FF?style=for-the-badge&logo=google-play&logoColor=white" alt="Get it on Google Play" /></a><br />_(출시 예정)_ |
+
+<!-- 출시 후 아래 링크를 실제 스토어 URL로 교체하세요. -->
+<!-- App Store: https://apps.apple.com/app/id... -->
+<!-- Google Play: https://play.google.com/store/apps/details?id=com.minwoo1119.sasang -->
 
 ---
 
@@ -160,85 +180,6 @@ sasang/
 ├── pnpm-workspace.yaml
 └── turbo.json
 ```
-
----
-
-## 시작하기
-
-### 사전 요구사항
-
-- Node.js v22.0.0 이상
-- pnpm v10.34.5 이상 (`corepack enable` 권장)
-
-### 1. 의존성 설치
-
-```bash
-corepack enable
-pnpm install
-```
-
-### 2. 모바일 앱 실행
-
-루트 디렉터리에서 실행:
-
-```bash
-pnpm start
-# 또는 특정 경로 지정
-npx expo start app
-```
-
-앱 디렉터리(`app/`)에서 직접 실행:
-
-```bash
-cd app
-npx expo start
-```
-
-플랫폼별 실행:
-
-```bash
-pnpm --filter @sasang/app android  # Android
-pnpm --filter @sasang/app ios      # iOS
-pnpm --filter @sasang/app web      # Web
-```
-
-### 3. 백엔드 API 실행
-
-```bash
-pnpm --filter @sasang/backend dev
-```
-
-### 4. 지도 데이터 전처리
-
-행정 구역 및 국가별 SVG Path 데이터를 재생성할 때 실행합니다:
-
-```bash
-pnpm map:generate
-pnpm map:test
-```
-
-### 5. 코드 품질 검사
-
-```bash
-pnpm typecheck   # 전체 TypeScript 타입 검사
-pnpm lint        # ESLint 정적 분석
-pnpm format:check # Prettier 포맷 검사
-```
-
----
-
-## 환경 변수
-
-각 패키지의 `.env.example`을 참고하여 `.env` 파일을 생성합니다.
-
-- **Mobile (`app/.env`)**:
-  ```env
-  EXPO_PUBLIC_API_URL=https://api.sasang.app
-  ```
-- **Backend (`backend/.env`)**:
-  ```env
-  DATABASE_URL=postgresql://user:password@localhost:5432/sasang
-  ```
 
 ---
 
