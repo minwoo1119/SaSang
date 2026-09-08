@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "61d86d82-2904-4975-bb79-7bdabb61f81a"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.minwoo1119.sasang",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
+  }
+}
