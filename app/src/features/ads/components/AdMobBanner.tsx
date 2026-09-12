@@ -1,8 +1,9 @@
 import Constants from "expo-constants";
 import type { ComponentType, ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { StyleProp, ViewStyle } from "react-native";
 import { StyleSheet, View } from "react-native";
+import { initializeMobileAds } from "../services/mobileAds";
 
 type AdMobBannerProps = {
   fallback: ReactNode;
@@ -39,10 +40,33 @@ function loadGoogleMobileAds() {
 }
 
 export function AdMobBanner({ fallback, size, style, unitId }: AdMobBannerProps) {
+  const [adsReady, setAdsReady] = useState(false);
   const [adFailed, setAdFailed] = useState(false);
   const googleMobileAds = loadGoogleMobileAds();
+  const canLoadAds = googleMobileAds !== null;
 
-  if (!googleMobileAds || adFailed) {
+  useEffect(() => {
+    if (!canLoadAds) return;
+
+    let isMounted = true;
+    void initializeMobileAds().then(
+      () => {
+        if (isMounted) setAdsReady(true);
+      },
+      (error: unknown) => {
+        if (__DEV__) {
+          console.warn("[AdMob] SDK initialization failed:", error);
+        }
+        if (isMounted) setAdFailed(true);
+      },
+    );
+
+    return () => {
+      isMounted = false;
+    };
+  }, [canLoadAds]);
+
+  if (!googleMobileAds || !adsReady || adFailed) {
     return <>{fallback}</>;
   }
 
@@ -85,4 +109,3 @@ const styles = StyleSheet.create({
     width: "100%",
   },
 });
-

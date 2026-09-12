@@ -3,31 +3,28 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { initializeMobileAds } from "@/features/ads/services/mobileAds";
 
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [queryClient] = useState(() => new QueryClient());
+  const splashHiddenRef = useRef(false);
   const [fontsLoaded] = useFonts({
     "SUIT-Heavy": require("../../assets/fonts/SUIT-Heavy.ttf"),
   });
 
-  useEffect(() => {
-    if (fontsLoaded) {
-      void (async () => {
-        try {
-          await initializeMobileAds();
-        } finally {
-          await SplashScreen.hideAsync();
-        }
-      })();
-    }
+  const handleRootLayout = useCallback(() => {
+    if (!fontsLoaded || splashHiddenRef.current) return;
+
+    splashHiddenRef.current = true;
+    void SplashScreen.hideAsync().catch(() => {
+      splashHiddenRef.current = false;
+    });
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
@@ -35,7 +32,7 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView onLayout={handleRootLayout} style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <Stack screenOptions={{ headerShown: false }} />
