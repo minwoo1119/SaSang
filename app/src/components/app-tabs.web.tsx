@@ -57,7 +57,7 @@ export function TabButton({
 
 export function CustomTabList(props: TabListProps) {
   const scheme = useColorScheme();
-  const colors = Colors[scheme ?? "light"];
+  const colors = Colors[scheme === "dark" ? "dark" : "light"];
 
   return (
     <View {...props} style={styles.tabListContainer}>

@@ -4,7 +4,7 @@
   "private": true,
   "packageManager": "pnpm@10.34.5",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.13.0"
   },
   "scripts": {
     "start": "pnpm --filter @sasang/app start",
@@ -20,6 +20,7 @@
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@types/react": "~19.2.18",
     "pnpm": "10.34.5",
     "polygon-clipping": "^0.15.7",
     "prettier": "^3.6.2",

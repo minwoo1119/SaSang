@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  mapViewport: StyleSheet.absoluteFillObject,
+  mapViewport: StyleSheet.absoluteFill,
   photoButton: {
     alignItems: "center",
     backgroundColor: "#007AFF",

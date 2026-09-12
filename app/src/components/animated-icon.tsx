@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   splashOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "#208AEF",
     alignItems: "center",
     justifyContent: "center",
