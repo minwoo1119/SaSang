@@ -33,6 +33,10 @@ module.exports = ({ config }) => {
     ios: {
       bundleIdentifier: appIdentifier,
       icon: './assets/images/icon.png',
+      infoPlist: {
+        CFBundleAllowMixedLocalizations: true,
+        CFBundleDevelopmentRegion: 'ko',
+      },
       ...(hasFirebaseConfig ? { googleServicesFile: googleServicesPlist } : {}),
     },
     android: {
@@ -47,6 +51,9 @@ module.exports = ({ config }) => {
     web: {
       output: 'static',
       favicon: './assets/images/favicon.png',
+    },
+    locales: {
+      ko: './locales/ko.json',
     },
     plugins: [
       'expo-router',

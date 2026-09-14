@@ -1,0 +1,6 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "사상",
+    "NSPhotoLibraryUsageDescription": "여행 사진을 선택하여 지역 지도에 표시하기 위해 사진 보관함 접근이 필요합니다."
+  }
+}
