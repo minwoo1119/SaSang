@@ -12,9 +12,14 @@ import type {
   RegionPhoto,
 } from "@/features/map/models/map.types";
 import { useMapUiStore } from "@/features/map/store/mapUi.store";
+import {
+  getRegionPhotoDateKey,
+  parsePhotoDate,
+} from "@/features/photos/utils/photoDate";
 import { trackScreenView } from "@/services/analytics/analytics";
 
 type PlaceFilter = "korea" | "world";
+type SortOrder = "newest" | "oldest";
 
 type PlaceCard = {
   id: string;
@@ -26,6 +31,7 @@ type PlaceCard = {
 export function PlacesScreen() {
   const insets = useSafeAreaInsets();
   const [filter, setFilter] = useState<PlaceFilter>("korea");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
   const regionPhotos = useMapUiStore((state) => state.regionPhotos);
 
   useEffect(() => {
@@ -44,28 +50,56 @@ export function PlacesScreen() {
         }
         return items;
       }, [])
-      .sort(
-        (a, b) =>
-          new Date(b.photo.createdAt).getTime() -
-          new Date(a.photo.createdAt).getTime(),
-      )
-      .filter(({ mode }) => mode === filter);
-  }, [filter, regionPhotos]);
+      .filter(({ mode }) => mode === filter)
+      .sort((a, b) => {
+        const dateComparison = getRegionPhotoDateKey(a.photo).localeCompare(
+          getRegionPhotoDateKey(b.photo),
+        );
+        const comparison =
+          dateComparison || a.photo.createdAt.localeCompare(b.photo.createdAt);
+        return sortOrder === "newest" ? -comparison : comparison;
+      });
+  }, [filter, regionPhotos, sortOrder]);
 
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <View style={styles.segmentedControl}>
-          <FilterButton
-            label="국내"
-            onPress={() => setFilter("korea")}
-            selected={filter === "korea"}
-          />
-          <FilterButton
-            label="해외"
-            onPress={() => setFilter("world")}
-            selected={filter === "world"}
-          />
+        <View style={styles.headerRow}>
+          <View style={styles.segmentedControl}>
+            <FilterButton
+              label="국내"
+              onPress={() => setFilter("korea")}
+              selected={filter === "korea"}
+            />
+            <FilterButton
+              label="해외"
+              onPress={() => setFilter("world")}
+              selected={filter === "world"}
+            />
+          </View>
+          <Pressable
+            accessibilityLabel={`날짜 정렬, 현재 ${sortOrder === "newest" ? "최신순" : "오래된순"}`}
+            accessibilityRole="button"
+            onPress={() =>
+              setSortOrder((current) =>
+                current === "newest" ? "oldest" : "newest",
+              )
+            }
+            style={({ pressed }) => [
+              styles.sortButton,
+              pressed && styles.pressed,
+            ]}
+          >
+            <SymbolView
+              fallback={<Text style={styles.sortFallback}>↕</Text>}
+              name="arrow.up.arrow.down"
+              size={13}
+              tintColor="#52525B"
+            />
+            <Text style={styles.sortText}>
+              {sortOrder === "newest" ? "최신순" : "오래된순"}
+            </Text>
+          </Pressable>
         </View>
       </View>
 
@@ -171,11 +205,14 @@ function FilterButton({
 function PlacePhotoCard({ card }: { card: PlaceCard }) {
   const locationLabel =
     card.region.provinceName ?? (card.mode === "korea" ? "대한민국" : "해외");
+  const photoDate =
+    parsePhotoDate(getRegionPhotoDateKey(card.photo)) ??
+    new Date(card.photo.createdAt);
   const dateLabel = new Intl.DateTimeFormat("ko-KR", {
     day: "numeric",
     month: "long",
     year: "numeric",
-  }).format(new Date(card.photo.createdAt));
+  }).format(photoDate);
 
   return (
     <Pressable
@@ -379,6 +416,19 @@ const styles = StyleSheet.create({
   miniFallback: {
     fontSize: 10,
   },
+  sortButton: {
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderColor: "rgba(24, 24, 27, 0.1)",
+    borderRadius: 8,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 6,
+    height: 36,
+    paddingHorizontal: 11,
+  },
+  sortFallback: { color: "#52525B", fontSize: 13, fontWeight: "700" },
+  sortText: { color: "#52525B", fontSize: 12, fontWeight: "700" },
   miniPinBadge: {
     alignItems: "center",
     backgroundColor: "#007AFF",
@@ -422,4 +472,3 @@ const styles = StyleSheet.create({
     padding: 4,
   },
 });
-

@@ -28,6 +28,7 @@ export type RegionPhoto = {
   offsetX: number;
   offsetY: number;
   createdAt: string;
+  takenAt?: string;
 };
 
 export type RegionMapAsset = {

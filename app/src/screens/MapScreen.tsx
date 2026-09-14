@@ -22,13 +22,27 @@ import {
   getRegionPhotoKey,
   useMapUiStore,
 } from "@/features/map/store/mapUi.store";
+import { PhotoDateModal } from "@/features/photos/components/PhotoDateModal";
+import {
+  getPhotoTakenDate,
+  toPhotoDateKey,
+} from "@/features/photos/utils/photoDate";
 import { trackEvent, trackScreenView } from "@/services/analytics/analytics";
 import { saveImageToDevice } from "@/services/storage/localImageStorage";
+
+type PendingPhoto = {
+  asset: ImagePicker.ImagePickerAsset;
+  dateFromMetadata: boolean;
+  initialDate: Date;
+  mode: "korea" | "world";
+  regionCode: string;
+};
 
 export function MapScreen() {
   const insets = useSafeAreaInsets();
   const [isAdModalVisible, setIsAdModalVisible] = useState(true);
   const [isPickingPhoto, setIsPickingPhoto] = useState(false);
+  const [pendingPhoto, setPendingPhoto] = useState<PendingPhoto | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const mode = useMapUiStore((state) => state.mode);
   const setMode = useMapUiStore((state) => state.setMode);
@@ -104,35 +118,64 @@ export function MapScreen() {
       setIsPickingPhoto(true);
       const result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: false,
+        exif: true,
         mediaTypes: ["images"],
         quality: 0.9,
       });
       const asset = result.assets?.[0];
       if (!result.canceled && asset) {
-        const savedUri = await saveImageToDevice(
-          asset.uri,
-          "photos",
-          `${mode}-${selectedRegion.code}`,
-        );
-        setRegionPhoto(mode, selectedRegion.code, {
-          createdAt: new Date().toISOString(),
-          height: asset.height,
-          id: asset.assetId ?? `${mode}-${selectedRegion.code}-${Date.now()}`,
-          offsetX: 0,
-          offsetY: 0,
-          scale: 1,
-          uri: savedUri,
-          width: asset.width,
-        });
-        void trackEvent("region_photo_saved", {
-          map_mode: mode,
-          region_code: selectedRegion.code,
+        const metadataDate = getPhotoTakenDate(asset.exif);
+        const now = new Date();
+        const hasUsableMetadataDate =
+          metadataDate !== null && metadataDate <= now;
+        setPendingPhoto({
+          asset,
+          dateFromMetadata: hasUsableMetadataDate,
+          initialDate: hasUsableMetadataDate ? metadataDate : now,
+          mode,
+          regionCode: selectedRegion.code,
         });
       }
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "사진을 불러오지 못했습니다.";
       Alert.alert("사진을 추가할 수 없어요", message);
+    } finally {
+      setIsPickingPhoto(false);
+    }
+  };
+
+  const savePendingPhoto = async (takenAt: Date) => {
+    if (!pendingPhoto || isPickingPhoto) return;
+
+    try {
+      setIsPickingPhoto(true);
+      const { asset, mode: photoMode, regionCode } = pendingPhoto;
+      const savedUri = await saveImageToDevice(
+        asset.uri,
+        "photos",
+        `${photoMode}-${regionCode}`,
+      );
+      setRegionPhoto(photoMode, regionCode, {
+        createdAt: new Date().toISOString(),
+        height: asset.height,
+        id: asset.assetId ?? `${photoMode}-${regionCode}-${Date.now()}`,
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        takenAt: toPhotoDateKey(takenAt),
+        uri: savedUri,
+        width: asset.width,
+      });
+      setPendingPhoto(null);
+      void trackEvent("region_photo_saved", {
+        map_mode: photoMode,
+        region_code: regionCode,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "사진을 저장하지 못했습니다.";
+      Alert.alert("사진을 저장할 수 없어요", message);
     } finally {
       setIsPickingPhoto(false);
     }
@@ -360,6 +403,15 @@ export function MapScreen() {
           </Text>
         </MapGlassSurface>
       )}
+      <PhotoDateModal
+        dateFromMetadata={pendingPhoto?.dateFromMetadata ?? false}
+        initialDate={pendingPhoto?.initialDate ?? new Date()}
+        isSaving={isPickingPhoto}
+        onCancel={() => setPendingPhoto(null)}
+        onConfirm={savePendingPhoto}
+        photoUri={pendingPhoto?.asset.uri ?? ""}
+        visible={pendingPhoto !== null}
+      />
       <AdPlaceholderModal onClose={closeAdModal} visible={isAdModalVisible} />
     </View>
   );
