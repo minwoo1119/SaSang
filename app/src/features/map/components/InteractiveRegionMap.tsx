@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Svg, { G, Path, Rect } from "react-native-svg";
+import Svg, { G, Path, Rect, type SvgProps } from "react-native-svg";
 import { MAP_ASSETS } from "../models/mapAssets";
 import type { MapMode, MapRegion } from "../models/map.types";
 import { getRegionPhotoKey, useMapUiStore } from "../store/mapUi.store";
@@ -19,6 +19,12 @@ type RegionPolygons = { polygons: Polygon[]; region: MapRegion };
 type ViewBox = { height: number; width: number; x: number; y: number };
 type ViewportSize = { height: number; width: number };
 type ViewportInsets = { bottom: number; top: number };
+type NativeSvgViewBoxProps = SvgProps & {
+  minX: number;
+  minY: number;
+  vbHeight: number;
+  vbWidth: number;
+};
 
 function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(Math.max(value, minimum), maximum);
@@ -299,6 +305,34 @@ function getViewBoxForScale(
   );
 }
 
+function getViewBoxForPinch(
+  sourceViewBox: ViewBox,
+  scale: number,
+  anchor: Point,
+  focalPoint: Point,
+  mapWidth: number,
+  mapHeight: number,
+  viewport: ViewportSize,
+  insets?: ViewportInsets,
+) {
+  const aspectRatio = sourceViewBox.width / sourceViewBox.height;
+  const width = mapWidth / scale;
+  const height = width / aspectRatio;
+
+  return clampViewBox(
+    {
+      height,
+      width,
+      x: anchor.x - (focalPoint.x / viewport.width) * width,
+      y: anchor.y - (focalPoint.y / viewport.height) * height,
+    },
+    mapWidth,
+    mapHeight,
+    viewport,
+    insets,
+  );
+}
+
 function parsePathPolygons(path: string): Polygon[] {
   const tokens = path.match(/[MLZ]|-?\d+(?:\.\d+)?/g) ?? [];
   const polygons: Polygon[] = [];
@@ -457,7 +491,12 @@ export function InteractiveRegionMap({
   );
   const viewportSizeRef = useRef(viewportSize);
   const viewBoxRef = useRef(viewBox);
-  const startViewBoxRef = useRef(viewBox);
+  const panStartViewBoxRef = useRef(viewBox);
+  const pinchStartViewBoxRef = useRef(viewBox);
+  const pinchAnchorRef = useRef<Point>({ x: 0, y: 0 });
+  const pendingViewBoxRef = useRef<ViewBox | null>(null);
+  const viewBoxFrameRef = useRef<number | null>(null);
+  const svgRef = useRef<Svg | null>(null);
 
   const photoRegionCodes = useMemo(
     () =>
@@ -506,10 +545,54 @@ export function InteractiveRegionMap({
     [map.regions],
   );
 
+  const applyNativeViewBox = useCallback((nextViewBox: ViewBox) => {
+    if (Platform.OS === "web") return;
+
+    const nativeProps: NativeSvgViewBoxProps = {
+      minX: nextViewBox.x,
+      minY: nextViewBox.y,
+      vbHeight: nextViewBox.height,
+      vbWidth: nextViewBox.width,
+    };
+    svgRef.current?.setNativeProps(nativeProps);
+  }, []);
+
   const updateViewBox = useCallback((nextViewBox: ViewBox) => {
     viewBoxRef.current = nextViewBox;
     setViewBox(nextViewBox);
   }, []);
+
+  const updateGestureViewBox = useCallback(
+    (nextViewBox: ViewBox) => {
+      viewBoxRef.current = nextViewBox;
+
+      if (Platform.OS === "web") {
+        setViewBox(nextViewBox);
+        return;
+      }
+
+      pendingViewBoxRef.current = nextViewBox;
+      if (viewBoxFrameRef.current !== null) return;
+
+      viewBoxFrameRef.current = requestAnimationFrame(() => {
+        viewBoxFrameRef.current = null;
+        const pendingViewBox = pendingViewBoxRef.current;
+        pendingViewBoxRef.current = null;
+        if (pendingViewBox) applyNativeViewBox(pendingViewBox);
+      });
+    },
+    [applyNativeViewBox],
+  );
+
+  const commitGestureViewBox = useCallback(() => {
+    if (viewBoxFrameRef.current !== null) {
+      cancelAnimationFrame(viewBoxFrameRef.current);
+      viewBoxFrameRef.current = null;
+    }
+    pendingViewBoxRef.current = null;
+    applyNativeViewBox(viewBoxRef.current);
+    setViewBox(viewBoxRef.current);
+  }, [applyNativeViewBox]);
 
   const resetViewport = useCallback(() => {
     updateViewBox(initialViewBox);
@@ -518,6 +601,15 @@ export function InteractiveRegionMap({
   useEffect(() => {
     updateViewBox(initialViewBox);
   }, [initialViewBox, updateViewBox]);
+
+  useEffect(
+    () => () => {
+      if (viewBoxFrameRef.current !== null) {
+        cancelAnimationFrame(viewBoxFrameRef.current);
+      }
+    },
+    [],
+  );
 
   const handleMapTap = useCallback(
     (x: number, y: number) => {
@@ -558,17 +650,18 @@ export function InteractiveRegionMap({
 
   const panGesture = Gesture.Pan()
     .minDistance(5)
+    .maxPointers(1)
     .runOnJS(true)
     .onBegin(() => {
       onMapInteraction?.();
-      startViewBoxRef.current = viewBoxRef.current;
+      panStartViewBoxRef.current = viewBoxRef.current;
     })
     .onUpdate((event) => {
-      const startViewBox = startViewBoxRef.current;
+      const startViewBox = panStartViewBoxRef.current;
       const viewport = viewportSizeRef.current;
       if (viewport.width <= 0 || viewport.height <= 0) return;
 
-      updateViewBox(
+      updateGestureViewBox(
         clampViewBox(
           {
             ...startViewBox,
@@ -585,16 +678,27 @@ export function InteractiveRegionMap({
           initialFocusInsets,
         ),
       );
-    });
+    })
+    .onFinalize(commitGestureViewBox);
 
   const pinchGesture = Gesture.Pinch()
     .runOnJS(true)
-    .onBegin(() => {
+    .onStart((event) => {
       onMapInteraction?.();
-      startViewBoxRef.current = viewBoxRef.current;
+      const startViewBox = viewBoxRef.current;
+      const viewport = viewportSizeRef.current;
+      pinchStartViewBoxRef.current = startViewBox;
+      if (viewport.width <= 0 || viewport.height <= 0) return;
+      pinchAnchorRef.current = getMapPointFromScreenPoint(
+        { x: event.focalX, y: event.focalY },
+        startViewBox,
+        viewport,
+      );
     })
     .onUpdate((event) => {
-      const startViewBox = startViewBoxRef.current;
+      const startViewBox = pinchStartViewBoxRef.current;
+      const viewport = viewportSizeRef.current;
+      if (viewport.width <= 0 || viewport.height <= 0) return;
       const startScale = getViewBoxScale(startViewBox, map.viewBox.width);
       const minimumScale = getViewBoxScale(initialViewBox, map.viewBox.width);
       const nextScale = clamp(
@@ -602,17 +706,20 @@ export function InteractiveRegionMap({
         minimumScale,
         MAX_SCALE,
       );
-      updateViewBox(
-        getViewBoxForScale(
+      updateGestureViewBox(
+        getViewBoxForPinch(
           startViewBox,
           nextScale,
+          pinchAnchorRef.current,
+          { x: event.focalX, y: event.focalY },
           map.viewBox.width,
           map.viewBox.height,
-          viewportSizeRef.current,
+          viewport,
           initialFocusInsets,
         ),
       );
-    });
+    })
+    .onFinalize(commitGestureViewBox);
 
   const tapGesture = Gesture.Tap()
     .maxDistance(8)
@@ -680,6 +787,7 @@ export function InteractiveRegionMap({
             }
             height="100%"
             preserveAspectRatio="none"
+            ref={svgRef}
             viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
             width="100%"
           >
