@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AdPlaceholderModal } from "@/features/ads/components/AdPlaceholderModal";
 import { InteractiveRegionMap } from "@/features/map/components/InteractiveRegionMap";
 import { MapGlassSurface } from "@/features/map/components/MapGlassSurface";
-import { MapModeTabs } from "@/features/map/components/MapModeTabs";
+import { OwnedMapSelector } from "@/features/map/components/OwnedMapSelector";
 import { MAP_ASSETS } from "@/features/map/models/mapAssets";
 import {
   getRegionPhotoKey,
@@ -243,7 +243,7 @@ export function MapScreen() {
             />
             <Text style={styles.recordCount}>{photoCount}개의 여행 기록</Text>
           </View>
-          <MapModeTabs onChange={handleModeChange} value={mode} />
+          <OwnedMapSelector onChange={handleModeChange} value={mode} />
         </View>
         <MapGlassSurface style={styles.searchBar}>
           <TextInput

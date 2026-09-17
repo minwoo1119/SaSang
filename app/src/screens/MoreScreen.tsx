@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useState } from "react";
@@ -197,6 +197,16 @@ export function MoreScreen() {
         label="AdMob Banner"
         style={styles.adBannerMargin}
       />
+
+      <View style={styles.infoSection}>
+        <Text style={styles.infoTitle}>지도</Text>
+        <View style={styles.infoList}>
+          <MoreRow
+            label="지도 상점"
+            onPress={() => router.push("/map-store" as Href)}
+          />
+        </View>
+      </View>
 
       <View style={styles.infoSection}>
         <Text style={styles.infoTitle}>약관 및 정보</Text>
