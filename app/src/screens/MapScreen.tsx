@@ -389,6 +389,8 @@ export function MapScreen() {
           >
             {isPickingPhoto ? (
               <ActivityIndicator color="#FFFFFF" size="small" />
+            ) : selectedPhoto ? (
+              <Text style={styles.photoButtonEditText}>수정</Text>
             ) : (
               <Text style={styles.photoButtonIcon}>＋</Text>
             )}
@@ -446,6 +448,11 @@ const styles = StyleSheet.create({
     fontSize: 23,
     fontWeight: "400",
     lineHeight: 23,
+  },
+  photoButtonEditText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "800",
   },
   photoButtonPressed: { backgroundColor: "#0068D9" },
   pressed: { opacity: 0.55 },

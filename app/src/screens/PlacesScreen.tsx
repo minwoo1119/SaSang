@@ -1,8 +1,18 @@
 import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AdNativeCardPlaceholder } from "@/features/ads/components/AdNativeCardPlaceholder";
 import { OwnedMapSelector } from "@/features/map/components/OwnedMapSelector";
@@ -14,11 +24,15 @@ import type {
   RegionPhoto,
 } from "@/features/map/models/map.types";
 import { useMapUiStore } from "@/features/map/store/mapUi.store";
+import { PhotoDateModal } from "@/features/photos/components/PhotoDateModal";
 import {
+  getPhotoTakenDate,
   getRegionPhotoDateKey,
   parsePhotoDate,
+  toPhotoDateKey,
 } from "@/features/photos/utils/photoDate";
-import { trackScreenView } from "@/services/analytics/analytics";
+import { trackEvent, trackScreenView } from "@/services/analytics/analytics";
+import { saveImageToDevice } from "@/services/storage/localImageStorage";
 
 type SortOrder = "newest" | "oldest";
 
@@ -29,12 +43,26 @@ type PlaceCard = {
   region: MapRegion;
 };
 
+type PendingReplacement = {
+  asset: ImagePicker.ImagePickerAsset;
+  dateFromMetadata: boolean;
+  initialDate: Date;
+  mode: MapMode;
+  regionCode: string;
+};
+
 export function PlacesScreen() {
   const insets = useSafeAreaInsets();
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
+  const [selectedCard, setSelectedCard] = useState<PlaceCard | null>(null);
+  const [pendingReplacement, setPendingReplacement] =
+    useState<PendingReplacement | null>(null);
+  const [isSavingPhoto, setIsSavingPhoto] = useState(false);
   const filter = useMapUiStore((state) => state.mode);
   const setFilter = useMapUiStore((state) => state.setMode);
   const regionPhotos = useMapUiStore((state) => state.regionPhotos);
+  const setRegionPhoto = useMapUiStore((state) => state.setRegionPhoto);
+  const removeRegionPhoto = useMapUiStore((state) => state.removeRegionPhoto);
 
   useEffect(() => {
     void trackScreenView("Places");
@@ -62,6 +90,97 @@ export function PlacesScreen() {
         return sortOrder === "newest" ? -comparison : comparison;
       });
   }, [filter, regionPhotos, sortOrder]);
+
+  const pickReplacement = async () => {
+    if (!selectedCard || isSavingPhoto) return;
+
+    try {
+      setIsSavingPhoto(true);
+      const result = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: false,
+        exif: true,
+        mediaTypes: ["images"],
+        quality: 0.9,
+      });
+      const asset = result.assets?.[0];
+      if (!result.canceled && asset) {
+        const metadataDate = getPhotoTakenDate(asset.exif);
+        const now = new Date();
+        const dateFromMetadata = metadataDate !== null && metadataDate <= now;
+        setPendingReplacement({
+          asset,
+          dateFromMetadata,
+          initialDate: dateFromMetadata ? metadataDate : now,
+          mode: selectedCard.mode,
+          regionCode: selectedCard.region.code,
+        });
+        setSelectedCard(null);
+      }
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "사진을 불러오지 못했습니다.";
+      Alert.alert("사진을 변경할 수 없어요", message);
+    } finally {
+      setIsSavingPhoto(false);
+    }
+  };
+
+  const saveReplacement = async (takenAt: Date) => {
+    if (!pendingReplacement || isSavingPhoto) return;
+
+    try {
+      setIsSavingPhoto(true);
+      const { asset, mode, regionCode } = pendingReplacement;
+      const savedUri = await saveImageToDevice(
+        asset.uri,
+        "photos",
+        `${mode}-${regionCode}`,
+      );
+      setRegionPhoto(mode, regionCode, {
+        createdAt: new Date().toISOString(),
+        height: asset.height,
+        id: asset.assetId ?? `${mode}-${regionCode}-${Date.now()}`,
+        offsetX: 0,
+        offsetY: 0,
+        scale: 1,
+        takenAt: toPhotoDateKey(takenAt),
+        uri: savedUri,
+        width: asset.width,
+      });
+      setPendingReplacement(null);
+      void trackEvent("place_photo_replaced", {
+        map_mode: mode,
+        region_code: regionCode,
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "사진을 저장하지 못했습니다.";
+      Alert.alert("사진을 변경할 수 없어요", message);
+    } finally {
+      setIsSavingPhoto(false);
+    }
+  };
+
+  const deleteSelectedPhoto = () => {
+    if (!selectedCard) return;
+    const { mode, region } = selectedCard;
+
+    Alert.alert("사진 삭제", `'${region.name}'의 사진을 삭제할까요?`, [
+      { style: "cancel", text: "취소" },
+      {
+        onPress: () => {
+          removeRegionPhoto(mode, region.code);
+          setSelectedCard(null);
+          void trackEvent("place_photo_removed", {
+            map_mode: mode,
+            region_code: region.code,
+          });
+        },
+        style: "destructive",
+        text: "삭제",
+      },
+    ]);
+  };
 
   return (
     <View style={styles.container}>
@@ -104,7 +223,10 @@ export function PlacesScreen() {
         {cards.length > 0 ? (
           cards.map((card, index) => (
             <View key={card.id} style={styles.listItem}>
-              <PlacePhotoCard card={card} />
+              <PlacePhotoCard
+                card={card}
+                onPress={() => setSelectedCard(card)}
+              />
               {index === 0 ? (
                 <AdNativeCardPlaceholder style={styles.adItemMargin} />
               ) : null}
@@ -114,6 +236,23 @@ export function PlacesScreen() {
           <EmptyPlacesState filter={filter} />
         )}
       </ScrollView>
+
+      <PhotoManagementModal
+        isBusy={isSavingPhoto}
+        onClose={() => setSelectedCard(null)}
+        onDelete={deleteSelectedPhoto}
+        onReplace={pickReplacement}
+        selectedCard={selectedCard}
+      />
+      <PhotoDateModal
+        dateFromMetadata={pendingReplacement?.dateFromMetadata ?? false}
+        initialDate={pendingReplacement?.initialDate ?? new Date()}
+        isSaving={isSavingPhoto}
+        onCancel={() => setPendingReplacement(null)}
+        onConfirm={saveReplacement}
+        photoUri={pendingReplacement?.asset.uri ?? ""}
+        visible={pendingReplacement !== null}
+      />
     </View>
   );
 }
@@ -127,32 +266,10 @@ function EmptyPlacesState({ filter }: { filter: MapMode }) {
 
   return (
     <View style={styles.emptyContainer}>
-      <View style={styles.emptyCard}>
-        <View style={styles.iconOuterRing}>
-          <View style={styles.iconInnerBadge}>
-            <SymbolView
-              fallback={<Text style={styles.iconFallback}>🗺️</Text>}
-              name="photo.stack.fill"
-              size={30}
-              tintColor="#007AFF"
-            />
-          </View>
-          <View style={styles.miniPinBadge}>
-            <SymbolView
-              fallback={<Text style={styles.miniFallback}>📍</Text>}
-              name="location.fill"
-              size={11}
-              tintColor="#FFFFFF"
-            />
-          </View>
-        </View>
-
-        <View style={styles.emptyContent}>
-          <Text style={styles.emptyTitle}>
-            {mapName}에 여행 기록이 없어요
-          </Text>
-          <Text style={styles.emptyDescription}>{subtitleText}</Text>
-        </View>
+      <View style={styles.emptyState}>
+        <Text style={styles.emptyMapName}>{mapName}</Text>
+        <Text style={styles.emptyTitle}>아직 여행 기록이 없어요</Text>
+        <Text style={styles.emptyDescription}>{subtitleText}</Text>
 
         <Pressable
           accessibilityRole="button"
@@ -171,7 +288,100 @@ function EmptyPlacesState({ filter }: { filter: MapMode }) {
   );
 }
 
-function PlacePhotoCard({ card }: { card: PlaceCard }) {
+function PhotoManagementModal({
+  isBusy,
+  onClose,
+  onDelete,
+  onReplace,
+  selectedCard,
+}: {
+  isBusy: boolean;
+  onClose: () => void;
+  onDelete: () => void;
+  onReplace: () => void;
+  selectedCard: PlaceCard | null;
+}) {
+  return (
+    <Modal
+      animationType="fade"
+      onRequestClose={isBusy ? undefined : onClose}
+      presentationStyle="overFullScreen"
+      transparent
+      visible={selectedCard !== null}
+    >
+      <View style={styles.photoModalBackdrop}>
+        <Pressable
+          accessibilityLabel="사진 관리 닫기"
+          disabled={isBusy}
+          onPress={onClose}
+          style={StyleSheet.absoluteFill}
+        />
+        {selectedCard ? (
+          <View accessibilityViewIsModal style={styles.photoModalSheet}>
+            <Image
+              contentFit="cover"
+              source={{ uri: selectedCard.photo.uri }}
+              style={styles.photoModalPreview}
+            />
+            <View style={styles.photoModalCopy}>
+              <Text numberOfLines={1} style={styles.photoModalTitle}>
+                {selectedCard.region.name}
+              </Text>
+              <Text style={styles.photoModalSubtitle}>사진 관리</Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              disabled={isBusy}
+              onPress={onReplace}
+              style={({ pressed }) => [
+                styles.replaceButton,
+                pressed && styles.replaceButtonPressed,
+              ]}
+            >
+              {isBusy ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <Text style={styles.replaceButtonText}>새 사진으로 변경</Text>
+              )}
+            </Pressable>
+            <View style={styles.photoModalSecondaryActions}>
+              <Pressable
+                accessibilityRole="button"
+                disabled={isBusy}
+                onPress={onClose}
+                style={({ pressed }) => [
+                  styles.photoModalSecondaryButton,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Text style={styles.photoModalCloseText}>닫기</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                disabled={isBusy}
+                onPress={onDelete}
+                style={({ pressed }) => [
+                  styles.photoModalSecondaryButton,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Text style={styles.photoModalDeleteText}>삭제</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
+      </View>
+    </Modal>
+  );
+}
+
+function PlacePhotoCard({
+  card,
+  onPress,
+}: {
+  card: PlaceCard;
+  onPress: () => void;
+}) {
   const locationLabel =
     card.region.provinceName ?? (card.mode === "korea" ? "대한민국" : "해외");
   const photoDate =
@@ -185,7 +395,9 @@ function PlacePhotoCard({ card }: { card: PlaceCard }) {
 
   return (
     <Pressable
+      accessibilityLabel={`${card.region.name} 사진 관리`}
       accessibilityRole="button"
+      onPress={onPress}
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
       <View style={styles.imageFrame}>
@@ -255,11 +467,8 @@ const styles = StyleSheet.create({
   ctaButton: {
     alignItems: "center",
     backgroundColor: "#007AFF",
-    borderRadius: 22,
-    boxShadow: "0 4px 14px rgba(0, 122, 255, 0.28)",
-    elevation: 3,
+    borderRadius: 8,
     flexDirection: "row",
-    gap: 8,
     height: 46,
     justifyContent: "center",
     marginTop: 4,
@@ -279,18 +488,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
-  emptyCard: {
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderColor: "rgba(24, 24, 27, 0.08)",
-    borderRadius: 24,
-    borderWidth: 1,
-    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.04)",
-    elevation: 2,
-    gap: 18,
-    paddingHorizontal: 24,
-    paddingVertical: 36,
-  },
   emptyContainer: {
     gap: 20,
     marginTop: 8,
@@ -299,10 +496,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 16,
   },
-  emptyContent: {
-    alignItems: "center",
-    gap: 8,
-  },
   emptyDescription: {
     color: "#71717A",
     fontSize: 14,
@@ -310,9 +503,24 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     textAlign: "center",
   },
+  emptyMapName: {
+    color: "#007AFF",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  emptyState: {
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderColor: "rgba(24, 24, 27, 0.08)",
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: 10,
+    paddingHorizontal: 24,
+    paddingVertical: 42,
+  },
   emptyTitle: {
     color: "#18181B",
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "800",
     textAlign: "center",
   },
@@ -324,26 +532,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-  },
-  iconFallback: {
-    fontSize: 24,
-  },
-  iconInnerBadge: {
-    alignItems: "center",
-    backgroundColor: "rgba(0, 122, 255, 0.12)",
-    borderRadius: 30,
-    height: 60,
-    justifyContent: "center",
-    width: 60,
-  },
-  iconOuterRing: {
-    alignItems: "center",
-    backgroundColor: "rgba(0, 122, 255, 0.06)",
-    borderRadius: 44,
-    height: 88,
-    justifyContent: "center",
-    position: "relative",
-    width: 88,
   },
   imageFrame: {
     aspectRatio: 1.18,
@@ -362,9 +550,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
-  miniFallback: {
-    fontSize: 10,
-  },
   sortButton: {
     alignItems: "center",
     backgroundColor: "rgba(255, 255, 255, 0.92)",
@@ -378,19 +563,6 @@ const styles = StyleSheet.create({
   },
   sortFallback: { color: "#52525B", fontSize: 14, fontWeight: "800" },
   sortText: { color: "#27272A", fontSize: 13, fontWeight: "800" },
-  miniPinBadge: {
-    alignItems: "center",
-    backgroundColor: "#007AFF",
-    borderColor: "#FFFFFF",
-    borderRadius: 12,
-    borderWidth: 2,
-    bottom: 2,
-    height: 24,
-    justifyContent: "center",
-    position: "absolute",
-    right: 2,
-    width: 24,
-  },
   modeLabel: {
     backgroundColor: "rgba(0, 122, 255, 0.1)",
     borderRadius: 10,
@@ -404,6 +576,58 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.78,
   },
+  photoModalBackdrop: {
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.38)",
+    flex: 1,
+    justifyContent: "center",
+    padding: 20,
+  },
+  photoModalCloseText: {
+    color: "#52525B",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  photoModalCopy: { gap: 3 },
+  photoModalDeleteText: {
+    color: "#EF4444",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  photoModalPreview: {
+    aspectRatio: 1.7,
+    backgroundColor: "#F4F4F5",
+    borderRadius: 8,
+    width: "100%",
+  },
+  photoModalSecondaryActions: { flexDirection: "row", gap: 8 },
+  photoModalSecondaryButton: {
+    alignItems: "center",
+    backgroundColor: "#F4F4F5",
+    borderRadius: 8,
+    flex: 1,
+    height: 44,
+    justifyContent: "center",
+  },
+  photoModalSheet: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 8,
+    gap: 15,
+    maxWidth: 430,
+    padding: 18,
+    width: "100%",
+  },
+  photoModalSubtitle: { color: "#71717A", fontSize: 12, fontWeight: "600" },
+  photoModalTitle: { color: "#18181B", fontSize: 20, fontWeight: "800" },
+  replaceButton: {
+    alignItems: "center",
+    backgroundColor: "#007AFF",
+    borderRadius: 8,
+    height: 48,
+    justifyContent: "center",
+  },
+  replaceButtonPressed: { backgroundColor: "#0068D9" },
+  replaceButtonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "800" },
   regionName: {
     color: "#18181B",
     flex: 1,
