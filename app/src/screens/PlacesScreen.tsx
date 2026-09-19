@@ -2,6 +2,7 @@ import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
+import { ImagePlus } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -16,7 +17,6 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AdNativeCardPlaceholder } from "@/features/ads/components/AdNativeCardPlaceholder";
 import { OwnedMapSelector } from "@/features/map/components/OwnedMapSelector";
-import { getOwnedMap } from "@/features/map/models/mapCatalog";
 import { MAP_ASSETS } from "@/features/map/models/mapAssets";
 import type {
   MapMode,
@@ -233,7 +233,7 @@ export function PlacesScreen() {
             </View>
           ))
         ) : (
-          <EmptyPlacesState filter={filter} />
+          <EmptyPlacesState />
         )}
       </ScrollView>
 
@@ -257,19 +257,17 @@ export function PlacesScreen() {
   );
 }
 
-function EmptyPlacesState({ filter }: { filter: MapMode }) {
-  const isKorea = filter === "korea";
-  const mapName = getOwnedMap(filter).name;
-  const subtitleText = isKorea
-    ? "지도에서 원하는 시·군·구를 선택하고\n사진을 채워 나만의 여행 지도를 만들어보세요."
-    : "지도에서 다녀온 국가를 선택하고\n사진을 채워 세계 여행을 기록해보세요.";
-
+function EmptyPlacesState() {
   return (
     <View style={styles.emptyContainer}>
       <View style={styles.emptyState}>
-        <Text style={styles.emptyMapName}>{mapName}</Text>
+        <View style={styles.emptyIcon}>
+          <ImagePlus color="#007AFF" size={23} strokeWidth={2.2} />
+        </View>
         <Text style={styles.emptyTitle}>아직 여행 기록이 없어요</Text>
-        <Text style={styles.emptyDescription}>{subtitleText}</Text>
+        <Text style={styles.emptyDescription}>
+          지도에서 사진을 추가해보세요.
+        </Text>
 
         <Pressable
           accessibilityRole="button"
@@ -279,7 +277,7 @@ function EmptyPlacesState({ filter }: { filter: MapMode }) {
             pressed && styles.ctaButtonPressed,
           ]}
         >
-          <Text style={styles.ctaButtonText}>지도에서 사진 추가하기</Text>
+          <Text style={styles.ctaButtonText}>사진 추가</Text>
         </Pressable>
       </View>
 
@@ -467,9 +465,9 @@ const styles = StyleSheet.create({
   ctaButton: {
     alignItems: "center",
     backgroundColor: "#007AFF",
-    borderRadius: 8,
+    borderRadius: 22,
     flexDirection: "row",
-    height: 46,
+    height: 44,
     justifyContent: "center",
     marginTop: 4,
     paddingHorizontal: 22,
@@ -500,21 +498,25 @@ const styles = StyleSheet.create({
     color: "#71717A",
     fontSize: 14,
     fontWeight: "600",
-    lineHeight: 21,
+    lineHeight: 20,
     textAlign: "center",
   },
-  emptyMapName: {
-    color: "#007AFF",
-    fontSize: 12,
-    fontWeight: "800",
+  emptyIcon: {
+    alignItems: "center",
+    backgroundColor: "rgba(0, 122, 255, 0.1)",
+    borderRadius: 24,
+    height: 48,
+    justifyContent: "center",
+    marginBottom: 2,
+    width: 48,
   },
   emptyState: {
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderColor: "rgba(24, 24, 27, 0.08)",
-    borderRadius: 8,
+    borderRadius: 18,
     borderWidth: StyleSheet.hairlineWidth,
-    gap: 10,
+    gap: 11,
     paddingHorizontal: 24,
     paddingVertical: 42,
   },
