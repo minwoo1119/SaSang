@@ -2,7 +2,7 @@ import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import { ImagePlus } from "lucide-react-native";
+import { ArrowRight, MapPinned } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -262,12 +262,14 @@ function EmptyPlacesState() {
     <View style={styles.emptyContainer}>
       <View style={styles.emptyState}>
         <View style={styles.emptyIcon}>
-          <ImagePlus color="#007AFF" size={23} strokeWidth={2.2} />
+          <MapPinned color="#007AFF" size={25} strokeWidth={2.2} />
         </View>
-        <Text style={styles.emptyTitle}>아직 여행 기록이 없어요</Text>
-        <Text style={styles.emptyDescription}>
-          지도에서 사진을 추가해보세요.
-        </Text>
+        <View style={styles.emptyCopy}>
+          <Text style={styles.emptyTitle}>아직 기록이 없어요</Text>
+          <Text style={styles.emptyDescription}>
+            지도에서 첫 사진을 추가해보세요.
+          </Text>
+        </View>
 
         <Pressable
           accessibilityRole="button"
@@ -277,7 +279,8 @@ function EmptyPlacesState() {
             pressed && styles.ctaButtonPressed,
           ]}
         >
-          <Text style={styles.ctaButtonText}>사진 추가</Text>
+          <Text style={styles.ctaButtonText}>지도에서 시작하기</Text>
+          <ArrowRight color="#FFFFFF" size={18} strokeWidth={2.4} />
         </Pressable>
       </View>
 
@@ -465,12 +468,12 @@ const styles = StyleSheet.create({
   ctaButton: {
     alignItems: "center",
     backgroundColor: "#007AFF",
-    borderRadius: 22,
+    borderRadius: 16,
     flexDirection: "row",
-    height: 44,
-    justifyContent: "center",
-    marginTop: 4,
-    paddingHorizontal: 22,
+    height: 52,
+    justifyContent: "space-between",
+    marginTop: 10,
+    paddingHorizontal: 17,
   },
   ctaButtonPressed: {
     opacity: 0.85,
@@ -497,34 +500,38 @@ const styles = StyleSheet.create({
   emptyDescription: {
     color: "#71717A",
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "500",
     lineHeight: 20,
-    textAlign: "center",
+  },
+  emptyCopy: {
+    gap: 5,
   },
   emptyIcon: {
     alignItems: "center",
-    backgroundColor: "rgba(0, 122, 255, 0.1)",
-    borderRadius: 24,
-    height: 48,
+    alignSelf: "flex-start",
+    backgroundColor: "#EAF4FF",
+    borderRadius: 16,
+    height: 52,
     justifyContent: "center",
-    marginBottom: 2,
-    width: 48,
+    marginBottom: 8,
+    width: 52,
   },
   emptyState: {
-    alignItems: "center",
     backgroundColor: "#FFFFFF",
-    borderColor: "rgba(24, 24, 27, 0.08)",
-    borderRadius: 18,
-    borderWidth: StyleSheet.hairlineWidth,
-    gap: 11,
+    borderRadius: 20,
+    gap: 12,
     paddingHorizontal: 24,
-    paddingVertical: 42,
+    paddingVertical: 28,
+    shadowColor: "#18181B",
+    shadowOffset: { height: 4, width: 0 },
+    shadowOpacity: 0.04,
+    shadowRadius: 14,
   },
   emptyTitle: {
     color: "#18181B",
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "800",
-    textAlign: "center",
+    lineHeight: 29,
   },
   header: {
     paddingBottom: 18,
