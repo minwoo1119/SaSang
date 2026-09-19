@@ -193,10 +193,7 @@ export function MoreScreen() {
         </Pressable>
       </View>
 
-      <AdBannerPlaceholder
-        label="AdMob Banner"
-        style={styles.adBannerMargin}
-      />
+      <AdBannerPlaceholder style={styles.adBannerMargin} />
 
       <View style={styles.infoSection}>
         <Text style={styles.infoTitle}>지도</Text>

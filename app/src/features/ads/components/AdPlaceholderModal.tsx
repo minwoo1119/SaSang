@@ -82,10 +82,7 @@ export function AdPlaceholderModal({
         >
           <AdMobBanner
             fallback={
-              <View style={[styles.adSlot, { height: adSlotHeight }]}>
-                <Text style={styles.adLabel}>AdMob</Text>
-                <Text style={styles.adText}>광고 영역</Text>
-              </View>
+              <View style={[styles.adSlot, { height: adSlotHeight }]} />
             }
             size="ANCHORED_ADAPTIVE_BANNER"
             unitId={ADMOB_AD_UNIT_IDS.home}
@@ -107,25 +104,14 @@ export function AdPlaceholderModal({
 }
 
 const styles = StyleSheet.create({
-  adLabel: {
-    color: "#007AFF",
-    fontSize: 13,
-    fontWeight: "800",
-  },
   adSlot: {
     alignItems: "center",
     backgroundColor: "#F8F8FA",
     borderColor: "rgba(0, 0, 0, 0.06)",
     borderRadius: 18,
     borderWidth: StyleSheet.hairlineWidth,
-    gap: 6,
     justifyContent: "center",
     width: "100%",
-  },
-  adText: {
-    color: "#71717A",
-    fontSize: 16,
-    fontWeight: "700",
   },
   backdrop: {
     backgroundColor: "rgba(24, 24, 27, 0.18)",

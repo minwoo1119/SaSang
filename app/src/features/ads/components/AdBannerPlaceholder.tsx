@@ -1,25 +1,16 @@
 import type { StyleProp, ViewStyle } from "react-native";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { ADMOB_AD_UNIT_IDS } from "../models/adMobUnits";
 import { AdMobBanner } from "./AdMobBanner";
 
 type AdBannerPlaceholderProps = {
-  label?: string;
   style?: StyleProp<ViewStyle>;
 };
 
-export function AdBannerPlaceholder({
-  label = "AdMob Banner",
-  style,
-}: AdBannerPlaceholderProps) {
+export function AdBannerPlaceholder({ style }: AdBannerPlaceholderProps) {
   return (
     <AdMobBanner
-      fallback={
-        <View accessibilityLabel={label} style={[styles.container, style]}>
-          <View style={styles.mark} />
-          <Text style={styles.label}>{label}</Text>
-        </View>
-      }
+      fallback={<View style={[styles.container, style]} />}
       size="ANCHORED_ADAPTIVE_BANNER"
       style={[styles.container, style]}
       unitId={ADMOB_AD_UNIT_IDS.moreBanner}
@@ -32,23 +23,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderRadius: 18,
-    flexDirection: "row",
-    gap: 10,
     justifyContent: "center",
     minHeight: 76,
     overflow: "hidden",
     paddingHorizontal: 20,
     paddingVertical: 18,
-  },
-  label: {
-    color: "#71717A",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  mark: {
-    backgroundColor: "rgba(0, 122, 255, 0.14)",
-    borderRadius: 5,
-    height: 10,
-    width: 10,
   },
 });
