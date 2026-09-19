@@ -40,12 +40,13 @@ const KOREAN_REGION_NAMES = new Intl.DisplayNames(["ko"], { type: "region" });
 export const MAP_CONFIGS = {
   korea: {
     viewBox: { width: 360, height: 520, padding: 12 },
+    minimumProjectedPolygonSize: 0.08,
     codePattern: /^\d{5}$/,
     regionProperties: KOREA_CODES,
     mergeByProvinceCodes: MERGED_SPECIAL_AND_METROPOLITAN_CITY_CODES,
     mergeCityDistricts: true,
     metadata: {
-      version: "sgis-sigungu-2025-2q-v4",
+      version: "sgis-sigungu-2025-2q-v5",
       generatedAt: "2025-06-30T00:00:00.000Z",
       source:
         "https://www.data.go.kr/data/15129688/fileData.do (bnd_sigungu_00_2025_2Q)",
@@ -58,6 +59,7 @@ export const MAP_CONFIGS = {
   },
   world: {
     viewBox: { width: 720, height: 360, padding: 10 },
+    minimumProjectedPolygonSize: 0,
     codePattern: /^[A-Z]{2}$/,
     regionProperties: null,
     metadata: {
@@ -88,6 +90,35 @@ function dissolvePolygons(polygons) {
 
 function formatNumber(value) {
   return Number(value.toFixed(2)).toString();
+}
+
+function getProjectedPolygonSize(polygon, project) {
+  const points = polygon.flatMap((ring) => ring).map(project);
+  const xs = points.map(([x]) => x);
+  const ys = points.map(([, y]) => y);
+  return Math.max(
+    Math.max(...xs) - Math.min(...xs),
+    Math.max(...ys) - Math.min(...ys),
+  );
+}
+
+function filterProjectedPolygons(polygons, project, minimumSize) {
+  if (!minimumSize) return polygons;
+
+  const polygonsWithSize = polygons.map((polygon) => ({
+    polygon,
+    size: getProjectedPolygonSize(polygon, project),
+  }));
+  const visiblePolygons = polygonsWithSize
+    .filter(({ size }) => size >= minimumSize)
+    .map(({ polygon }) => polygon);
+
+  if (visiblePolygons.length > 0) return visiblePolygons;
+  return [
+    polygonsWithSize.reduce((largest, current) =>
+      current.size > largest.size ? current : largest,
+    ).polygon,
+  ];
 }
 
 function mergedFeature(code, properties, polygons, config) {
@@ -214,7 +245,12 @@ export function generateMap(source, config) {
       ) {
         throw new Error("Every region requires a code and name.");
       }
-      const polygons = polygonsFromGeometry(geometry);
+      const sourcePolygons = polygonsFromGeometry(geometry);
+      const polygons = filterProjectedPolygons(
+        sourcePolygons,
+        project,
+        config.minimumProjectedPolygonSize,
+      );
       const projectedPoints = polygons.flat(2).map(project);
       const projectedXs = projectedPoints.map(([x]) => x);
       const projectedYs = projectedPoints.map(([, y]) => y);
@@ -252,7 +288,7 @@ export function generateMap(source, config) {
               provinceName: properties.provinceName,
             }
           : {}),
-        geometryType: geometry.type,
+        geometryType: polygons.length === 1 ? "Polygon" : "MultiPolygon",
         polygonCount: polygons.length,
         bounds,
         path,

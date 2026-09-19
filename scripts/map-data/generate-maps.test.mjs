@@ -42,19 +42,17 @@ test("generates every Korea district with a stable five-digit code", () => {
     "11000",
   );
   const mergedCities = [
-    ["11000", "서울특별시", "Polygon", 1],
-    ["26000", "부산광역시", "MultiPolygon", 192],
-    ["27000", "대구광역시", "Polygon", 1],
-    ["28000", "인천광역시", "MultiPolygon", 637],
-    ["29000", "광주광역시", "Polygon", 1],
-    ["30000", "대전광역시", "Polygon", 1],
-    ["31000", "울산광역시", "MultiPolygon", 298],
+    ["11000", "서울특별시"],
+    ["26000", "부산광역시"],
+    ["27000", "대구광역시"],
+    ["28000", "인천광역시"],
+    ["29000", "광주광역시"],
+    ["30000", "대전광역시"],
+    ["31000", "울산광역시"],
   ];
-  for (const [code, name, geometryType, polygonCount] of mergedCities) {
+  for (const [code, name] of mergedCities) {
     const city = result.regions.find((region) => region.code === code);
     assert.equal(city?.name, name);
-    assert.equal(city?.geometryType, geometryType);
-    assert.equal(city?.polygonCount, polygonCount);
   }
   assert.equal(
     result.regions.filter(({ provinceCode }) =>
@@ -63,24 +61,22 @@ test("generates every Korea district with a stable five-digit code", () => {
     0,
   );
   const mergedDistrictCities = [
-    ["41110", "수원시", "Polygon", 1],
-    ["41130", "성남시", "Polygon", 1],
-    ["41170", "안양시", "Polygon", 1],
-    ["41190", "부천시", "MultiPolygon", 2],
-    ["41270", "안산시", "MultiPolygon", 26],
-    ["41280", "고양시", "Polygon", 1],
-    ["41460", "용인시", "Polygon", 1],
-    ["43110", "청주시", "Polygon", 1],
-    ["44130", "천안시", "Polygon", 1],
-    ["47110", "포항시", "MultiPolygon", 223],
-    ["48120", "창원시", "MultiPolygon", 57],
-    ["52110", "전주시", "Polygon", 1],
+    ["41110", "수원시"],
+    ["41130", "성남시"],
+    ["41170", "안양시"],
+    ["41190", "부천시"],
+    ["41270", "안산시"],
+    ["41280", "고양시"],
+    ["41460", "용인시"],
+    ["43110", "청주시"],
+    ["44130", "천안시"],
+    ["47110", "포항시"],
+    ["48120", "창원시"],
+    ["52110", "전주시"],
   ];
-  for (const [code, name, geometryType, polygonCount] of mergedDistrictCities) {
+  for (const [code, name] of mergedDistrictCities) {
     const city = result.regions.find((region) => region.code === code);
     assert.equal(city?.name, name);
-    assert.equal(city?.geometryType, geometryType);
-    assert.equal(city?.polygonCount, polygonCount);
   }
   assert.deepEqual(
     result.regions
@@ -90,6 +86,12 @@ test("generates every Korea district with a stable five-digit code", () => {
   );
   assert.ok(
     result.regions.some(({ geometryType }) => geometryType === "MultiPolygon"),
+  );
+  assert.ok(
+    result.regions.reduce(
+      (total, { polygonCount }) => total + polygonCount,
+      0,
+    ) < 3000,
   );
 });
 

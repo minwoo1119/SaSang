@@ -32,6 +32,10 @@ generation so the app renders only the merged city outlines.
 The large source SHP is converted outside the mobile runtime with
 `prepare-shapefile.mjs`. A 250-meter deterministic Douglas-Peucker tolerance is
 applied while preserving every source ring and its Polygon/MultiPolygon type.
+The mobile asset additionally omits projected island polygons smaller than
+`0.08` map units. These fragments remain below roughly one screen pixel even at
+maximum zoom, while removing them substantially reduces SVG pan and pinch work.
+At least one polygon is always retained for every administrative region.
 
 ## World
 
