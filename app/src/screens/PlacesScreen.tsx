@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AdNativeCardPlaceholder } from "@/features/ads/components/AdNativeCardPlaceholder";
+import { OwnedMapSelector } from "@/features/map/components/OwnedMapSelector";
+import { getOwnedMap } from "@/features/map/models/mapCatalog";
 import { MAP_ASSETS } from "@/features/map/models/mapAssets";
 import type {
   MapMode,
@@ -18,7 +20,6 @@ import {
 } from "@/features/photos/utils/photoDate";
 import { trackScreenView } from "@/services/analytics/analytics";
 
-type PlaceFilter = "korea" | "world";
 type SortOrder = "newest" | "oldest";
 
 type PlaceCard = {
@@ -30,8 +31,9 @@ type PlaceCard = {
 
 export function PlacesScreen() {
   const insets = useSafeAreaInsets();
-  const [filter, setFilter] = useState<PlaceFilter>("korea");
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
+  const filter = useMapUiStore((state) => state.mode);
+  const setFilter = useMapUiStore((state) => state.setMode);
   const regionPhotos = useMapUiStore((state) => state.regionPhotos);
 
   useEffect(() => {
@@ -65,18 +67,7 @@ export function PlacesScreen() {
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <View style={styles.headerRow}>
-          <View style={styles.segmentedControl}>
-            <FilterButton
-              label="국내"
-              onPress={() => setFilter("korea")}
-              selected={filter === "korea"}
-            />
-            <FilterButton
-              label="해외"
-              onPress={() => setFilter("world")}
-              selected={filter === "world"}
-            />
-          </View>
+          <OwnedMapSelector onChange={setFilter} value={filter} />
           <Pressable
             accessibilityLabel={`날짜 정렬, 현재 ${sortOrder === "newest" ? "최신순" : "오래된순"}`}
             accessibilityRole="button"
@@ -127,8 +118,9 @@ export function PlacesScreen() {
   );
 }
 
-function EmptyPlacesState({ filter }: { filter: PlaceFilter }) {
+function EmptyPlacesState({ filter }: { filter: MapMode }) {
   const isKorea = filter === "korea";
+  const mapName = getOwnedMap(filter).name;
   const subtitleText = isKorea
     ? "지도에서 원하는 시·군·구를 선택하고\n사진을 채워 나만의 여행 지도를 만들어보세요."
     : "지도에서 다녀온 국가를 선택하고\n사진을 채워 세계 여행을 기록해보세요.";
@@ -157,7 +149,7 @@ function EmptyPlacesState({ filter }: { filter: PlaceFilter }) {
 
         <View style={styles.emptyContent}>
           <Text style={styles.emptyTitle}>
-            {isKorea ? "국내 여행 기록이 없어요" : "해외 여행 기록이 없어요"}
+            {mapName}에 여행 기록이 없어요
           </Text>
           <Text style={styles.emptyDescription}>{subtitleText}</Text>
         </View>
@@ -176,29 +168,6 @@ function EmptyPlacesState({ filter }: { filter: PlaceFilter }) {
 
       <AdNativeCardPlaceholder style={styles.emptyAdMargin} />
     </View>
-  );
-}
-
-function FilterButton({
-  label,
-  onPress,
-  selected,
-}: {
-  label: string;
-  onPress: () => void;
-  selected: boolean;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      onPress={onPress}
-      style={[styles.filterButton, selected && styles.filterButtonSelected]}
-    >
-      <Text style={[styles.filterText, selected && styles.filterTextSelected]}>
-        {label}
-      </Text>
-    </Pressable>
   );
 }
 
@@ -347,26 +316,6 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     textAlign: "center",
   },
-  filterButton: {
-    alignItems: "center",
-    borderRadius: 18,
-    height: 36,
-    justifyContent: "center",
-    minWidth: 58,
-    paddingHorizontal: 14,
-  },
-  filterButtonSelected: {
-    backgroundColor: "rgba(0, 122, 255, 0.12)",
-  },
-  filterText: {
-    color: "#3F3F46",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  filterTextSelected: {
-    color: "#007AFF",
-    fontWeight: "800",
-  },
   header: {
     paddingBottom: 18,
     paddingHorizontal: 16,
@@ -460,15 +409,5 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: "800",
-  },
-  segmentedControl: {
-    alignSelf: "flex-end",
-    backgroundColor: "#FFFFFF",
-    borderColor: "rgba(0, 0, 0, 0.08)",
-    borderRadius: 22,
-    borderWidth: StyleSheet.hairlineWidth,
-    flexDirection: "row",
-    gap: 4,
-    padding: 4,
   },
 });

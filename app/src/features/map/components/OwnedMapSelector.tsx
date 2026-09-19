@@ -1,7 +1,14 @@
 import { router, type Href } from "expo-router";
-import { Check, ChevronDown, Plus, X } from "lucide-react-native";
-import { useState } from "react";
 import {
+  Check,
+  ChevronDown,
+  Map as MapIcon,
+  Plus,
+  X,
+} from "lucide-react-native";
+import { useRef, useState } from "react";
+import {
+  Animated,
   Modal,
   Pressable,
   StyleSheet,
@@ -21,16 +28,58 @@ type Props = {
 export function OwnedMapSelector({ onChange, value }: Props) {
   const insets = useSafeAreaInsets();
   const [visible, setVisible] = useState(false);
+  const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const sheetTranslateY = useRef(new Animated.Value(420)).current;
   const currentMap = getOwnedMap(value);
+
+  const openSelector = () => {
+    backdropOpacity.setValue(0);
+    sheetTranslateY.setValue(420);
+    setVisible(true);
+
+    requestAnimationFrame(() => {
+      Animated.sequence([
+        Animated.timing(backdropOpacity, {
+          duration: 90,
+          toValue: 1,
+          useNativeDriver: true,
+        }),
+        Animated.spring(sheetTranslateY, {
+          bounciness: 0,
+          speed: 18,
+          toValue: 0,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  };
+
+  const closeSelector = (onClosed?: () => void) => {
+    Animated.parallel([
+      Animated.timing(backdropOpacity, {
+        duration: 150,
+        toValue: 0,
+        useNativeDriver: true,
+      }),
+      Animated.timing(sheetTranslateY, {
+        duration: 180,
+        toValue: 420,
+        useNativeDriver: true,
+      }),
+    ]).start(({ finished }) => {
+      if (!finished) return;
+      setVisible(false);
+      onClosed?.();
+    });
+  };
 
   const selectMap = (mode: MapMode) => {
     onChange(mode);
-    setVisible(false);
+    closeSelector();
   };
 
   const openStore = () => {
-    setVisible(false);
-    router.push("/map-store" as Href);
+    closeSelector(() => router.push("/map-store" as Href));
   };
 
   return (
@@ -38,9 +87,10 @@ export function OwnedMapSelector({ onChange, value }: Props) {
       <Pressable
         accessibilityLabel={`현재 지도 ${currentMap.name}. 지도 변경`}
         accessibilityRole="button"
-        onPress={() => setVisible(true)}
+        onPress={openSelector}
         style={({ pressed }) => [styles.trigger, pressed && styles.pressed]}
       >
+        <MapIcon color="#007AFF" size={16} strokeWidth={2.3} />
         <Text numberOfLines={1} style={styles.triggerText}>
           {currentMap.name}
         </Text>
@@ -48,20 +98,30 @@ export function OwnedMapSelector({ onChange, value }: Props) {
       </Pressable>
 
       <Modal
-        animationType="slide"
-        onRequestClose={() => setVisible(false)}
+        animationType="none"
+        onRequestClose={() => closeSelector()}
         presentationStyle="overFullScreen"
         transparent
         visible={visible}
       >
         <View style={styles.modalRoot}>
-          <Pressable
-            accessibilityLabel="내 지도 닫기"
-            onPress={() => setVisible(false)}
-            style={styles.backdrop}
-          />
-          <View
-            style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}
+          <Animated.View
+            style={[styles.backdrop, { opacity: backdropOpacity }]}
+          >
+            <Pressable
+              accessibilityLabel="내 지도 닫기"
+              onPress={() => closeSelector()}
+              style={StyleSheet.absoluteFill}
+            />
+          </Animated.View>
+          <Animated.View
+            style={[
+              styles.sheet,
+              {
+                paddingBottom: Math.max(insets.bottom, 16),
+                transform: [{ translateY: sheetTranslateY }],
+              },
+            ]}
           >
             <View style={styles.sheetHeader}>
               <View>
@@ -72,7 +132,7 @@ export function OwnedMapSelector({ onChange, value }: Props) {
                 accessibilityLabel="닫기"
                 accessibilityRole="button"
                 hitSlop={8}
-                onPress={() => setVisible(false)}
+                onPress={() => closeSelector()}
                 style={({ pressed }) => [
                   styles.closeButton,
                   pressed && styles.pressed,
@@ -127,7 +187,7 @@ export function OwnedMapSelector({ onChange, value }: Props) {
               <Plus color="#007AFF" size={19} strokeWidth={2.5} />
               <Text style={styles.storeButtonText}>새로운 지도 둘러보기</Text>
             </Pressable>
-          </View>
+          </Animated.View>
         </View>
       </Modal>
     </>
@@ -243,13 +303,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "rgba(255, 255, 255, 0.92)",
     borderColor: "rgba(0, 0, 0, 0.08)",
-    borderRadius: 8,
+    borderRadius: 19,
     borderWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
-    gap: 6,
+    gap: 7,
     height: 38,
-    maxWidth: 156,
-    paddingHorizontal: 11,
+    maxWidth: 168,
+    paddingHorizontal: 12,
   },
   triggerText: {
     color: "#27272A",
