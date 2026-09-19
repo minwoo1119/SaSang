@@ -1,11 +1,5 @@
 import { router, type Href } from "expo-router";
-import {
-  Check,
-  ChevronDown,
-  Map as MapIcon,
-  Plus,
-  X,
-} from "lucide-react-native";
+import { Check, ChevronDown, Plus, X } from "lucide-react-native";
 import { useRef, useState } from "react";
 import {
   Animated,
@@ -90,7 +84,6 @@ export function OwnedMapSelector({ onChange, value }: Props) {
         onPress={openSelector}
         style={({ pressed }) => [styles.trigger, pressed && styles.pressed]}
       >
-        <MapIcon color="#007AFF" size={16} strokeWidth={2.3} />
         <Text numberOfLines={1} style={styles.triggerText}>
           {currentMap.name}
         </Text>
@@ -289,7 +282,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     flexDirection: "row",
-    gap: 7,
+    gap: 6,
     height: 50,
     justifyContent: "center",
   },
