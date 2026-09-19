@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { ChevronLeft, Lock, X } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  Animated,
   Modal,
   Pressable,
   ScrollView,
@@ -123,26 +124,74 @@ function ProductModal({
   product: StoreMapProduct | null;
 }) {
   const insets = useSafeAreaInsets();
+  const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const sheetTranslateY = useRef(new Animated.Value(460)).current;
+
+  useEffect(() => {
+    if (!product) return;
+
+    backdropOpacity.setValue(0);
+    sheetTranslateY.setValue(460);
+    requestAnimationFrame(() => {
+      Animated.sequence([
+        Animated.timing(backdropOpacity, {
+          duration: 90,
+          toValue: 1,
+          useNativeDriver: true,
+        }),
+        Animated.spring(sheetTranslateY, {
+          bounciness: 0,
+          speed: 18,
+          toValue: 0,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  }, [backdropOpacity, product, sheetTranslateY]);
+
+  const closeModal = () => {
+    Animated.parallel([
+      Animated.timing(backdropOpacity, {
+        duration: 150,
+        toValue: 0,
+        useNativeDriver: true,
+      }),
+      Animated.timing(sheetTranslateY, {
+        duration: 180,
+        toValue: 460,
+        useNativeDriver: true,
+      }),
+    ]).start(({ finished }) => {
+      if (finished) onClose();
+    });
+  };
 
   return (
     <Modal
-      animationType="slide"
-      onRequestClose={onClose}
+      animationType="none"
+      onRequestClose={closeModal}
       presentationStyle="overFullScreen"
       transparent
       visible={product !== null}
     >
       <View style={styles.modalRoot}>
-        <Pressable
-          accessibilityLabel="상품 닫기"
-          onPress={onClose}
-          style={styles.backdrop}
-        />
+        <Animated.View
+          style={[styles.backdrop, { opacity: backdropOpacity }]}
+        >
+          <Pressable
+            accessibilityLabel="상품 닫기"
+            onPress={closeModal}
+            style={StyleSheet.absoluteFill}
+          />
+        </Animated.View>
         {product ? (
-          <View
+          <Animated.View
             style={[
               styles.productSheet,
-              { paddingBottom: Math.max(insets.bottom, 18) },
+              {
+                paddingBottom: Math.max(insets.bottom, 18),
+                transform: [{ translateY: sheetTranslateY }],
+              },
             ]}
           >
             <View style={styles.modalHeader}>
@@ -154,7 +203,7 @@ function ProductModal({
                 accessibilityLabel="닫기"
                 accessibilityRole="button"
                 hitSlop={8}
-                onPress={onClose}
+                onPress={closeModal}
                 style={({ pressed }) => [
                   styles.modalCloseButton,
                   pressed && styles.pressed,
@@ -180,7 +229,7 @@ function ProductModal({
             >
               <Text style={styles.disabledPurchaseText}>출시 예정</Text>
             </Pressable>
-          </View>
+          </Animated.View>
         ) : null}
       </View>
     </Modal>
