@@ -20,7 +20,7 @@ module.exports = ({ config }) => {
     ...config,
     name: '사상',
     slug: 'sasang',
-    version: '1.0.2',
+    version: '1.0.3',
     orientation: 'portrait',
     icon: './assets/images/icon.png',
     scheme: 'sasang',
