@@ -32,7 +32,10 @@ import {
   toPhotoDateKey,
 } from "@/features/photos/utils/photoDate";
 import { trackEvent, trackScreenView } from "@/services/analytics/analytics";
-import { saveImageToDevice } from "@/services/storage/localImageStorage";
+import {
+  resolveLocalImageUri,
+  saveImageToDevice,
+} from "@/services/storage/localImageStorage";
 
 type SortOrder = "newest" | "oldest";
 
@@ -321,7 +324,7 @@ function PhotoManagementModal({
           <View accessibilityViewIsModal style={styles.photoModalSheet}>
             <Image
               contentFit="cover"
-              source={{ uri: selectedCard.photo.uri }}
+              source={{ uri: resolveLocalImageUri(selectedCard.photo.uri) }}
               style={styles.photoModalPreview}
             />
             <View style={styles.photoModalCopy}>
@@ -402,7 +405,10 @@ function PlacePhotoCard({
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
       <View style={styles.imageFrame}>
-        <Image source={{ uri: card.photo.uri }} style={styles.cardImage} />
+        <Image
+          source={{ uri: resolveLocalImageUri(card.photo.uri) }}
+          style={styles.cardImage}
+        />
       </View>
       <View style={styles.cardDivider} />
       <View style={styles.cardBody}>

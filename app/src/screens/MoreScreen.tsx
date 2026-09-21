@@ -19,7 +19,10 @@ import { INFO_ITEMS, type InfoType } from "@/features/more/models/infoContent";
 import { useProfileStore } from "@/features/profile/store/profile.store";
 import { trackEvent, trackScreenView } from "@/services/analytics/analytics";
 import { appStorage } from "@/services/storage/appStorage";
-import { saveImageToDevice } from "@/services/storage/localImageStorage";
+import {
+  resolveLocalImageUri,
+  saveImageToDevice,
+} from "@/services/storage/localImageStorage";
 
 export function MoreScreen() {
   const insets = useSafeAreaInsets();
@@ -144,7 +147,7 @@ export function MoreScreen() {
             {profileImageUri ? (
               <Image
                 contentFit="cover"
-                source={{ uri: profileImageUri }}
+                source={{ uri: resolveLocalImageUri(profileImageUri) }}
                 style={styles.avatarImage}
               />
             ) : (

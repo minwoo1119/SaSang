@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { ClipPath, Defs, Image as SvgImage, Path } from "react-native-svg";
+import { resolveLocalImageUri } from "@/services/storage/localImageStorage";
 import type {
   MapMode,
   MapRegion,
@@ -38,7 +39,7 @@ export const RegionPhotoLayer = memo(function RegionPhotoLayer({
         <SvgImage
           clipPath={`url(#photo-${mode}-${region.code})`}
           height={region.bounds.height}
-          href={{ uri: photo.uri }}
+          href={{ uri: resolveLocalImageUri(photo.uri) }}
           key={region.code}
           preserveAspectRatio="xMidYMid slice"
           width={region.bounds.width}

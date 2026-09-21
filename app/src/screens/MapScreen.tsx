@@ -28,7 +28,10 @@ import {
   toPhotoDateKey,
 } from "@/features/photos/utils/photoDate";
 import { trackEvent, trackScreenView } from "@/services/analytics/analytics";
-import { saveImageToDevice } from "@/services/storage/localImageStorage";
+import {
+  resolveLocalImageUri,
+  saveImageToDevice,
+} from "@/services/storage/localImageStorage";
 
 type PendingPhoto = {
   asset: ImagePicker.ImagePickerAsset;
@@ -344,7 +347,7 @@ export function MapScreen() {
         >
           {selectedPhoto ? (
             <Image
-              source={{ uri: selectedPhoto.uri }}
+              source={{ uri: resolveLocalImageUri(selectedPhoto.uri) }}
               style={styles.thumbnail}
             />
           ) : (
