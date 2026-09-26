@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sasang/core/storage/sasang_storage.dart';
+import 'package:sasang/core/layout/sasang_layout.dart';
 import 'package:sasang/features/map/region_map_view.dart';
 import 'package:sasang/features/photos/photo_date.dart';
 import 'package:sasang/models/map_models.dart';
@@ -77,6 +78,12 @@ void main() {
       );
       expect(assetStroke * assetToScreenScale * zoom, closeTo(1.6, .0001));
     }
+  });
+
+  test('places the map control directly against the bottom bar', () {
+    expect(sasangBottomBarTopOffset(34), 100);
+    expect(sasangBottomBarTopOffset(24), 90);
+    expect(sasangBottomBarTopOffset(0), 80);
   });
 
   testWidgets('map store uses country previews instead of code placeholders', (

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../core/theme/sasang_theme.dart';
+import '../core/layout/sasang_layout.dart';
 import '../features/state/sasang_state.dart';
 import 'map_screen.dart';
 import 'more_screen.dart';
@@ -43,9 +44,14 @@ class _HomeShellState extends State<HomeShell> {
         ),
       ),
       bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(18, 0, 18, 14),
+        minimum: const EdgeInsets.fromLTRB(
+          18,
+          0,
+          18,
+          sasangBottomBarMinimumInset,
+        ),
         child: Container(
-          height: 66,
+          height: sasangBottomBarHeight,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(34),

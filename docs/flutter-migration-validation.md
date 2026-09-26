@@ -61,7 +61,7 @@ so no migration exists for those absent data classes.
 | --- | --- |
 | `flutter pub get` | Pass |
 | `flutter analyze` | Pass, zero issues |
-| `flutter test` | Pass, 6 tests |
+| `flutter test` | Pass, 7 tests |
 | iOS Simulator debug build/install/launch | Pass, iPhone 17 Pro / iOS 26.4 |
 | Android release AAB | Pass from repository root, 50.7 MB |
 | iOS release build | Pass from repository root, unsigned `Runner.app`, 32.6 MB |

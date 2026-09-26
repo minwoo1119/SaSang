@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../core/theme/sasang_theme.dart';
 import '../core/storage/sasang_storage.dart';
+import '../core/layout/sasang_layout.dart';
 import '../features/map/map_mode_selector.dart';
 import '../features/map/map_repository.dart';
 import '../features/map/region_map_view.dart';
@@ -162,7 +163,8 @@ class _MapScreenState extends State<MapScreen> {
               ),
             )
             .length;
-        final bottomOverlayOffset = MediaQuery.paddingOf(context).bottom + 76;
+        final safeBottom = MediaQuery.paddingOf(context).bottom;
+        final bottomOverlayOffset = sasangBottomBarTopOffset(safeBottom);
         return Stack(
           children: [
             Positioned.fill(
