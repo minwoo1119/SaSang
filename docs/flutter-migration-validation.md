@@ -22,6 +22,8 @@ React Native baseline: `pre-flutter-migration` (`d850547`)
 - Korea/world generated vector assets, Polygon/MultiPolygon rendering, region
   search and selection, pan/pinch/zoom/reset, photo clipping, and transform
   metadata rendering.
+- Aspect-correct map rendering and hit testing, zoom-independent selected-region
+  borders, safe-area-aligned bottom controls, and explicit photo-add icon colors.
 - Photo selection, EXIF date lookup, date confirmation, device-local copy,
   replacement, and deletion of region associations.
 - Places filtering, sorting, empty state, and photo management.
@@ -31,6 +33,9 @@ React Native baseline: `pre-flutter-migration` (`d850547`)
 - AdMob initialization with Google test units in debug and existing production
   units in release.
 - `sasang://map`, `/places`, `/more`, `/map-store`, and `/info/{type}` routing.
+- Cold-start and warm custom-scheme routing, including direct Map Store launch.
+- Map Store country-outline previews, lock badges, product count, and explicit
+  sheet close control matching the React Native reference hierarchy.
 
 ## Existing-user data migration
 
@@ -56,10 +61,10 @@ so no migration exists for those absent data classes.
 | --- | --- |
 | `flutter pub get` | Pass |
 | `flutter analyze` | Pass, zero issues |
-| `flutter test` | Pass, 3 tests |
+| `flutter test` | Pass, 6 tests |
 | iOS Simulator debug build/install/launch | Pass, iPhone 17 Pro / iOS 26.4 |
 | Android release AAB | Pass from repository root, 50.7 MB |
-| iOS release build | Pass from repository root, unsigned `Runner.app`, 32.5 MB |
+| iOS release build | Pass from repository root, unsigned `Runner.app`, 32.6 MB |
 | Physical Android device | Not available |
 | Physical iOS device | Not available |
 | Production-signed store update | Not attempted; credentials intentionally untouched |

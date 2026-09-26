@@ -23,7 +23,6 @@ abstract final class SasangTheme {
       splashFactory: NoSplash.splashFactory,
       highlightColor: Colors.transparent,
       hoverColor: Colors.transparent,
-      fontFamilyFallback: const ['Apple SD Gothic Neo', 'Noto Sans KR'],
     );
     return base.copyWith(
       appBarTheme: const AppBarTheme(

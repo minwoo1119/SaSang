@@ -23,12 +23,20 @@ class SasangApp extends StatefulWidget {
 
 class _SasangAppState extends State<SasangApp> {
   final _navigatorKey = GlobalKey<NavigatorState>();
+  final _appLinks = AppLinks();
   StreamSubscription<Uri>? _linkSubscription;
 
   @override
   void initState() {
     super.initState();
-    _linkSubscription = AppLinks().uriLinkStream.listen(_openLink);
+    _linkSubscription = _appLinks.uriLinkStream.listen(_openLink);
+    unawaited(_openInitialLink());
+  }
+
+  Future<void> _openInitialLink() async {
+    final uri = await _appLinks.getInitialLink();
+    if (uri == null || !mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _openLink(uri));
   }
 
   @override

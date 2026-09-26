@@ -48,7 +48,28 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _showAdSheet() => showSasangSheet<void>(
     context,
-    const AdBanner(placement: AdPlacement.home),
+    Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const AdBanner(placement: AdPlacement.home),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerRight,
+          child: CupertinoButton(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              '닫기',
+              style: TextStyle(
+                color: SasangColors.ink,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
   );
 
   Future<void> _pickPhoto(MapRegion region) async {
@@ -141,6 +162,7 @@ class _MapScreenState extends State<MapScreen> {
               ),
             )
             .length;
+        final bottomOverlayOffset = MediaQuery.paddingOf(context).bottom + 76;
         return Stack(
           children: [
             Positioned.fill(
@@ -281,8 +303,8 @@ class _MapScreenState extends State<MapScreen> {
             ),
             Positioned(
               left: 24,
-              right: 72,
-              bottom: 94,
+              right: 24,
+              bottom: bottomOverlayOffset,
               child: selected == null
                   ? _selectionHint()
                   : _regionControl(selected, mode),
@@ -354,11 +376,18 @@ class _MapScreenState extends State<MapScreen> {
               onPressed: _saving ? null : () => _pickPhoto(region),
               child: _saving
                   ? const CupertinoActivityIndicator(color: Colors.white)
-                  : Text(
-                      photo == null ? '+' : '수정',
+                  : photo == null
+                  ? const Icon(
+                      CupertinoIcons.add,
+                      color: Colors.white,
+                      size: 24,
+                    )
+                  : const Text(
+                      '수정',
                       style: TextStyle(
-                        fontSize: photo == null ? 23 : 13,
-                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
             ),

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
@@ -124,9 +125,14 @@ class _RegionMapViewState extends State<RegionMapView> {
 
   void _handleTap(Offset localPosition, Size size) {
     final scene = _controller.toScene(localPosition);
+    final contentRect = mapContentRect(size, widget.asset);
+    if (!contentRect.contains(scene)) {
+      widget.onSelectRegion(null);
+      return;
+    }
     final mapPoint = Offset(
-      scene.dx / size.width * widget.asset.width,
-      scene.dy / size.height * widget.asset.height,
+      (scene.dx - contentRect.left) / contentRect.width * widget.asset.width,
+      (scene.dy - contentRect.top) / contentRect.height * widget.asset.height,
     );
     for (final region in widget.asset.regions.reversed) {
       final bounds = region.bounds;
@@ -181,13 +187,14 @@ class _RegionMapViewState extends State<RegionMapView> {
                     photos: widget.photos,
                     images: _images,
                     selectedRegionCode: widget.selectedRegionCode,
+                    transformationController: _controller,
                   ),
                 ),
               ),
             ),
             Positioned(
               right: 12,
-              bottom: 178,
+              bottom: MediaQuery.paddingOf(context).bottom + 170,
               child: SasangSurface(
                 blur: true,
                 radius: 24,
@@ -263,14 +270,15 @@ class _ZoomButton extends StatelessWidget {
 }
 
 class RegionMapPainter extends CustomPainter {
-  const RegionMapPainter({
+  RegionMapPainter({
     required this.asset,
     required this.mode,
     required this.paths,
     required this.photos,
     required this.images,
     required this.selectedRegionCode,
-  });
+    required this.transformationController,
+  }) : super(repaint: transformationController);
 
   final RegionMapAsset asset;
   final MapMode mode;
@@ -278,11 +286,23 @@ class RegionMapPainter extends CustomPainter {
   final Map<String, RegionPhoto> photos;
   final Map<String, ui.Image> images;
   final String? selectedRegionCode;
+  final TransformationController transformationController;
 
   @override
   void paint(Canvas canvas, Size size) {
+    final contentRect = mapContentRect(size, asset);
+    final assetToScreenScale = contentRect.width / asset.width;
+    final interactiveScale = transformationController.value.getMaxScaleOnAxis();
+    final selectedStrokeWidth = mapStrokeWidth(
+      assetToScreenScale: assetToScreenScale,
+      interactiveScale: interactiveScale,
+    );
     canvas.save();
-    canvas.scale(size.width / asset.width, size.height / asset.height);
+    canvas.translate(contentRect.left, contentRect.top);
+    canvas.scale(
+      contentRect.width / asset.width,
+      contentRect.height / asset.height,
+    );
     for (final region in asset.regions) {
       final path = paths[region.code]!;
       final key = regionPhotoKey(mode, region.code);
@@ -309,7 +329,7 @@ class RegionMapPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeJoin = StrokeJoin.round
-            ..strokeWidth = mode == MapMode.world ? 0.8 : 1.6
+            ..strokeWidth = selectedStrokeWidth
             ..color = SasangColors.accent,
         );
       }
@@ -362,3 +382,24 @@ class RegionMapPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant RegionMapPainter oldDelegate) => true;
 }
+
+Rect mapContentRect(Size viewport, RegionMapAsset asset) {
+  final scale = math.min(
+    viewport.width / asset.width,
+    viewport.height / asset.height,
+  );
+  final width = asset.width * scale;
+  final height = asset.height * scale;
+  return Rect.fromLTWH(
+    (viewport.width - width) / 2,
+    (viewport.height - height) / 2,
+    width,
+    height,
+  );
+}
+
+double mapStrokeWidth({
+  required double assetToScreenScale,
+  required double interactiveScale,
+  double screenWidth = 1.6,
+}) => screenWidth / (assetToScreenScale * interactiveScale);
