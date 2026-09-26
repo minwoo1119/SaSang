@@ -1,0 +1,118 @@
+# Flutter migration validation
+
+Date: 2026-09-26
+
+Branch: `migration/flutter`
+
+React Native baseline: `pre-flutter-migration` (`d850547`)
+
+## Completed migration scope
+
+- Standard Flutter Android/iOS project in `flutter_app/`; React Native `app/`
+  remains unchanged.
+- Existing production identity (`com.sasang.app`), Korean display name, Sasang
+  custom schemes, portrait behavior, photo-library description, app icon,
+  splash, and AdMob app/unit IDs.
+- Local consent session and logout behavior.
+- Floating Map/Places/More navigation and Android back-to-Map behavior.
+- Korea/world generated vector assets, Polygon/MultiPolygon rendering, region
+  search and selection, pan/pinch/zoom/reset, photo clipping, and transform
+  metadata rendering.
+- Photo selection, EXIF date lookup, date confirmation, device-local copy,
+  replacement, and deletion of region associations.
+- Places filtering, sorting, empty state, and photo management.
+- Profile name/photo, privacy/terms/app information, local-data reset, and
+  coming-soon Map Store.
+- Typed API client using `API_URL` supplied through `--dart-define`.
+- AdMob initialization with Google test units in debug and existing production
+  units in release.
+- `sasang://map`, `/places`, `/more`, `/map-store`, and `/info/{type}` routing.
+
+## Existing-user data migration
+
+The Flutter implementation reads and writes the existing Zustand JSON envelope
+(`state` plus `version: 0`) under `Documents/sasang/state`. It probes the Flutter
+documents root, application-support root, and the Expo-style Android files root.
+No legacy state is deleted during import.
+
+Stored photo/profile URIs are repaired using the stable suffix after `/sasang/`,
+matching the RN resolver's sandbox-container migration behavior. A
+`flutter-migration-v1.json` marker records successful initialization. An iOS
+Simulator that already contained `com.sasang.app` state entered the tab shell
+without showing the first-run consent screen, confirming session compatibility
+in that environment.
+
+There are no access/refresh tokens, AsyncStorage records, secure-storage values,
+SQLite databases, Firebase Auth sessions, or push tokens in the current RN app,
+so no migration exists for those absent data classes.
+
+## Verification results
+
+| Check | Result |
+| --- | --- |
+| `flutter pub get` | Pass |
+| `flutter analyze` | Pass, zero issues |
+| `flutter test` | Pass, 3 tests |
+| iOS Simulator debug build/install/launch | Pass, iPhone 17 Pro / iOS 26.4 |
+| Android release AAB | Pass, 51.2 MB |
+| iOS release build | Pass, unsigned `Runner.app`, 33.2 MB |
+| Physical Android device | Not available |
+| Physical iOS device | Not available |
+| Production-signed store update | Not attempted; credentials intentionally untouched |
+
+Tests cover legacy Zustand decoding, RN/EXIF date formats, map asset decoding,
+MultiPolygon preservation, and photo transform persistence.
+
+## Intentional or remaining differences
+
+- RN profile selection requested the platform's square edit UI. Flutter keeps
+  the original selected file and clips it to a circle at display time; there is
+  no destructive square crop. This is safer for source data but needs UX parity
+  sign-off.
+- The current RN app stores scale/offset fields but has no photo-position editor.
+  Flutter preserves and renders those fields but likewise does not add an editor.
+- Firebase files are ignored locally but Firebase is explicitly disabled in RN.
+  Flutter does not enable Firebase, Firebase Auth, Analytics, or push.
+- Map Store purchases remain disabled/coming soon because RN has no active IAP.
+- No verified Universal Link/App Link host exists in RN. Flutter preserves custom
+  schemes only; adding Associated Domains or an `https` host requires an approved
+  domain and hosted association files.
+- Analytics remains effectively absent. RN calls a no-op analytics stub; Flutter
+  does not invent a replacement event backend.
+
+## Store-update blockers and manual checklist
+
+- [ ] Confirm the live Play application ID and App Store bundle ID are exactly
+      `com.sasang.app` in their consoles.
+- [ ] Set Android `versionCode` and iOS `CFBundleVersion` above the latest store
+      builds; `1.0.3+1` is a source baseline, not an asserted production number.
+- [ ] Connect the existing Play upload/production keystore. The locally verified
+      AAB uses Flutter's debug signing fallback and must not be uploaded.
+- [ ] Configure the existing Apple development team, distribution certificate,
+      provisioning profile, and App Store signing. Rebuild without
+      `--no-codesign` and archive through Xcode/CI.
+- [ ] Install the production-signed RN version on physical iOS and Android
+      devices, create session/profile/Korea/world photo data, update in place to
+      the Flutter candidate, and compare every record and image.
+- [ ] Verify photo permission denied/limited/full flows, large HEIC/JPEG images,
+      EXIF/no-EXIF dates, app termination during copy, and low-storage failures.
+- [ ] Exercise Korea/world region taps, island MultiPolygons, search, pinch/pan,
+      Android system back, and iOS swipe-back behavior.
+- [ ] Test every custom-scheme URL while the app is cold and warm. Decide whether
+      verified web links are required before adding native entitlements/filters.
+- [ ] Validate production AdMob consent/privacy requirements, live units, and
+      store privacy disclosures. Debug builds already use test ads.
+- [ ] Confirm that Firebase and push are genuinely not present in the live binary;
+      if the store version differs from this repository, inventory the production
+      native project before release.
+- [ ] Review privacy policy and terms copy; both RN and Flutter currently state
+      that final documents will be supplied before distribution.
+- [ ] Run accessibility, Dynamic Type/text scaling, Korean localization, offline,
+      background/foreground, and crash monitoring checks on physical devices.
+- [ ] Keep `app/` through at least one validated rollback cycle. No RN file was
+      deleted by this migration.
+
+## React Native cleanup
+
+No React Native files were removed. Cleanup is deliberately deferred until the
+production-signed update, rollback, and data-compatibility checks above pass.
