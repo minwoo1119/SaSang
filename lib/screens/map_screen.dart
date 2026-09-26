@@ -164,7 +164,7 @@ class _MapScreenState extends State<MapScreen> {
             )
             .length;
         final safeBottom = MediaQuery.paddingOf(context).bottom;
-        final bottomOverlayOffset = sasangBottomBarTopOffset(safeBottom);
+        final bottomOverlayOffset = sasangMapOverlayBottomOffset(safeBottom);
         return Stack(
           children: [
             Positioned.fill(

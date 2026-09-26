@@ -80,10 +80,15 @@ void main() {
     }
   });
 
-  test('places the map control directly against the bottom bar', () {
+  test('overlaps the map control with the bottom bar', () {
     expect(sasangBottomBarTopOffset(34), 100);
     expect(sasangBottomBarTopOffset(24), 90);
     expect(sasangBottomBarTopOffset(0), 80);
+    expect(sasangMapOverlayBottomOffset(34), 76);
+    expect(
+      sasangBottomBarTopOffset(34) - sasangMapOverlayBottomOffset(34),
+      sasangMapOverlayOverlap,
+    );
   });
 
   testWidgets('map store uses country previews instead of code placeholders', (
