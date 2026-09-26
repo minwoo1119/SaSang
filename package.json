@@ -7,14 +7,16 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "start": "pnpm --filter @sasang/app start",
-    "start:dev-client": "pnpm --filter @sasang/app start:dev-client",
-    "start:go": "pnpm --filter @sasang/app start:go",
-    "dev": "turbo dev",
+    "start": "flutter run",
+    "analyze:app": "flutter analyze",
+    "test:app": "flutter test",
+    "build:android": "flutter build appbundle --release",
+    "build:ios": "flutter build ios --release --no-codesign",
+    "dev": "pnpm --filter @sasang/backend dev",
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
-    "test": "turbo test",
+    "test": "flutter test && turbo test",
     "map:generate": "node scripts/map-data/generate-maps.mjs",
     "map:test": "node --test scripts/map-data/*.test.mjs",
     "format:check": "prettier --check ."

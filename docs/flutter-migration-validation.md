@@ -8,12 +8,16 @@ React Native baseline: `pre-flutter-migration` (`d850547`)
 
 ## Completed migration scope
 
-- Standard Flutter Android/iOS project in `flutter_app/`; React Native `app/`
-  remains unchanged.
+- Standard Flutter Android/iOS project at the repository root. The superseded
+  React Native `app/` tree is removed from this branch and preserved in the
+  `pre-flutter-migration` tag and Git history.
 - Existing production identity (`com.sasang.app`), Korean display name, Sasang
   custom schemes, portrait behavior, photo-library description, app icon,
   splash, and AdMob app/unit IDs.
 - Local consent session and logout behavior.
+- Apple-style visual system using Cupertino controls, iOS page transitions,
+  restrained neutral surfaces, thin separators, glass-like overlays, and native
+  confirmation/date interactions instead of default Material components.
 - Floating Map/Places/More navigation and Android back-to-Map behavior.
 - Korea/world generated vector assets, Polygon/MultiPolygon rendering, region
   search and selection, pan/pinch/zoom/reset, photo clipping, and transform
@@ -54,8 +58,8 @@ so no migration exists for those absent data classes.
 | `flutter analyze` | Pass, zero issues |
 | `flutter test` | Pass, 3 tests |
 | iOS Simulator debug build/install/launch | Pass, iPhone 17 Pro / iOS 26.4 |
-| Android release AAB | Pass, 51.2 MB |
-| iOS release build | Pass, unsigned `Runner.app`, 33.2 MB |
+| Android release AAB | Pass from repository root, 50.7 MB |
+| iOS release build | Pass from repository root, unsigned `Runner.app`, 32.5 MB |
 | Physical Android device | Not available |
 | Physical iOS device | Not available |
 | Production-signed store update | Not attempted; credentials intentionally untouched |
@@ -109,10 +113,15 @@ MultiPolygon preservation, and photo transform persistence.
       that final documents will be supplied before distribution.
 - [ ] Run accessibility, Dynamic Type/text scaling, Korean localization, offline,
       background/foreground, and crash monitoring checks on physical devices.
-- [ ] Keep `app/` through at least one validated rollback cycle. No RN file was
-      deleted by this migration.
+- [ ] Confirm the `pre-flutter-migration` tag is available on the remote before
+      release so the React Native source remains an explicit rollback point.
 
 ## React Native cleanup
 
-No React Native files were removed. Cleanup is deliberately deferred until the
-production-signed update, rollback, and data-compatibility checks above pass.
+The tracked Expo application, Expo configuration, and Expo-only assets were
+removed after the Flutter implementation became independently runnable. Backend,
+shared contracts, map preprocessing, migration notes, signing configuration, and
+Git history were retained. The deletion is isolated to `migration/flutter`.
+Ignored local Firebase configuration files were moved to
+`.local/legacy-native-config/` before deleting local Expo build artifacts; the
+directory is not committed and no credential or project setting was altered.

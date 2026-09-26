@@ -1,6 +1,6 @@
 # Map data preprocessing
 
-Sasang renders committed, lightweight SVG path assets. The Expo app never parses
+Sasang renders committed, lightweight SVG path assets. The Flutter app never parses
 SHP or GeoJSON at runtime.
 
 ```bash
@@ -21,7 +21,7 @@ and writes deterministic JSON. Generated files contain the marker
   the Interior and Safety Administrative Standard Code system, snapshot joined
   at 2025-06-30. SGIS statistical codes are retained only as source join keys.
 - Input: `sources/korea-sigungu-2025-2q.geojson`.
-- Output: `app/src/assets/maps/korea/regions.json`.
+- Output: `assets/maps/korea/regions.json`.
 
 Seoul, Busan, Daegu, Incheon, Gwangju, Daejeon, and Ulsan are merged to their
 special/metropolitan-city region. Non-metropolitan cities that are split into
@@ -42,7 +42,7 @@ At least one polygon is always retained for every administrative region.
 - Geometry: Natural Earth 1:110m Admin-0 Countries, version 5.1.2.
 - Identifier: `ISO_A2_EH` (ISO 3166-1 alpha-2).
 - Input: `sources/natural-earth-admin0-5.1.2.geojson`.
-- Output: `app/src/assets/maps/world/countries.json`.
+- Output: `assets/maps/world/countries.json`.
 
 Country display names are localized to Korean during generation with
 `Intl.DisplayNames`. The original Natural Earth English name is preserved as

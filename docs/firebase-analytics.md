@@ -1,23 +1,20 @@
-# Firebase Analytics
+# Firebase Analytics (legacy reference)
 
-Sasang uses React Native Firebase Analytics for native iOS and Android event
-collection.
+The React Native baseline contains an optional Firebase Analytics integration.
+The current Flutter app does not enable Firebase because the checked-in React
+Native configuration disabled it and no active Firebase behavior was found.
 
 Required project files are not committed because they are Firebase project
 specific:
 
-- `app/GoogleService-Info.plist`
-- `app/google-services.json`
+- `ios/Runner/GoogleService-Info.plist`
+- `android/app/google-services.json`
 
-After creating iOS and Android apps in the Firebase console, download those two
-files into the paths above. `app/app.config.js` only enables the React Native
-Firebase config plugins when both files exist, so local Expo startup is not
-blocked before Firebase setup is ready.
+Do not copy or commit these project-specific files until Firebase is deliberately
+enabled for Flutter. Reuse the existing Firebase project and identifiers; never
+create or switch projects as part of routine app setup.
 
-React Native Firebase uses custom native code, so Analytics runs in an Expo
-development build or EAS build, not Expo Go.
-
-Tracked events currently include:
+Legacy event names to preserve if Analytics is re-enabled:
 
 - screen views for login, map, places, more, and info pages
 - local start button press

@@ -18,11 +18,11 @@ const KOREA_CODES = JSON.parse(
   ),
 ).regions;
 const KOREA_OUTPUT = new URL(
-  "../../app/src/assets/maps/korea/regions.json",
+  "../../assets/maps/korea/regions.json",
   import.meta.url,
 );
 const WORLD_OUTPUT = new URL(
-  "../../app/src/assets/maps/world/countries.json",
+  "../../assets/maps/world/countries.json",
   import.meta.url,
 );
 

@@ -3,8 +3,9 @@
 ## Guardrails
 
 - Work only on `migration/flutter` from baseline tag `pre-flutter-migration`.
-- Preserve `app/`, Git history, ignored signing files, and local Firebase files.
-- Build the new application in `flutter_app/` with application/bundle identifier
+- Preserve the React Native baseline in Git tag `pre-flutter-migration`, Git
+  history, ignored signing files, and local Firebase files.
+- Build the new application at the repository root with application/bundle identifier
   `com.sasang.app` and display name `사상`.
 - Preserve API contracts and generated map assets; copy assets rather than hand
   editing geometry.
@@ -29,14 +30,13 @@
 9. Run formatting, `flutter pub get`, `flutter analyze`, tests, debug execution
    where a simulator/device is available, Android app bundle, and unsigned iOS
    release build. Classify signing/device failures separately from code failures.
-10. Record parity gaps and a human release checklist. Do not delete RN code until
-    both upgrade paths have been exercised with production-like signed builds.
+10. Record parity gaps and a human release checklist. The React Native source is
+    retained in Git history and the `pre-flutter-migration` tag for rollback.
 
 ## Explicit non-goals for this branch
 
 - No new backend authentication, Firebase feature, push system, social login, or
   purchase flow.
 - No API redesign and no map-data regeneration.
-- No deletion of the React Native application or signing material.
+- No deletion or modification of signing material.
 - No merge, force push, store submission, or production Firebase project change.
-

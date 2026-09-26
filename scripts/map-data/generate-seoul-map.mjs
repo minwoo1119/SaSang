@@ -6,7 +6,7 @@ const DEFAULT_INPUT = new URL(
   import.meta.url,
 );
 const DEFAULT_OUTPUT = new URL(
-  "../../app/src/assets/maps/korea/seoul.json",
+  "../../assets/maps/korea/seoul.json",
   import.meta.url,
 );
 
