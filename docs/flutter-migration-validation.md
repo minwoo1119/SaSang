@@ -26,9 +26,9 @@ React Native baseline: `pre-flutter-migration` (`d850547`)
   borders, safe-area-aligned bottom controls, and explicit photo-add icon colors.
 - Photo selection, EXIF date lookup, date confirmation, device-local copy,
   replacement, and deletion of region associations.
-- Places filtering, sorting, empty state, and photo management.
-- Profile name/photo, privacy/terms/app information, local-data reset, and
-  coming-soon Map Store.
+- Places filtering, sorting, photo management, and the original compact
+  filter/card-based empty-state hierarchy.
+- Privacy/terms/app information, local-data reset, and coming-soon Map Store.
 - Typed API client using `API_URL` supplied through `--dart-define`.
 - AdMob initialization with Google test units in debug and existing production
   units in release.
@@ -64,24 +64,24 @@ so no migration exists for those absent data classes.
 | --- | --- |
 | `flutter pub get` | Pass |
 | `flutter analyze` | Pass, zero issues |
-| `flutter test` | Pass, 8 tests |
+| `flutter test` | Pass, 10 tests |
 | iOS Simulator debug build/install/launch | Pass, iPhone 17 Pro / iOS 26.4 |
 | Android release AAB | Pass from repository root, 50.7 MB |
-| iOS release build | Pass from repository root, unsigned `Runner.app`, 32.6 MB |
+| iOS release build | Pass from repository root, unsigned `Runner.app`, 32.5 MB |
 | Physical Android device | Not available |
 | Physical iOS device | Not available |
 | Production-signed store update | Not attempted; credentials intentionally untouched |
 
 Tests cover legacy Zustand decoding, RN/EXIF date formats, map asset decoding,
 MultiPolygon preservation, photo transform persistence, and the illustrated
-owned-map selector structure.
+owned-map selector structure. UI regressions cover the Places filter/empty
+state and removal of profile controls from More.
 
 ## Intentional or remaining differences
 
 - RN profile selection requested the platform's square edit UI. Flutter keeps
-  the original selected file and clips it to a circle at display time; there is
-  no destructive square crop. This is safer for source data but needs UX parity
-  sign-off.
+  previously stored profile values only for update compatibility. Profile
+  controls are intentionally no longer shown in More.
 - The current RN app stores scale/offset fields but has no photo-position editor.
   Flutter preserves and renders those fields but likewise does not add an editor.
 - Firebase files are ignored locally but Firebase is explicitly disabled in RN.

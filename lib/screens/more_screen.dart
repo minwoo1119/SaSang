@@ -1,11 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
-import '../core/theme/sasang_theme.dart';
 import '../features/more/info_content.dart';
-import '../features/photos/photo_picker_service.dart';
 import '../features/state/sasang_state.dart';
 import '../widgets/ad_banner.dart';
 import '../widgets/sasang_ui.dart';
@@ -19,71 +14,6 @@ class MoreScreen extends StatefulWidget {
 }
 
 class _MoreScreenState extends State<MoreScreen> {
-  final _picker = PhotoPickerService();
-
-  Future<void> _pickProfile() async {
-    try {
-      final picked = await _picker.pick(imageQuality: 85);
-      if (picked == null) return;
-      final saved = await widget.state.storage.copyImage(
-        picked.file,
-        'profile',
-        'profile-image',
-      );
-      widget.state.setProfile(imageUri: saved.uri.toString(), setImage: true);
-    } on Object catch (error) {
-      if (mounted) _error(error);
-    }
-  }
-
-  Future<void> _editName() async {
-    final controller = TextEditingController(text: widget.state.name);
-    final value = await showCupertinoDialog<String>(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('표시 이름 수정'),
-        content: Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: CupertinoTextField(
-            controller: controller,
-            autofocus: true,
-            maxLength: 20,
-            textInputAction: TextInputAction.done,
-          ),
-        ),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
-          ),
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            onPressed: () => Navigator.pop(context, controller.text.trim()),
-            child: const Text('저장'),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-    if (value != null && value.isNotEmpty) {
-      widget.state.setProfile(nextName: value);
-    }
-  }
-
-  void _error(Object error) => showCupertinoDialog<void>(
-    context: context,
-    builder: (context) => CupertinoAlertDialog(
-      title: const Text('이미지를 변경할 수 없어요'),
-      content: Text(error.toString()),
-      actions: [
-        CupertinoDialogAction(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('확인'),
-        ),
-      ],
-    ),
-  );
-
   Future<void> _logout() async {
     final approved = await _confirm(
       '로그아웃',
@@ -122,73 +52,6 @@ class _MoreScreenState extends State<MoreScreen> {
     child: ListView(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 112),
       children: [
-        SasangSurface(
-          padding: const EdgeInsets.all(18),
-          radius: 24,
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: _pickProfile,
-                    child: FutureBuilder<File?>(
-                      future: widget.state.storage.resolveImage(
-                        widget.state.profileImageUri,
-                      ),
-                      builder: (context, snapshot) => CircleAvatar(
-                        radius: 42,
-                        backgroundColor: const Color(0xFFF4F4F5),
-                        foregroundImage: snapshot.data == null
-                            ? const AssetImage(
-                                'assets/images/default-profile.jpg',
-                              )
-                            : FileImage(snapshot.data!) as ImageProvider,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          '개인 프로필',
-                          style: TextStyle(
-                            color: SasangColors.accent,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        Text(
-                          widget.state.name,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const Text(
-                          '프로필 사진과 표시 이름을 관리해요',
-                          style: TextStyle(
-                            color: SasangColors.secondary,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-              SasangPrimaryButton(
-                label: '수정',
-                height: 44,
-                onPressed: _editName,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
         const AdBanner(placement: AdPlacement.more),
         const SizedBox(height: 24),
         _section('지도', [

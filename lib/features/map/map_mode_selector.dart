@@ -20,6 +20,7 @@ class MapModeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) => CupertinoButton(
     padding: EdgeInsets.zero,
+    minimumSize: Size.zero,
     onPressed: () => _show(context),
     child: Container(
       constraints: const BoxConstraints(maxWidth: 168),
@@ -200,74 +201,84 @@ class _MapModeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => CupertinoButton(
     padding: EdgeInsets.zero,
+    minimumSize: Size.zero,
     onPressed: onPressed,
     child: Container(
-      clipBehavior: Clip.antiAlias,
+      key: Key('map-mode-card-${mode.storageKey}'),
       decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      foregroundDecoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: selected ? SasangColors.accent : SasangColors.divider,
           width: selected ? 1.5 : .6,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            height: 82,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: MapPreview(mode: mode, selected: selected),
-                ),
-                if (selected)
-                  Positioned(
-                    right: 7,
-                    top: 7,
-                    child: Container(
-                      width: 22,
-                      height: 22,
-                      decoration: const BoxDecoration(
-                        color: SasangColors.accent,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        CupertinoIcons.check_mark,
-                        color: Colors.white,
-                        size: 14,
-                      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6.5),
+        child: ColoredBox(
+          color: Colors.white,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 82,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: MapPreview(mode: mode, selected: selected),
                     ),
+                    if (selected)
+                      Positioned(
+                        right: 7,
+                        top: 7,
+                        child: Container(
+                          width: 22,
+                          height: 22,
+                          decoration: const BoxDecoration(
+                            color: SasangColors.accent,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            CupertinoIcons.check_mark,
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(11, 10, 11, 0),
+                child: Text(
+                  mode.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: SasangColors.ink,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
                   ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(11, 10, 11, 0),
-            child: Text(
-              mode.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: SasangColors.ink,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(11, 3, 11, 12),
-            child: Text(
-              mode.description,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: SasangColors.secondary,
-                fontSize: 11,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(11, 3, 11, 12),
+                child: Text(
+                  mode.description,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: SasangColors.secondary,
+                    fontSize: 11,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     ),
   );

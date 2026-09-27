@@ -15,9 +15,15 @@ import '../widgets/ad_banner.dart';
 import '../widgets/sasang_ui.dart';
 
 class PlacesScreen extends StatefulWidget {
-  const PlacesScreen({required this.state, required this.onOpenMap, super.key});
+  const PlacesScreen({
+    required this.state,
+    required this.onOpenMap,
+    super.key,
+    this.mapAsset,
+  });
   final SasangState state;
   final VoidCallback onOpenMap;
+  final Future<RegionMapAsset>? mapAsset;
 
   @override
   State<PlacesScreen> createState() => _PlacesScreenState();
@@ -122,7 +128,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
     final mode = widget.state.mode;
     return SafeArea(
       child: FutureBuilder<RegionMapAsset>(
-        future: _maps.load(mode),
+        future: widget.mapAsset ?? _maps.load(mode),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CupertinoActivityIndicator());
@@ -149,32 +155,19 @@ class _PlacesScreenState extends State<PlacesScreen> {
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                key: const Key('places-filter-bar'),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: MapModeSelector(
-                        value: mode,
-                        onChanged: widget.state.setMode,
-                      ),
+                    MapModeSelector(
+                      value: mode,
+                      onChanged: widget.state.setMode,
                     ),
                     const SizedBox(width: 10),
-                    CupertinoButton(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 6,
-                      ),
+                    _SortButton(
+                      newest: _newest,
                       onPressed: () => setState(() => _newest = !_newest),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            CupertinoIcons.arrow_up_arrow_down,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 5),
-                          Text(_newest ? '최신순' : '오래된순'),
-                        ],
-                      ),
                     ),
                   ],
                 ),
@@ -183,12 +176,12 @@ class _PlacesScreenState extends State<PlacesScreen> {
                 child: items.isEmpty
                     ? _empty()
                     : ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 112),
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 112),
                         itemCount: items.length + 1,
                         itemBuilder: (context, index) {
                           if (index == 1) {
                             return const Padding(
-                              padding: EdgeInsets.only(bottom: 14),
+                              padding: EdgeInsets.fromLTRB(0, 12, 0, 20),
                               child: AdBanner(placement: AdPlacement.places),
                             );
                           }
@@ -198,53 +191,123 @@ class _PlacesScreenState extends State<PlacesScreen> {
                           }
                           final item = items[actual];
                           return Padding(
-                            padding: const EdgeInsets.only(bottom: 14),
+                            padding: const EdgeInsets.only(bottom: 20),
                             child: CupertinoButton(
                               padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
                               onPressed: () => _manage(item),
-                              child: SasangSurface(
-                                radius: 20,
-                                padding: EdgeInsets.zero,
+                              child: Container(
+                                clipBehavior: Clip.antiAlias,
+                                decoration: BoxDecoration(
+                                  color: CupertinoColors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: const Color(0x1A18181B),
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x0F18181B),
+                                      blurRadius: 14,
+                                      offset: Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    _StoredImage(
-                                      uri: item.photo.uri,
-                                      storage: widget.state.storage,
-                                      height: 220,
-                                      radius: 20,
+                                    AspectRatio(
+                                      aspectRatio: 1.18,
+                                      child: _StoredImage(
+                                        uri: item.photo.uri,
+                                        storage: widget.state.storage,
+                                        radius: 0,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: .5,
+                                      child: ColoredBox(
+                                        color: Color(0x1218181B),
+                                      ),
                                     ),
                                     Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
+                                      padding: const EdgeInsets.fromLTRB(
+                                        13,
+                                        12,
+                                        13,
+                                        13,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
                                             children: [
-                                              Text(
-                                                item.region.name,
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w800,
+                                              Expanded(
+                                                child: Text(
+                                                  item.region.name,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    color: SasangColors.ink,
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w800,
+                                                  ),
                                                 ),
                                               ),
-                                              Text(
-                                                '${item.region.provinceName ?? (mode == MapMode.korea ? '대한민국' : '해외')} · ${koreanDate(regionPhotoDate(item.photo.takenAt, item.photo.createdAt))}',
-                                                style: const TextStyle(
-                                                  color: SasangColors.secondary,
-                                                  fontSize: 12,
+                                              const SizedBox(width: 8),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 3,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(
+                                                    0x1A007AFF,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                ),
+                                                child: Text(
+                                                  mode == MapMode.korea
+                                                      ? '국내'
+                                                      : '해외',
+                                                  style: const TextStyle(
+                                                    color: SasangColors.accent,
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w800,
+                                                  ),
                                                 ),
                                               ),
                                             ],
                                           ),
+                                          const SizedBox(height: 4),
                                           Text(
-                                            mode == MapMode.korea ? '국내' : '해외',
+                                            item.region.provinceName ??
+                                                (mode == MapMode.korea
+                                                    ? '대한민국'
+                                                    : '해외'),
                                             style: const TextStyle(
-                                              color: SasangColors.accent,
-                                              fontWeight: FontWeight.w700,
+                                              color: Color(0xFF52525B),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            koreanDate(
+                                              regionPhotoDate(
+                                                item.photo.takenAt,
+                                                item.photo.createdAt,
+                                              ),
+                                            ),
+                                            style: const TextStyle(
+                                              color: SasangColors.secondary,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
                                             ),
                                           ),
                                         ],
@@ -265,36 +328,134 @@ class _PlacesScreenState extends State<PlacesScreen> {
     );
   }
 
-  Widget _empty() => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(30),
-      child: Column(
+  Widget _empty() => ListView(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 112),
+    children: [
+      Container(
+        key: const Key('places-empty-state'),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+        decoration: BoxDecoration(
+          color: CupertinoColors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A18181B),
+              blurRadius: 14,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAF4FF),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                CupertinoIcons.map_pin_ellipse,
+                color: SasangColors.accent,
+                size: 25,
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              '아직 기록이 없어요',
+              style: TextStyle(
+                color: SasangColors.ink,
+                fontSize: 22,
+                height: 1.32,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 5),
+            const Text(
+              '지도에서 첫 사진을 추가해보세요.',
+              style: TextStyle(
+                color: SasangColors.secondary,
+                fontSize: 14,
+                height: 1.43,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 22),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: CupertinoButton(
+                padding: const EdgeInsets.symmetric(horizontal: 17),
+                borderRadius: BorderRadius.circular(16),
+                color: SasangColors.accent,
+                onPressed: widget.onOpenMap,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '지도에서 시작하기',
+                      style: TextStyle(
+                        color: CupertinoColors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Icon(
+                      CupertinoIcons.arrow_right,
+                      color: CupertinoColors.white,
+                      size: 18,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      const SizedBox(height: 36),
+      const AdBanner(placement: AdPlacement.places),
+    ],
+  );
+}
+
+class _SortButton extends StatelessWidget {
+  const _SortButton({required this.newest, required this.onPressed});
+
+  final bool newest;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => CupertinoButton(
+    key: const Key('places-sort-button'),
+    padding: EdgeInsets.zero,
+    minimumSize: Size.zero,
+    onPressed: onPressed,
+    child: Container(
+      height: 38,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: CupertinoColors.white.withValues(alpha: .92),
+        borderRadius: BorderRadius.circular(19),
+        border: Border.all(color: SasangColors.divider, width: .6),
+      ),
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const DecoratedBox(
-            decoration: BoxDecoration(
-              color: Color(0x1A007AFF),
-              shape: BoxShape.circle,
+          const Icon(
+            CupertinoIcons.arrow_up_arrow_down,
+            size: 13,
+            color: Color(0xFF52525B),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            newest ? '최신순' : '오래된순',
+            style: const TextStyle(
+              color: Color(0xFF27272A),
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
             ),
-            child: Padding(
-              padding: EdgeInsets.all(14),
-              child: Icon(CupertinoIcons.map, color: SasangColors.accent),
-            ),
-          ),
-          const SizedBox(height: 14),
-          const Text(
-            '아직 기록이 없어요',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-          ),
-          const Text(
-            '지도에서 첫 사진을 추가해보세요.',
-            style: TextStyle(color: SasangColors.secondary),
-          ),
-          const SizedBox(height: 18),
-          SasangPrimaryButton(
-            onPressed: widget.onOpenMap,
-            label: '지도에서 시작하기',
-            icon: CupertinoIcons.arrow_right,
           ),
         ],
       ),
@@ -313,12 +474,12 @@ class _StoredImage extends StatelessWidget {
   const _StoredImage({
     required this.uri,
     required this.storage,
-    required this.height,
     required this.radius,
+    this.height,
   });
   final String uri;
   final SasangStorage storage;
-  final double height;
+  final double? height;
   final double radius;
 
   @override

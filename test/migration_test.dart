@@ -7,8 +7,11 @@ import 'package:sasang/features/map/map_mode_selector.dart';
 import 'package:sasang/features/map/map_preview.dart';
 import 'package:sasang/features/map/region_map_view.dart';
 import 'package:sasang/features/photos/photo_date.dart';
+import 'package:sasang/features/state/sasang_state.dart';
 import 'package:sasang/models/map_models.dart';
 import 'package:sasang/screens/map_store_screen.dart';
+import 'package:sasang/screens/more_screen.dart';
+import 'package:sasang/screens/places_screen.dart';
 
 void main() {
   test('decodes the legacy Zustand persist envelope', () {
@@ -134,5 +137,71 @@ void main() {
     expect(find.byIcon(CupertinoIcons.check_mark), findsOneWidget);
     expect(find.byIcon(CupertinoIcons.xmark), findsOneWidget);
     expect(find.text('새로운 지도 둘러보기'), findsOneWidget);
+
+    final selectedCard = tester.widget<Container>(
+      find.byKey(const Key('map-mode-card-korea')),
+    );
+    expect(selectedCard.clipBehavior, Clip.none);
+    final foreground = selectedCard.foregroundDecoration! as BoxDecoration;
+    expect(foreground.border!.top.width, 1.5);
+    expect(foreground.border!.top.color, const Color(0xFF007AFF));
+  });
+
+  testWidgets('places restores the compact filter bar and card empty state', (
+    tester,
+  ) async {
+    final state = SasangState(SasangStorage());
+    final mapAsset = Future.value(
+      const RegionMapAsset(
+        version: 'test',
+        width: 360,
+        height: 520,
+        regions: [],
+      ),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: PlacesScreen(
+            state: state,
+            onOpenMap: () {},
+            mapAsset: mapAsset,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.byKey(const Key('places-filter-bar')), findsOneWidget);
+    expect(find.byKey(const Key('places-sort-button')), findsOneWidget);
+    expect(find.text('최신순'), findsOneWidget);
+    expect(find.byKey(const Key('places-empty-state')), findsOneWidget);
+    expect(find.text('아직 기록이 없어요'), findsOneWidget);
+    expect(find.text('지도에서 시작하기'), findsOneWidget);
+
+    final selectorRect = tester.getRect(find.byType(MapModeSelector));
+    final sortRect = tester.getRect(
+      find.byKey(const Key('places-sort-button')),
+    );
+    expect(selectorRect.left, lessThan(sortRect.left));
+    expect(selectorRect.center.dy, closeTo(sortRect.center.dy, 1));
+  });
+
+  testWidgets('more screen no longer shows personal profile controls', (
+    tester,
+  ) async {
+    final state = SasangState(SasangStorage());
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: MoreScreen(state: state)),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('개인 프로필'), findsNothing);
+    expect(find.text('프로필 사진과 표시 이름을 관리해요'), findsNothing);
+    expect(find.text('수정'), findsNothing);
+    expect(find.text('지도 상점'), findsOneWidget);
   });
 }
