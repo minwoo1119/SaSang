@@ -36,6 +36,9 @@ React Native baseline: `pre-flutter-migration` (`d850547`)
 - Cold-start and warm custom-scheme routing, including direct Map Store launch.
 - Map Store country-outline previews, lock badges, product count, and explicit
   sheet close control matching the React Native reference hierarchy.
+- Illustrated owned-map Bottom Sheet with Korea/world vector previews, selected
+  card treatment, explicit close control, and Map Store entry matching the
+  React Native iOS-style hierarchy.
 
 ## Existing-user data migration
 
@@ -61,7 +64,7 @@ so no migration exists for those absent data classes.
 | --- | --- |
 | `flutter pub get` | Pass |
 | `flutter analyze` | Pass, zero issues |
-| `flutter test` | Pass, 7 tests |
+| `flutter test` | Pass, 8 tests |
 | iOS Simulator debug build/install/launch | Pass, iPhone 17 Pro / iOS 26.4 |
 | Android release AAB | Pass from repository root, 50.7 MB |
 | iOS release build | Pass from repository root, unsigned `Runner.app`, 32.6 MB |
@@ -70,7 +73,8 @@ so no migration exists for those absent data classes.
 | Production-signed store update | Not attempted; credentials intentionally untouched |
 
 Tests cover legacy Zustand decoding, RN/EXIF date formats, map asset decoding,
-MultiPolygon preservation, and photo transform persistence.
+MultiPolygon preservation, photo transform persistence, and the illustrated
+owned-map selector structure.
 
 ## Intentional or remaining differences
 

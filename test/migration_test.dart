@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sasang/core/storage/sasang_storage.dart';
 import 'package:sasang/core/layout/sasang_layout.dart';
+import 'package:sasang/features/map/map_mode_selector.dart';
+import 'package:sasang/features/map/map_preview.dart';
 import 'package:sasang/features/map/region_map_view.dart';
 import 'package:sasang/features/photos/photo_date.dart';
 import 'package:sasang/models/map_models.dart';
@@ -102,5 +104,35 @@ void main() {
     expect(find.text('6개'), findsOneWidget);
     expect(find.byIcon(CupertinoIcons.lock_fill), findsNWidgets(6));
     expect(find.text('JP'), findsNothing);
+  });
+
+  testWidgets('owned map selector restores the illustrated iOS sheet', (
+    tester,
+  ) async {
+    var selectedMode = MapMode.korea;
+    await tester.pumpWidget(
+      MaterialApp(
+        routes: {'/map-store': (_) => const SizedBox.shrink()},
+        home: Scaffold(
+          body: StatefulBuilder(
+            builder: (context, setState) => MapModeSelector(
+              value: selectedMode,
+              onChanged: (value) => setState(() => selectedMode = value),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('대한민국 지도'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.text('내 지도'), findsOneWidget);
+    expect(find.text('보유한 지도'), findsOneWidget);
+    expect(find.byType(MapPreview), findsNWidgets(2));
+    expect(find.byIcon(CupertinoIcons.check_mark), findsOneWidget);
+    expect(find.byIcon(CupertinoIcons.xmark), findsOneWidget);
+    expect(find.text('새로운 지도 둘러보기'), findsOneWidget);
   });
 }

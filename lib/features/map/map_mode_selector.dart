@@ -1,9 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/sasang_theme.dart';
 import '../../models/map_models.dart';
-import '../../widgets/sasang_ui.dart';
+import 'map_preview.dart';
 
 class MapModeSelector extends StatelessWidget {
   const MapModeSelector({
@@ -19,26 +21,35 @@ class MapModeSelector extends StatelessWidget {
   Widget build(BuildContext context) => CupertinoButton(
     padding: EdgeInsets.zero,
     onPressed: () => _show(context),
-    child: SasangSurface(
-      blur: true,
-      radius: 18,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+    child: Container(
+      constraints: const BoxConstraints(maxWidth: 168),
+      height: 38,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .92),
+        borderRadius: BorderRadius.circular(19),
+        border: Border.all(color: SasangColors.divider, width: .6),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            value.label,
-            style: const TextStyle(
-              color: SasangColors.ink,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
+          Flexible(
+            child: Text(
+              value.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFF27272A),
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           const SizedBox(width: 7),
           const Icon(
             CupertinoIcons.chevron_down,
-            size: 14,
-            color: SasangColors.secondary,
+            size: 16,
+            color: Color(0xFF52525B),
           ),
         ],
       ),
@@ -46,104 +57,218 @@ class MapModeSelector extends StatelessWidget {
   );
 
   Future<void> _show(BuildContext context) async {
-    final selected = await showSasangSheet<MapMode>(
-      context,
-      Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 36,
-              height: 5,
-              decoration: BoxDecoration(
-                color: const Color(0xFFD4D4D8),
-                borderRadius: BorderRadius.circular(3),
-              ),
-            ),
+    final selected = await showModalBottomSheet<MapMode>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: .30),
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final bottom = math
+            .max(MediaQuery.paddingOf(sheetContext).bottom, 16)
+            .toDouble();
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.fromLTRB(18, 18, 18, bottom),
+          decoration: const BoxDecoration(
+            color: SasangColors.background,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-          const SizedBox(height: 18),
-          const Text(
-            '내 지도',
-            style: TextStyle(fontSize: 23, fontWeight: FontWeight.w800),
-          ),
-          const Text(
-            '보유한 지도',
-            style: TextStyle(color: SasangColors.secondary, fontSize: 13),
-          ),
-          const SizedBox(height: 14),
-          for (final mode in MapMode.values)
-            CupertinoButton(
-              padding: const EdgeInsets.symmetric(vertical: 5),
-              onPressed: () => Navigator.pop(context, mode),
-              child: SasangSurface(
-                radius: 16,
-                color: mode == value ? const Color(0xFFF0F7FF) : Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 15,
-                  vertical: 13,
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      mode == value
-                          ? CupertinoIcons.check_mark_circled_solid
-                          : CupertinoIcons.circle,
-                      color: mode == value
-                          ? SasangColors.accent
-                          : const Color(0xFFD4D4D8),
-                      size: 21,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '내 지도',
+                          style: TextStyle(
+                            color: SasangColors.ink,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(height: 3),
+                        Text(
+                          '보유한 지도',
+                          style: TextStyle(
+                            color: SasangColors.secondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
+                  ),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(36, 36),
+                    borderRadius: BorderRadius.circular(8),
+                    color: const Color(0xFFF4F4F5),
+                    onPressed: () => Navigator.pop(sheetContext),
+                    child: const Icon(
+                      CupertinoIcons.xmark,
+                      size: 19,
+                      color: Color(0xFF52525B),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (
+                    var index = 0;
+                    index < MapMode.values.length;
+                    index++
+                  ) ...[
+                    if (index > 0) const SizedBox(width: 10),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            mode.label,
-                            style: const TextStyle(
-                              color: SasangColors.ink,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            mode.description,
-                            style: const TextStyle(
-                              color: SasangColors.secondary,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
+                      child: _MapModeCard(
+                        mode: MapMode.values[index],
+                        selected: MapMode.values[index] == value,
+                        onPressed: () =>
+                            Navigator.pop(sheetContext, MapMode.values[index]),
                       ),
                     ),
                   ],
+                ],
+              ),
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white,
+                  onPressed: () {
+                    Navigator.pop(sheetContext);
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (context.mounted) {
+                        Navigator.pushNamed(context, '/map-store');
+                      }
+                    });
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: SasangColors.accent.withValues(alpha: .25),
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(CupertinoIcons.add, size: 19),
+                        SizedBox(width: 6),
+                        Text(
+                          '새로운 지도 둘러보기',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-          const SizedBox(height: 6),
-          CupertinoButton(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/map-store');
-            },
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            ],
+          ),
+        );
+      },
+    );
+    if (selected != null) onChanged(selected);
+  }
+}
+
+class _MapModeCard extends StatelessWidget {
+  const _MapModeCard({
+    required this.mode,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  final MapMode mode;
+  final bool selected;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => CupertinoButton(
+    padding: EdgeInsets.zero,
+    onPressed: onPressed,
+    child: Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: selected ? SasangColors.accent : SasangColors.divider,
+          width: selected ? 1.5 : .6,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: 82,
+            child: Stack(
               children: [
-                Icon(CupertinoIcons.add, size: 18),
-                SizedBox(width: 7),
-                Text(
-                  '새로운 지도 둘러보기',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                Positioned.fill(
+                  child: MapPreview(mode: mode, selected: selected),
                 ),
+                if (selected)
+                  Positioned(
+                    right: 7,
+                    top: 7,
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: const BoxDecoration(
+                        color: SasangColors.accent,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        CupertinoIcons.check_mark,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                    ),
+                  ),
               ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(11, 10, 11, 0),
+            child: Text(
+              mode.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: SasangColors.ink,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(11, 3, 11, 12),
+            child: Text(
+              mode.description,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: SasangColors.secondary,
+                fontSize: 11,
+              ),
             ),
           ),
         ],
       ),
-    );
-    if (selected != null) onChanged(selected);
-  }
+    ),
+  );
 }
