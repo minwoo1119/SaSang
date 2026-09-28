@@ -185,36 +185,13 @@ class _MapScreenState extends State<MapScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Image.asset(
-                              'assets/images/main-text-design.png',
-                              width: 49,
-                              height: 30,
-                              fit: BoxFit.contain,
-                            ),
-                            Text(
-                              '$count개의 여행 기록',
-                              style: const TextStyle(
-                                color: SasangColors.secondary,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                        MapModeSelector(
-                          value: mode,
-                          onChanged: (next) {
-                            _search.clear();
-                            widget.state.setMode(next);
-                          },
-                        ),
-                      ],
+                    MapTopBar(
+                      count: count,
+                      mode: mode,
+                      onModeChanged: (next) {
+                        _search.clear();
+                        widget.state.setMode(next);
+                      },
                     ),
                     const SizedBox(height: 12),
                     SasangSurface(
@@ -421,5 +398,35 @@ class _PhotoThumb extends StatelessWidget {
               fit: BoxFit.cover,
             ),
     ),
+  );
+}
+
+class MapTopBar extends StatelessWidget {
+  const MapTopBar({
+    required this.count,
+    required this.mode,
+    required this.onModeChanged,
+    super.key,
+  });
+
+  final int count;
+  final MapMode mode;
+  final ValueChanged<MapMode> onModeChanged;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(
+        '$count개의 여행 기록',
+        key: const Key('map-record-count'),
+        style: const TextStyle(
+          color: SasangColors.secondary,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      MapModeSelector(value: mode, onChanged: onModeChanged),
+    ],
   );
 }

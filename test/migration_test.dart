@@ -9,6 +9,7 @@ import 'package:sasang/features/map/region_map_view.dart';
 import 'package:sasang/features/photos/photo_date.dart';
 import 'package:sasang/features/state/sasang_state.dart';
 import 'package:sasang/models/map_models.dart';
+import 'package:sasang/screens/map_screen.dart';
 import 'package:sasang/screens/map_store_screen.dart';
 import 'package:sasang/screens/more_screen.dart';
 import 'package:sasang/screens/places_screen.dart';
@@ -145,6 +146,23 @@ void main() {
     final foreground = selectedCard.foregroundDecoration! as BoxDecoration;
     expect(foreground.border!.top.width, 1.5);
     expect(foreground.border!.top.color, const Color(0xFF007AFF));
+  });
+
+  testWidgets('map top bar keeps the count without the brand image', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: MapTopBar(count: 3, mode: MapMode.korea, onModeChanged: (_) {}),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const Key('map-record-count')), findsOneWidget);
+    expect(find.text('3개의 여행 기록'), findsOneWidget);
+    expect(find.byType(MapModeSelector), findsOneWidget);
+    expect(find.byType(Image), findsNothing);
   });
 
   testWidgets('places restores the compact filter bar and card empty state', (
