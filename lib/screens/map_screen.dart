@@ -194,22 +194,14 @@ class _MapScreenState extends State<MapScreen> {
                       },
                     ),
                     const SizedBox(height: 12),
-                    SasangSurface(
-                      blur: true,
-                      radius: 23,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: CupertinoSearchTextField(
-                        controller: _search,
-                        onChanged: (_) => setState(() {}),
-                        placeholder: mode == MapMode.korea
-                            ? '지역명 또는 코드'
-                            : '국가명 또는 코드',
-                        backgroundColor: Colors.transparent,
-                        onSuffixTap: () {
-                          _search.clear();
-                          setState(() {});
-                        },
-                      ),
+                    MapSearchBar(
+                      controller: _search,
+                      mode: mode,
+                      onChanged: (_) => setState(() {}),
+                      onClear: () {
+                        _search.clear();
+                        setState(() {});
+                      },
                     ),
                     if (query.isNotEmpty)
                       SasangSurface(
@@ -417,16 +409,86 @@ class MapTopBar extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
-      Text(
-        '$count개의 여행 기록',
-        key: const Key('map-record-count'),
-        style: const TextStyle(
-          color: SasangColors.secondary,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
+      Semantics(
+        label: '$count개의 여행 기록',
+        button: false,
+        child: Container(
+          key: const Key('map-record-summary'),
+          height: 38,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: .88),
+            borderRadius: BorderRadius.circular(19),
+            border: Border.all(color: SasangColors.divider, width: .6),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                '여행 기록',
+                style: TextStyle(
+                  color: SasangColors.secondary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '$count',
+                key: const Key('map-record-count'),
+                style: const TextStyle(
+                  color: SasangColors.ink,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       MapModeSelector(value: mode, onChanged: onModeChanged),
     ],
+  );
+}
+
+class MapSearchBar extends StatelessWidget {
+  const MapSearchBar({
+    required this.controller,
+    required this.mode,
+    required this.onChanged,
+    required this.onClear,
+    super.key,
+  });
+
+  final TextEditingController controller;
+  final MapMode mode;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) => SasangSurface(
+    blur: true,
+    radius: 23,
+    padding: const EdgeInsets.symmetric(horizontal: 8),
+    child: CupertinoSearchTextField(
+      key: const Key('map-search-field'),
+      controller: controller,
+      onChanged: onChanged,
+      placeholder: mode == MapMode.korea ? '지역명 또는 코드' : '국가명 또는 코드',
+      backgroundColor: Colors.transparent,
+      itemColor: const Color(0xFF8E8E93),
+      itemSize: 17,
+      style: const TextStyle(
+        color: SasangColors.ink,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+      ),
+      placeholderStyle: const TextStyle(
+        color: Color(0xFF8E8E93),
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+      ),
+      onSuffixTap: onClear,
+    ),
   );
 }

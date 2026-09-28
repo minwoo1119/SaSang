@@ -24,7 +24,8 @@ React Native baseline: `pre-flutter-migration` (`d850547`)
   metadata rendering.
 - Aspect-correct map rendering and hit testing, zoom-independent selected-region
   borders, safe-area-aligned bottom controls, explicit photo-add icon colors,
-  and a simplified top bar without the decorative brand image.
+  a compact record-count summary, and restrained search typography without the
+  decorative brand image.
 - Photo selection, EXIF date lookup, date confirmation, device-local copy,
   replacement, and deletion of region associations.
 - Places filtering, sorting, photo management, and the original compact
@@ -65,7 +66,7 @@ so no migration exists for those absent data classes.
 | --- | --- |
 | `flutter pub get` | Pass |
 | `flutter analyze` | Pass, zero issues |
-| `flutter test` | Pass, 11 tests |
+| `flutter test` | Pass, 12 tests |
 | iOS Simulator debug build/install/launch | Pass, iPhone 17 Pro / iOS 26.4 |
 | Android release AAB | Pass from repository root, 50.7 MB |
 | iOS release build | Pass from repository root, unsigned `Runner.app`, 32.5 MB |
@@ -75,8 +76,9 @@ so no migration exists for those absent data classes.
 
 Tests cover legacy Zustand decoding, RN/EXIF date formats, map asset decoding,
 MultiPolygon preservation, photo transform persistence, and the illustrated
-owned-map selector structure. UI regressions cover the Places filter/empty
-state, the simplified map top bar, and removal of profile controls from More.
+owned-map selector structure. UI regressions cover the Places filter/icon-free
+empty state, the simplified map top bar and search typography, and removal of
+profile controls from More.
 
 ## Intentional or remaining differences
 

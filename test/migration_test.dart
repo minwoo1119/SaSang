@@ -148,7 +148,7 @@ void main() {
     expect(foreground.border!.top.color, const Color(0xFF007AFF));
   });
 
-  testWidgets('map top bar keeps the count without the brand image', (
+  testWidgets('map top bar uses a compact count summary without branding', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -159,10 +159,34 @@ void main() {
       ),
     );
 
-    expect(find.byKey(const Key('map-record-count')), findsOneWidget);
-    expect(find.text('3개의 여행 기록'), findsOneWidget);
+    expect(find.byKey(const Key('map-record-summary')), findsOneWidget);
+    expect(find.text('여행 기록'), findsOneWidget);
+    expect(find.text('3'), findsOneWidget);
     expect(find.byType(MapModeSelector), findsOneWidget);
     expect(find.byType(Image), findsNothing);
+  });
+
+  testWidgets('map search field keeps compact typography', (tester) async {
+    final controller = TextEditingController();
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: MapSearchBar(
+            controller: controller,
+            mode: MapMode.korea,
+            onChanged: (_) {},
+            onClear: () {},
+          ),
+        ),
+      ),
+    );
+
+    final field = tester.widget<CupertinoSearchTextField>(
+      find.byKey(const Key('map-search-field')),
+    );
+    expect(field.style?.fontSize, 14);
+    expect(field.placeholderStyle?.fontSize, 14);
   });
 
   testWidgets('places restores the compact filter bar and card empty state', (
@@ -197,6 +221,7 @@ void main() {
     expect(find.byKey(const Key('places-empty-state')), findsOneWidget);
     expect(find.text('아직 기록이 없어요'), findsOneWidget);
     expect(find.text('지도에서 시작하기'), findsOneWidget);
+    expect(find.byIcon(CupertinoIcons.map_pin_ellipse), findsNothing);
 
     final selectorRect = tester.getRect(find.byType(MapModeSelector));
     final sortRect = tester.getRect(

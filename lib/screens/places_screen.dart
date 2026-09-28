@@ -348,21 +348,6 @@ class _PlacesScreenState extends State<PlacesScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 52,
-              height: 52,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: const Color(0xFFEAF4FF),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Icon(
-                CupertinoIcons.map_pin_ellipse,
-                color: SasangColors.accent,
-                size: 25,
-              ),
-            ),
-            const SizedBox(height: 20),
             const Text(
               '아직 기록이 없어요',
               style: TextStyle(
