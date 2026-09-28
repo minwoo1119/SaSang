@@ -79,7 +79,7 @@ so no migration exists for those absent data classes.
 | `flutter analyze` | Pass, zero issues |
 | `flutter test` | Pass, 15 tests |
 | iOS Simulator debug build/install/launch | Pass, iPhone 17 Pro / iOS 26.4 |
-| Android release AAB | Pass for versionCode 25; shared candidate advanced to `1.0.3+26` for iOS resubmission |
+| Android release AAB | Pass for versionCode 25; shared candidate advanced to `1.0.3+27` after UI fixes |
 | Android release signing | Pass; AAB signer matches the recovered EAS upload certificate |
 | Android photo permissions | Pass; release manifest has no `READ_MEDIA_IMAGES` or `READ_EXTERNAL_STORAGE` |
 | iOS release build | Pass from repository root, unsigned `Runner.app`, 32.5 MB |
@@ -126,9 +126,9 @@ profile controls from More.
       the App Store build reported for live `1.0.2` is 18.
 - [x] Remove broad Android photo-library permissions. Photo attachment uses the
       system picker and copies only the user-selected image into app storage.
-- [x] Advance the shared candidate to `1.0.3+26` after the rejected iOS build
-      25 upload, set the iOS deployment target to 15.0, and explicitly retain
-      the existing portrait-only full-screen iPad experience.
+- [x] Advance the shared candidate to `1.0.3+27` after the rejected iOS build
+      25 upload and subsequent UI fixes, set the iOS deployment target to 15.0,
+      and explicitly retain the existing portrait-only full-screen iPad experience.
 - [x] Recover the existing EAS-managed Play upload keystore and connect release
       signing locally without committing the key or passwords.
 - [ ] Configure the existing Apple development team, distribution certificate,
