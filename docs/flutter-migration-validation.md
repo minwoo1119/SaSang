@@ -1,6 +1,6 @@
 # Flutter migration validation
 
-Date: 2026-09-26
+Date: 2026-09-28
 
 Branch: `migration/flutter`
 
@@ -73,11 +73,13 @@ so no migration exists for those absent data classes.
 | `flutter analyze` | Pass, zero issues |
 | `flutter test` | Pass, 12 tests |
 | iOS Simulator debug build/install/launch | Pass, iPhone 17 Pro / iOS 26.4 |
-| Android release AAB | Pass from repository root, 50.7 MB |
+| Android release AAB | Pass, 50.7 MB, `1.0.3` (`versionCode 23`) |
+| Android release signing | Pass; AAB signer matches the recovered EAS upload certificate |
 | iOS release build | Pass from repository root, unsigned `Runner.app`, 32.5 MB |
 | Physical Android device | Not available |
 | Physical iOS device | Not available |
-| Production-signed store update | Not attempted; credentials intentionally untouched |
+| Play upload-ready candidate | Pass; Play Console acceptance still requires Internal testing upload |
+| App Store upload-ready IPA | Blocked; no Apple Distribution identity is installed locally |
 
 Tests cover legacy Zustand decoding, RN/EXIF date formats, map asset decoding,
 MultiPolygon preservation, photo transform persistence, and the illustrated
@@ -105,10 +107,10 @@ profile controls from More.
 
 - [ ] Confirm the live Play application ID and App Store bundle ID are exactly
       `com.sasang.app` in their consoles.
-- [ ] Set Android `versionCode` and iOS `CFBundleVersion` above the latest store
-      builds; `1.0.3+1` is a source baseline, not an asserted production number.
-- [ ] Connect the existing Play upload/production keystore. The locally verified
-      AAB uses Flutter's debug signing fallback and must not be uploaded.
+- [x] Set the candidate to `1.0.3+23`, above Play versionCode 22 and App Store
+      build 18 reported for the live `1.0.2` release.
+- [x] Recover the existing EAS-managed Play upload keystore and connect release
+      signing locally without committing the key or passwords.
 - [ ] Configure the existing Apple development team, distribution certificate,
       provisioning profile, and App Store signing. Rebuild without
       `--no-codesign` and archive through Xcode/CI.
