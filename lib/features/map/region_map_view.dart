@@ -306,6 +306,7 @@ class RegionMapPainter extends CustomPainter {
       contentRect.width / asset.width,
       contentRect.height / asset.height,
     );
+    Path? selectedPath;
     for (final region in asset.regions) {
       final path = paths[region.code]!;
       final key = regionPhotoKey(mode, region.code);
@@ -327,15 +328,20 @@ class RegionMapPainter extends CustomPainter {
               : const Color(0x3871717A),
       );
       if (selectedRegionCode == region.code) {
-        canvas.drawPath(
-          path,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeJoin = StrokeJoin.round
-            ..strokeWidth = selectedStrokeWidth
-            ..color = SasangColors.accent,
-        );
+        selectedPath = path;
       }
+    }
+    if (selectedPath != null) {
+      canvas.drawPath(
+        selectedPath,
+        Paint()
+          ..isAntiAlias = true
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..strokeWidth = selectedStrokeWidth
+          ..color = SasangColors.accent,
+      );
     }
     canvas.restore();
   }

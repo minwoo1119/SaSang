@@ -2,30 +2,57 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../core/theme/sasang_theme.dart';
+import '../features/map/map_repository.dart';
 import '../features/map/map_preview.dart';
 import '../models/map_models.dart';
 import '../widgets/sasang_ui.dart';
 
-class _Product {
-  const _Product(this.code, this.name, this.description, this.price);
+class MapStoreProduct {
+  const MapStoreProduct({
+    required this.code,
+    required this.name,
+    required this.description,
+    required this.priceWon,
+  });
 
   final String code;
   final String name;
   final String description;
-  final String price;
+  final int priceWon;
+
+  String get priceLabel => '₩${priceWon ~/ 1000},000';
 }
 
-const _products = [
-  _Product('JP', '일본 지도', '도도부현별로 사진을 기록해요', '₩2,000'),
-  _Product('US', '미국 지도', '주별로 여행 사진을 기록해요', '₩2,000'),
-  _Product('FR', '프랑스 지도', '지역별로 여행 사진을 기록해요', '₩2,000'),
-  _Product('IT', '이탈리아 지도', '주별로 여행 사진을 기록해요', '₩2,000'),
-  _Product('TH', '태국 지도', '주별로 여행 사진을 기록해요', '₩2,000'),
-  _Product('VN', '베트남 지도', '성·시별로 여행 사진을 기록해요', '₩2,000'),
-];
+int mapStorePriceFor(MapRegion region) {
+  final geometryDetail = region.pathData.length;
+  if (geometryDetail > 1200) return 5000;
+  if (geometryDetail > 600) return 4000;
+  if (geometryDetail > 300) return 3000;
+  return 2000;
+}
+
+List<MapStoreProduct> mapStoreProducts(RegionMapAsset asset) {
+  final products = asset.regions
+      .map(
+        (region) => MapStoreProduct(
+          code: region.code,
+          name: '${region.name} 지도',
+          description: region.polygonCount > 1
+              ? '본토와 섬을 포함해 지역별로 기록해요'
+              : '지역별로 여행 사진을 기록해요',
+          priceWon: mapStorePriceFor(region),
+        ),
+      )
+      .toList(growable: false);
+  products.sort((a, b) => a.name.compareTo(b.name));
+  return products;
+}
 
 class MapStoreScreen extends StatelessWidget {
-  const MapStoreScreen({super.key});
+  const MapStoreScreen({super.key, this.mapAsset});
+
+  static final _maps = MapRepository();
+  final Future<RegionMapAsset>? mapAsset;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -38,83 +65,104 @@ class MapStoreScreen extends StatelessWidget {
         style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
       ),
     ),
-    body: ListView(
-      padding: EdgeInsets.fromLTRB(
-        18,
-        18,
-        18,
-        MediaQuery.paddingOf(context).bottom + 40,
-      ),
-      children: [
-        const Text(
-          '여행을 더 자세하게 기록하세요',
-          style: TextStyle(
-            color: SasangColors.ink,
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -.5,
-          ),
-        ),
-        const SizedBox(height: 7),
-        const SizedBox(
-          width: 330,
-          child: Text(
-            '국가 지도를 열면 도시와 지역 단위로 사진을 남길 수 있어요.',
-            style: TextStyle(
-              color: SasangColors.secondary,
-              fontSize: 14,
-              height: 1.42,
+    body: FutureBuilder<RegionMapAsset>(
+      future: mapAsset ?? _maps.load(MapMode.world),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CupertinoActivityIndicator());
+        }
+        final products = mapStoreProducts(snapshot.data!);
+        return CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '여행을 더 자세하게 기록하세요',
+                      style: TextStyle(
+                        color: SasangColors.ink,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -.5,
+                      ),
+                    ),
+                    const SizedBox(height: 7),
+                    const SizedBox(
+                      width: 330,
+                      child: Text(
+                        '국가 지도를 열면 도시와 지역 단위로 사진을 남길 수 있어요.',
+                        style: TextStyle(
+                          color: SasangColors.secondary,
+                          fontSize: 14,
+                          height: 1.42,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 26),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          '국가별 지도',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          '${products.length}개',
+                          style: const TextStyle(
+                            color: SasangColors.secondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 26),
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '국가별 지도',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-            Text(
-              '6개',
-              style: TextStyle(
-                color: SasangColors.secondary,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                18,
+                0,
+                18,
+                MediaQuery.paddingOf(context).bottom + 40,
+              ),
+              sliver: SliverGrid(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final product = products[index];
+                  return _ProductCard(
+                    product: product,
+                    onPressed: () => _showProduct(context, product),
+                  );
+                }, childCount: products.length),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: .78,
+                ),
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 12),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _products.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: .78,
-          ),
-          itemBuilder: (context, index) {
-            final product = _products[index];
-            return _ProductCard(
-              product: product,
-              onPressed: () => _showProduct(context, product),
-            );
-          },
-        ),
-      ],
+        );
+      },
     ),
   );
 
-  Future<void> _showProduct(BuildContext context, _Product product) =>
+  Future<void> _showProduct(BuildContext context, MapStoreProduct product) =>
       showSasangSheet<void>(
         context,
         Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(key: Key('map-store-modal-top-space'), height: 12),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -190,7 +238,7 @@ class MapStoreScreen extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  product.price,
+                  product.priceLabel,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -208,7 +256,7 @@ class MapStoreScreen extends StatelessWidget {
 class _ProductCard extends StatelessWidget {
   const _ProductCard({required this.product, required this.onPressed});
 
-  final _Product product;
+  final MapStoreProduct product;
   final VoidCallback onPressed;
 
   @override
@@ -288,7 +336,7 @@ class _ProductCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        product.price,
+                        product.priceLabel,
                         style: const TextStyle(
                           color: SasangColors.ink,
                           fontSize: 14,

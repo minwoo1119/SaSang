@@ -25,6 +25,19 @@ class MapScreen extends StatefulWidget {
   State<MapScreen> createState() => _MapScreenState();
 }
 
+String regionDisplaySubtitle(MapRegion region, MapMode mode) {
+  final provinceName = region.provinceName?.trim();
+  if (provinceName != null && provinceName.isNotEmpty) return provinceName;
+  final englishName = region.englishName?.trim();
+  if (mode == MapMode.world &&
+      englishName != null &&
+      englishName.isNotEmpty &&
+      englishName != region.name) {
+    return englishName;
+  }
+  return mode == MapMode.korea ? '대한민국' : '세계 지도';
+}
+
 class _MapScreenState extends State<MapScreen> {
   final _maps = MapRepository();
   final _picker = PhotoPickerService();
@@ -150,7 +163,7 @@ class _MapScreenState extends State<MapScreen> {
             : map.regions
                   .where(
                     (region) =>
-                        '${region.name} ${region.englishName ?? ''} ${region.provinceName ?? ''} ${region.code}'
+                        '${region.name} ${region.englishName ?? ''} ${region.provinceName ?? ''}'
                             .toLowerCase()
                             .contains(query),
                   )
@@ -247,7 +260,10 @@ class _MapScreenState extends State<MapScreen> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  '${region.provinceName ?? (mode == MapMode.korea ? '국내' : '해외')} · ${region.code}',
+                                                  regionDisplaySubtitle(
+                                                    region,
+                                                    mode,
+                                                  ),
                                                   style: const TextStyle(
                                                     color:
                                                         SasangColors.secondary,
@@ -321,7 +337,7 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                 ),
                 Text(
-                  '${region.provinceName ?? (mode == MapMode.korea ? '대한민국' : '세계')} · ${region.code}',
+                  regionDisplaySubtitle(region, mode),
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: SasangColors.secondary,
@@ -467,31 +483,34 @@ class MapSearchBar extends StatelessWidget {
   final VoidCallback onClear;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    height: 46,
-    child: SasangSurface(
-      blur: true,
-      radius: 23,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: CupertinoSearchTextField(
-        key: const Key('map-search-field'),
-        controller: controller,
-        onChanged: onChanged,
-        placeholder: mode == MapMode.korea ? '지역명 또는 코드' : '국가명 또는 코드',
-        backgroundColor: Colors.transparent,
-        itemColor: const Color(0xFF8E8E93),
-        itemSize: 17,
-        style: const TextStyle(
-          color: SasangColors.ink,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
+  Widget build(BuildContext context) => TapRegion(
+    onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+    child: SizedBox(
+      height: 46,
+      child: SasangSurface(
+        blur: true,
+        radius: 23,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: CupertinoSearchTextField(
+          key: const Key('map-search-field'),
+          controller: controller,
+          onChanged: onChanged,
+          placeholder: mode == MapMode.korea ? '지역 이름 검색' : '국가 이름 검색',
+          backgroundColor: Colors.transparent,
+          itemColor: const Color(0xFF8E8E93),
+          itemSize: 17,
+          style: const TextStyle(
+            color: SasangColors.ink,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+          placeholderStyle: const TextStyle(
+            color: Color(0xFF8E8E93),
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+          onSuffixTap: onClear,
         ),
-        placeholderStyle: const TextStyle(
-          color: Color(0xFF8E8E93),
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-        onSuffixTap: onClear,
       ),
     ),
   );

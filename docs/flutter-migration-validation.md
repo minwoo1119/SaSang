@@ -26,6 +26,9 @@ React Native baseline: `pre-flutter-migration` (`d850547`)
   borders, safe-area-aligned bottom controls, explicit photo-add icon colors,
   a compact record-count summary, and restrained search typography without the
   decorative brand image.
+- Region selection paints its blue outline above every neighboring polygon for
+  consistent thickness. Search results and selection controls hide internal
+  administrative/country codes, and tapping outside search dismisses the keyboard.
 - Map overlays use unclipped two-layer shadows, stronger hairline borders, and
   more opaque glass surfaces; the search field retains a 46 px touch height and
   zoom controls sit closer to the lower contextual control.
@@ -43,8 +46,9 @@ React Native baseline: `pre-flutter-migration` (`d850547`)
   units in release.
 - `sasang://map`, `/places`, `/more`, `/map-store`, and `/info/{type}` routing.
 - Cold-start and warm custom-scheme routing, including direct Map Store launch.
-- Map Store country-outline previews, lock badges, product count, and explicit
-  sheet close control matching the React Native reference hierarchy.
+- Map Store country-outline previews for all 175 countries in the bundled world
+  asset, lazy grid rendering, deterministic ₩2,000–₩5,000 preview price tiers,
+  lock badges, product count, and a roomier product-detail sheet.
 - Illustrated owned-map Bottom Sheet with Korea/world vector previews, selected
   card treatment, explicit close control, and Map Store entry matching the
   React Native iOS-style hierarchy.
@@ -73,7 +77,7 @@ so no migration exists for those absent data classes.
 | --- | --- |
 | `flutter pub get` | Pass |
 | `flutter analyze` | Pass, zero issues |
-| `flutter test` | Pass, 13 tests |
+| `flutter test` | Pass, 15 tests |
 | iOS Simulator debug build/install/launch | Pass, iPhone 17 Pro / iOS 26.4 |
 | Android release AAB | Pass for versionCode 25; shared candidate advanced to `1.0.3+26` for iOS resubmission |
 | Android release signing | Pass; AAB signer matches the recovered EAS upload certificate |

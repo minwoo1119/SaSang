@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -91,6 +93,38 @@ void main() {
     expect(photo.toJson()['offsetY'], -4.0);
   });
 
+  test('region subtitles hide internal administrative codes', () {
+    const antarctica = MapRegion(
+      code: 'AQ',
+      name: '남극',
+      englishName: 'Antarctica',
+      geometryType: 'MultiPolygon',
+      polygonCount: 1,
+      bounds: RegionBounds(x: 0, y: 0, width: 10, height: 10),
+      pathData: 'M 0 0 L 10 0 L 10 10 Z',
+    );
+    const gangnam = MapRegion(
+      code: '11680',
+      name: '강남구',
+      provinceName: '서울특별시',
+      geometryType: 'Polygon',
+      polygonCount: 1,
+      bounds: RegionBounds(x: 0, y: 0, width: 10, height: 10),
+      pathData: 'M 0 0 L 10 0 L 10 10 Z',
+    );
+
+    expect(regionDisplaySubtitle(antarctica, MapMode.world), 'Antarctica');
+    expect(regionDisplaySubtitle(gangnam, MapMode.korea), '서울특별시');
+    expect(
+      regionDisplaySubtitle(antarctica, MapMode.world),
+      isNot(contains('AQ')),
+    );
+    expect(
+      regionDisplaySubtitle(gangnam, MapMode.korea),
+      isNot(contains('11680')),
+    );
+  });
+
   test('keeps the map asset aspect ratio inside a tall phone viewport', () {
     const asset = RegionMapAsset(
       version: 'test',
@@ -133,14 +167,45 @@ void main() {
   testWidgets('map store uses country previews instead of code placeholders', (
     tester,
   ) async {
-    await tester.pumpWidget(const MaterialApp(home: MapStoreScreen()));
+    final asset = RegionMapAsset.fromJsonString(
+      File('assets/maps/world/countries.json').readAsStringSync(),
+    );
+    await tester.pumpWidget(
+      MaterialApp(home: MapStoreScreen(mapAsset: Future.value(asset))),
+    );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('국가별 지도'), findsOneWidget);
-    expect(find.text('6개'), findsOneWidget);
-    expect(find.byIcon(CupertinoIcons.lock_fill), findsNWidgets(6));
+    expect(find.text('${asset.regions.length}개'), findsOneWidget);
+    expect(mapStoreProducts(asset).length, asset.regions.length);
+    expect(find.byIcon(CupertinoIcons.lock_fill), findsWidgets);
     expect(find.text('JP'), findsNothing);
+
+    await tester.tap(find.byIcon(CupertinoIcons.lock_fill).first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byKey(const Key('map-store-modal-top-space')), findsOneWidget);
+    expect(
+      tester.getSize(find.byKey(const Key('map-store-modal-top-space'))).height,
+      12,
+    );
+  });
+
+  test('map store prices stay within deterministic detail tiers', () {
+    MapRegion regionWithDetail(int length) => MapRegion(
+      code: 'XX',
+      name: '테스트',
+      geometryType: 'Polygon',
+      polygonCount: 1,
+      bounds: const RegionBounds(x: 0, y: 0, width: 10, height: 10),
+      pathData: List.filled(length, 'M').join(),
+    );
+
+    expect(mapStorePriceFor(regionWithDetail(100)), 2000);
+    expect(mapStorePriceFor(regionWithDetail(400)), 3000);
+    expect(mapStorePriceFor(regionWithDetail(800)), 4000);
+    expect(mapStorePriceFor(regionWithDetail(1300)), 5000);
   });
 
   testWidgets('owned map selector restores the illustrated iOS sheet', (
@@ -205,11 +270,23 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: MapSearchBar(
-            controller: controller,
-            mode: MapMode.korea,
-            onChanged: (_) {},
-            onClear: () {},
+          body: Column(
+            children: [
+              MapSearchBar(
+                controller: controller,
+                mode: MapMode.korea,
+                onChanged: (_) {},
+                onClear: () {},
+              ),
+              Expanded(
+                child: GestureDetector(
+                  key: const Key('map-test-area'),
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {},
+                  child: const ColoredBox(color: Colors.white),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -220,8 +297,18 @@ void main() {
     );
     expect(field.style?.fontSize, 14);
     expect(field.placeholderStyle?.fontSize, 14);
+    expect(field.placeholder, '지역 이름 검색');
     expect(tester.getSize(find.byType(MapSearchBar)).height, 46);
     expect(find.byKey(const Key('sasang-blur-shadow')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('map-search-field')));
+    await tester.pump();
+    final editable = tester.widget<EditableText>(find.byType(EditableText));
+    expect(editable.focusNode.hasFocus, isTrue);
+
+    await tester.tapAt(const Offset(20, 100));
+    await tester.pump();
+    expect(editable.focusNode.hasFocus, isFalse);
   });
 
   testWidgets('places restores the compact filter bar and card empty state', (
