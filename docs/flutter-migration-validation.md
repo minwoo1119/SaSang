@@ -73,13 +73,14 @@ so no migration exists for those absent data classes.
 | `flutter analyze` | Pass, zero issues |
 | `flutter test` | Pass, 12 tests |
 | iOS Simulator debug build/install/launch | Pass, iPhone 17 Pro / iOS 26.4 |
-| Android release AAB | Pass, 50.7 MB, `1.0.3` (`versionCode 23`) |
+| Android release AAB | Pass, 50.7 MB, `1.0.3` (`versionCode 24`) |
 | Android release signing | Pass; AAB signer matches the recovered EAS upload certificate |
 | iOS release build | Pass from repository root, unsigned `Runner.app`, 32.5 MB |
 | Physical Android device | Not available |
 | Physical iOS device | Not available |
 | Play upload-ready candidate | Pass; Play Console acceptance still requires Internal testing upload |
 | App Store upload-ready IPA | Blocked; no Apple Distribution identity is installed locally |
+| iOS plugin-linked release build | Pass after CocoaPods reinstall; `app_links` resolves through `Runner.xcworkspace` |
 
 Tests cover legacy Zustand decoding, RN/EXIF date formats, map asset decoding,
 MultiPolygon preservation, photo transform persistence, and the illustrated
@@ -107,8 +108,8 @@ profile controls from More.
 
 - [ ] Confirm the live Play application ID and App Store bundle ID are exactly
       `com.sasang.app` in their consoles.
-- [x] Set the candidate to `1.0.3+23`, above Play versionCode 22 and App Store
-      build 18 reported for the live `1.0.2` release.
+- [x] Set the candidate to `1.0.3+24`; Play Console reported 23 as already
+      used, and the App Store build reported for live `1.0.2` is 18.
 - [x] Recover the existing EAS-managed Play upload keystore and connect release
       signing locally without committing the key or passwords.
 - [ ] Configure the existing Apple development team, distribution certificate,
