@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:path_drawing/path_drawing.dart';
 
 import '../../core/storage/sasang_storage.dart';
+import '../../core/layout/sasang_layout.dart';
 import '../../core/theme/sasang_theme.dart';
 import '../../models/map_models.dart';
 import '../../widgets/sasang_ui.dart';
@@ -194,7 +195,9 @@ class _RegionMapViewState extends State<RegionMapView> {
             ),
             Positioned(
               right: 12,
-              bottom: MediaQuery.paddingOf(context).bottom + 170,
+              bottom: sasangZoomControlsBottomOffset(
+                MediaQuery.paddingOf(context).bottom,
+              ),
               child: SasangSurface(
                 blur: true,
                 radius: 24,

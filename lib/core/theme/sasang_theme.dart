@@ -9,6 +9,14 @@ abstract final class SasangColors {
   static const divider = Color(0x12000000);
 }
 
+abstract final class SasangOverlayStyle {
+  static const border = Color(0x1A000000);
+  static const shadows = [
+    BoxShadow(color: Color(0x1718181B), blurRadius: 18, offset: Offset(0, 6)),
+    BoxShadow(color: Color(0x0A18181B), blurRadius: 3, offset: Offset(0, 1)),
+  ];
+}
+
 abstract final class SasangTheme {
   static ThemeData get light {
     final base = ThemeData(

@@ -163,6 +163,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
                     MapModeSelector(
                       value: mode,
                       onChanged: widget.state.setMode,
+                      elevated: true,
                     ),
                     const SizedBox(width: 10),
                     _SortButton(
@@ -202,15 +203,9 @@ class _PlacesScreenState extends State<PlacesScreen> {
                                   color: CupertinoColors.white,
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: const Color(0x1A18181B),
+                                    color: SasangOverlayStyle.border,
                                   ),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Color(0x0F18181B),
-                                      blurRadius: 14,
-                                      offset: Offset(0, 6),
-                                    ),
-                                  ],
+                                  boxShadow: SasangOverlayStyle.shadows,
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,13 +332,8 @@ class _PlacesScreenState extends State<PlacesScreen> {
         decoration: BoxDecoration(
           color: CupertinoColors.white,
           borderRadius: BorderRadius.circular(20),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x0A18181B),
-              blurRadius: 14,
-              offset: Offset(0, 4),
-            ),
-          ],
+          border: Border.all(color: SasangOverlayStyle.border, width: .6),
+          boxShadow: SasangOverlayStyle.shadows,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -418,12 +408,14 @@ class _SortButton extends StatelessWidget {
     minimumSize: Size.zero,
     onPressed: onPressed,
     child: Container(
+      key: const Key('places-sort-surface'),
       height: 38,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: CupertinoColors.white.withValues(alpha: .92),
+        color: CupertinoColors.white.withValues(alpha: .94),
         borderRadius: BorderRadius.circular(19),
-        border: Border.all(color: SasangColors.divider, width: .6),
+        border: Border.all(color: SasangOverlayStyle.border, width: .6),
+        boxShadow: SasangOverlayStyle.shadows,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

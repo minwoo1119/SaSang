@@ -417,9 +417,10 @@ class MapTopBar extends StatelessWidget {
           height: 38,
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: .88),
+            color: Colors.white.withValues(alpha: .94),
             borderRadius: BorderRadius.circular(19),
-            border: Border.all(color: SasangColors.divider, width: .6),
+            border: Border.all(color: SasangOverlayStyle.border, width: .6),
+            boxShadow: SasangOverlayStyle.shadows,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -446,7 +447,7 @@ class MapTopBar extends StatelessWidget {
           ),
         ),
       ),
-      MapModeSelector(value: mode, onChanged: onModeChanged),
+      MapModeSelector(value: mode, onChanged: onModeChanged, elevated: true),
     ],
   );
 }
@@ -466,29 +467,32 @@ class MapSearchBar extends StatelessWidget {
   final VoidCallback onClear;
 
   @override
-  Widget build(BuildContext context) => SasangSurface(
-    blur: true,
-    radius: 23,
-    padding: const EdgeInsets.symmetric(horizontal: 8),
-    child: CupertinoSearchTextField(
-      key: const Key('map-search-field'),
-      controller: controller,
-      onChanged: onChanged,
-      placeholder: mode == MapMode.korea ? '지역명 또는 코드' : '국가명 또는 코드',
-      backgroundColor: Colors.transparent,
-      itemColor: const Color(0xFF8E8E93),
-      itemSize: 17,
-      style: const TextStyle(
-        color: SasangColors.ink,
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
+  Widget build(BuildContext context) => SizedBox(
+    height: 46,
+    child: SasangSurface(
+      blur: true,
+      radius: 23,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: CupertinoSearchTextField(
+        key: const Key('map-search-field'),
+        controller: controller,
+        onChanged: onChanged,
+        placeholder: mode == MapMode.korea ? '지역명 또는 코드' : '국가명 또는 코드',
+        backgroundColor: Colors.transparent,
+        itemColor: const Color(0xFF8E8E93),
+        itemSize: 17,
+        style: const TextStyle(
+          color: SasangColors.ink,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+        placeholderStyle: const TextStyle(
+          color: Color(0xFF8E8E93),
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+        onSuffixTap: onClear,
       ),
-      placeholderStyle: const TextStyle(
-        color: Color(0xFF8E8E93),
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-      ),
-      onSuffixTap: onClear,
     ),
   );
 }

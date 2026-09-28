@@ -26,25 +26,42 @@ class SasangSurface extends StatelessWidget {
     final content = Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: color ?? Colors.white.withValues(alpha: blur ? 0.88 : 1),
+        color: color ?? Colors.white.withValues(alpha: blur ? 0.94 : 1),
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: SasangColors.divider, width: 0.6),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0F18181B),
-            blurRadius: 20,
-            offset: Offset(0, 7),
-          ),
-        ],
+        border: Border.all(
+          color: blur ? SasangOverlayStyle.border : SasangColors.divider,
+          width: 0.6,
+        ),
       ),
       child: child,
     );
-    if (!blur) return content;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+    if (!blur) {
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(radius),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0F18181B),
+              blurRadius: 20,
+              offset: Offset(0, 7),
+            ),
+          ],
+        ),
         child: content,
+      );
+    }
+    return DecoratedBox(
+      key: const Key('sasang-blur-shadow'),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(radius),
+        boxShadow: SasangOverlayStyle.shadows,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: content,
+        ),
       ),
     );
   }

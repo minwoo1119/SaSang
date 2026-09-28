@@ -26,6 +26,11 @@ React Native baseline: `pre-flutter-migration` (`d850547`)
   borders, safe-area-aligned bottom controls, explicit photo-add icon colors,
   a compact record-count summary, and restrained search typography without the
   decorative brand image.
+- Map overlays use unclipped two-layer shadows, stronger hairline borders, and
+  more opaque glass surfaces; the search field retains a 46 px touch height and
+  zoom controls sit closer to the lower contextual control.
+- Places filter controls, empty state, and record cards share the same subtle
+  two-layer elevation treatment for consistent surface separation.
 - Photo selection, EXIF date lookup, date confirmation, device-local copy,
   replacement, and deletion of region associations.
 - Places filtering, sorting, photo management, and the original compact

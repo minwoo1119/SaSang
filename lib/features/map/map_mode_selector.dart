@@ -12,10 +12,12 @@ class MapModeSelector extends StatelessWidget {
     required this.value,
     required this.onChanged,
     super.key,
+    this.elevated = false,
   });
 
   final MapMode value;
   final ValueChanged<MapMode> onChanged;
+  final bool elevated;
 
   @override
   Widget build(BuildContext context) => CupertinoButton(
@@ -27,9 +29,13 @@ class MapModeSelector extends StatelessWidget {
       height: 38,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .92),
+        color: Colors.white.withValues(alpha: elevated ? .94 : .92),
         borderRadius: BorderRadius.circular(19),
-        border: Border.all(color: SasangColors.divider, width: .6),
+        border: Border.all(
+          color: elevated ? SasangOverlayStyle.border : SasangColors.divider,
+          width: .6,
+        ),
+        boxShadow: elevated ? SasangOverlayStyle.shadows : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

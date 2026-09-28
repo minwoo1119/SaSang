@@ -90,7 +90,9 @@ void main() {
     expect(sasangBottomBarTopOffset(34), 100);
     expect(sasangBottomBarTopOffset(24), 90);
     expect(sasangBottomBarTopOffset(0), 80);
-    expect(sasangMapOverlayBottomOffset(34), 76);
+    expect(sasangMapOverlayBottomOffset(34), 64);
+    expect(sasangZoomControlsBottomOffset(34), 170);
+    expect(sasangZoomControlsBottomOffset(0), 136);
     expect(
       sasangBottomBarTopOffset(34) - sasangMapOverlayBottomOffset(34),
       sasangMapOverlayOverlap,
@@ -187,6 +189,8 @@ void main() {
     );
     expect(field.style?.fontSize, 14);
     expect(field.placeholderStyle?.fontSize, 14);
+    expect(tester.getSize(find.byType(MapSearchBar)).height, 46);
+    expect(find.byKey(const Key('sasang-blur-shadow')), findsOneWidget);
   });
 
   testWidgets('places restores the compact filter bar and card empty state', (
@@ -222,6 +226,21 @@ void main() {
     expect(find.text('아직 기록이 없어요'), findsOneWidget);
     expect(find.text('지도에서 시작하기'), findsOneWidget);
     expect(find.byIcon(CupertinoIcons.map_pin_ellipse), findsNothing);
+
+    final mapSelector = tester.widget<MapModeSelector>(
+      find.byType(MapModeSelector),
+    );
+    expect(mapSelector.elevated, isTrue);
+    final sortSurface = tester.widget<Container>(
+      find.byKey(const Key('places-sort-surface')),
+    );
+    final sortDecoration = sortSurface.decoration! as BoxDecoration;
+    expect(sortDecoration.boxShadow, isNotEmpty);
+    final emptySurface = tester.widget<Container>(
+      find.byKey(const Key('places-empty-state')),
+    );
+    final emptyDecoration = emptySurface.decoration! as BoxDecoration;
+    expect(emptyDecoration.boxShadow, sortDecoration.boxShadow);
 
     final selectorRect = tester.getRect(find.byType(MapModeSelector));
     final sortRect = tester.getRect(
