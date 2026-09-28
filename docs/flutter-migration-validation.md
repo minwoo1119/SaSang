@@ -73,8 +73,9 @@ so no migration exists for those absent data classes.
 | `flutter analyze` | Pass, zero issues |
 | `flutter test` | Pass, 12 tests |
 | iOS Simulator debug build/install/launch | Pass, iPhone 17 Pro / iOS 26.4 |
-| Android release AAB | Pass, 50.7 MB, `1.0.3` (`versionCode 24`) |
+| Android release AAB | Pass, 50.7 MB, `1.0.3` (`versionCode 25`) |
 | Android release signing | Pass; AAB signer matches the recovered EAS upload certificate |
+| Android photo permissions | Pass; release manifest has no `READ_MEDIA_IMAGES` or `READ_EXTERNAL_STORAGE` |
 | iOS release build | Pass from repository root, unsigned `Runner.app`, 32.5 MB |
 | Physical Android device | Not available |
 | Physical iOS device | Not available |
@@ -108,8 +109,11 @@ profile controls from More.
 
 - [ ] Confirm the live Play application ID and App Store bundle ID are exactly
       `com.sasang.app` in their consoles.
-- [x] Set the candidate to `1.0.3+24`; Play Console reported 23 as already
-      used, and the App Store build reported for live `1.0.2` is 18.
+- [x] Set the candidate to `1.0.3+25`; Play Console reported 23 as already
+      used, version 24 is superseded by the media-permission correction, and
+      the App Store build reported for live `1.0.2` is 18.
+- [x] Remove broad Android photo-library permissions. Photo attachment uses the
+      system picker and copies only the user-selected image into app storage.
 - [x] Recover the existing EAS-managed Play upload keystore and connect release
       signing locally without committing the key or passwords.
 - [ ] Configure the existing Apple development team, distribution certificate,
