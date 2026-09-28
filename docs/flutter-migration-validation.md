@@ -33,6 +33,8 @@ React Native baseline: `pre-flutter-migration` (`d850547`)
   two-layer elevation treatment for consistent surface separation.
 - Photo selection, EXIF date lookup, date confirmation, device-local copy,
   replacement, and deletion of region associations.
+- Photo date confirmation keeps the metadata-derived date visible above the
+  wheel and forces legible light picker styling even in system dark mode.
 - Places filtering, sorting, photo management, and the original compact
   filter/card-based empty-state hierarchy.
 - Privacy/terms/app information, local-data reset, and coming-soon Map Store.
@@ -71,7 +73,7 @@ so no migration exists for those absent data classes.
 | --- | --- |
 | `flutter pub get` | Pass |
 | `flutter analyze` | Pass, zero issues |
-| `flutter test` | Pass, 12 tests |
+| `flutter test` | Pass, 13 tests |
 | iOS Simulator debug build/install/launch | Pass, iPhone 17 Pro / iOS 26.4 |
 | Android release AAB | Pass for versionCode 25; shared candidate advanced to `1.0.3+26` for iOS resubmission |
 | Android release signing | Pass; AAB signer matches the recovered EAS upload certificate |

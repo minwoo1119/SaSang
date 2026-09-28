@@ -1,12 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sasang/core/theme/sasang_theme.dart';
 import 'package:sasang/core/storage/sasang_storage.dart';
 import 'package:sasang/core/layout/sasang_layout.dart';
 import 'package:sasang/features/map/map_mode_selector.dart';
 import 'package:sasang/features/map/map_preview.dart';
 import 'package:sasang/features/map/region_map_view.dart';
 import 'package:sasang/features/photos/photo_date.dart';
+import 'package:sasang/features/photos/photo_date_dialog.dart';
 import 'package:sasang/features/state/sasang_state.dart';
 import 'package:sasang/models/map_models.dart';
 import 'package:sasang/screens/map_screen.dart';
@@ -26,6 +28,35 @@ void main() {
   test('parses Expo EXIF and persisted photo dates', () {
     expect(parsePhotoDate('2025:03:09 18:02:11'), DateTime(2025, 3, 9, 12));
     expect(photoDateKey(DateTime(2026, 9, 6)), '2026-09-06');
+  });
+
+  testWidgets('photo date picker stays legible in system dark mode', (
+    tester,
+  ) async {
+    final initialDate = DateTime(2025, 3, 9, 12);
+
+    await tester.pumpWidget(
+      CupertinoApp(
+        theme: const CupertinoThemeData(brightness: Brightness.dark),
+        home: SizedBox(
+          height: 176,
+          child: PhotoDatePicker(
+            initialDate: initialDate,
+            maximumDate: DateTime(2026),
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    final pickerContext = tester.element(
+      find.byKey(const Key('photo-date-picker')),
+    );
+    final pickerTheme = CupertinoTheme.of(pickerContext);
+    expect(pickerTheme.brightness, Brightness.light);
+    expect(
+      pickerTheme.textTheme.dateTimePickerTextStyle.color,
+      SasangColors.ink,
+    );
   });
 
   test('preserves multipolygon region metadata and photo transforms', () {

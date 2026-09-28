@@ -56,24 +56,35 @@ Future<DateTime?> showPhotoDateDialog(
                     fit: BoxFit.cover,
                   ),
                 ),
-                SizedBox(
-                  height: 160,
-                  child: CupertinoDatePicker(
-                    mode: CupertinoDatePickerMode.date,
-                    initialDateTime: selected,
-                    minimumDate: DateTime(1970),
-                    maximumDate: DateTime.now(),
-                    onDateTimeChanged: (date) =>
-                        setState(() => selected = date),
-                  ),
-                ),
-                Center(
-                  child: Text(
-                    '${koreanDate(selected)} · ${photoDateKey(selected)}',
-                    style: const TextStyle(
-                      color: SasangColors.secondary,
-                      fontSize: 12,
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    const Text(
+                      '선택한 날짜',
+                      style: TextStyle(
+                        color: SasangColors.secondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
+                    const Spacer(),
+                    Text(
+                      koreanDate(selected),
+                      key: const Key('selected-photo-date'),
+                      style: const TextStyle(
+                        color: SasangColors.ink,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 176,
+                  child: PhotoDatePicker(
+                    initialDate: selected,
+                    maximumDate: DateTime.now(),
+                    onChanged: (date) => setState(() => selected = date),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -101,6 +112,41 @@ Future<DateTime?> showPhotoDateDialog(
           ),
         ),
       ),
+    ),
+  );
+}
+
+class PhotoDatePicker extends StatelessWidget {
+  const PhotoDatePicker({
+    required this.initialDate,
+    required this.maximumDate,
+    required this.onChanged,
+    super.key,
+  });
+
+  final DateTime initialDate;
+  final DateTime maximumDate;
+  final ValueChanged<DateTime> onChanged;
+
+  @override
+  Widget build(BuildContext context) => CupertinoTheme(
+    data: CupertinoTheme.of(context).copyWith(
+      brightness: Brightness.light,
+      textTheme: CupertinoTheme.of(context).textTheme.copyWith(
+        dateTimePickerTextStyle: const TextStyle(
+          color: SasangColors.ink,
+          fontSize: 21,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    ),
+    child: CupertinoDatePicker(
+      key: const Key('photo-date-picker'),
+      mode: CupertinoDatePickerMode.date,
+      initialDateTime: initialDate,
+      minimumDate: DateTime(1970),
+      maximumDate: maximumDate,
+      onDateTimeChanged: onChanged,
     ),
   );
 }
