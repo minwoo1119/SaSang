@@ -73,7 +73,7 @@ so no migration exists for those absent data classes.
 | `flutter analyze` | Pass, zero issues |
 | `flutter test` | Pass, 12 tests |
 | iOS Simulator debug build/install/launch | Pass, iPhone 17 Pro / iOS 26.4 |
-| Android release AAB | Pass, 50.7 MB, `1.0.3` (`versionCode 25`) |
+| Android release AAB | Pass for versionCode 25; shared candidate advanced to `1.0.3+26` for iOS resubmission |
 | Android release signing | Pass; AAB signer matches the recovered EAS upload certificate |
 | Android photo permissions | Pass; release manifest has no `READ_MEDIA_IMAGES` or `READ_EXTERNAL_STORAGE` |
 | iOS release build | Pass from repository root, unsigned `Runner.app`, 32.5 MB |
@@ -82,6 +82,8 @@ so no migration exists for those absent data classes.
 | Play upload-ready candidate | Pass; Play Console acceptance still requires Internal testing upload |
 | App Store upload-ready IPA | Blocked; no Apple Distribution identity is installed locally |
 | iOS plugin-linked release build | Pass after CocoaPods reinstall; `app_links` resolves through `Runner.xcworkspace` |
+| iPad orientation validation | Pass; portrait-only app opts out of iPad multitasking with `UIRequiresFullScreen` |
+| iOS deployment target | Pass; app executable and Flutter framework require iOS 15.0 |
 
 Tests cover legacy Zustand decoding, RN/EXIF date formats, map asset decoding,
 MultiPolygon preservation, photo transform persistence, and the illustrated
@@ -104,6 +106,10 @@ profile controls from More.
   domain and hosted association files.
 - Analytics remains effectively absent. RN calls a no-op analytics stub; Flutter
   does not invent a replacement event backend.
+- `UIRequiresFullScreen` preserves the current portrait-only iPad experience and
+  resolves the current App Store orientation validation. Apple has deprecated
+  this opt-out, so a later release should validate responsive iPad layouts and
+  declare all four orientations before removing the key.
 
 ## Store-update blockers and manual checklist
 
@@ -114,6 +120,9 @@ profile controls from More.
       the App Store build reported for live `1.0.2` is 18.
 - [x] Remove broad Android photo-library permissions. Photo attachment uses the
       system picker and copies only the user-selected image into app storage.
+- [x] Advance the shared candidate to `1.0.3+26` after the rejected iOS build
+      25 upload, set the iOS deployment target to 15.0, and explicitly retain
+      the existing portrait-only full-screen iPad experience.
 - [x] Recover the existing EAS-managed Play upload keystore and connect release
       signing locally without committing the key or passwords.
 - [ ] Configure the existing Apple development team, distribution certificate,
