@@ -4,6 +4,36 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 enum AdPlacement { home, places, more }
 
+String? adUnitIdFor({
+  required AdPlacement placement,
+  required TargetPlatform platform,
+  required bool useTestAds,
+}) {
+  if (useTestAds) {
+    return switch (platform) {
+      TargetPlatform.android => 'ca-app-pub-3940256099942544/6300978111',
+      TargetPlatform.iOS => 'ca-app-pub-3940256099942544/2934735716',
+      _ => null,
+    };
+  }
+
+  return switch ((platform, placement)) {
+    (TargetPlatform.android, AdPlacement.home) =>
+      'ca-app-pub-6638972080325593/8388425749',
+    (TargetPlatform.android, AdPlacement.places) =>
+      'ca-app-pub-6638972080325593/1709240829',
+    (TargetPlatform.android, AdPlacement.more) =>
+      'ca-app-pub-6638972080325593/5864108254',
+    (TargetPlatform.iOS, AdPlacement.home) =>
+      'ca-app-pub-6638972080325593/6737134392',
+    (TargetPlatform.iOS, AdPlacement.places) =>
+      'ca-app-pub-6638972080325593/8050216064',
+    (TargetPlatform.iOS, AdPlacement.more) =>
+      'ca-app-pub-6638972080325593/2115363102',
+    _ => null,
+  };
+}
+
 class AdBanner extends StatefulWidget {
   const AdBanner({required this.placement, super.key});
   final AdPlacement placement;
@@ -19,16 +49,15 @@ class _AdBannerState extends State<AdBanner> {
   @override
   void initState() {
     super.initState();
-    final productionId = switch (widget.placement) {
-      AdPlacement.home => 'ca-app-pub-6638972080325593/8388425749',
-      AdPlacement.places => 'ca-app-pub-6638972080325593/1709240829',
-      AdPlacement.more => 'ca-app-pub-6638972080325593/5864108254',
-    };
+    final adUnitId = adUnitIdFor(
+      placement: widget.placement,
+      platform: defaultTargetPlatform,
+      useTestAds: kDebugMode,
+    );
+    if (adUnitId == null) return;
     _ad = BannerAd(
       size: AdSize.banner,
-      adUnitId: kDebugMode
-          ? 'ca-app-pub-3940256099942544/6300978111'
-          : productionId,
+      adUnitId: adUnitId,
       request: const AdRequest(nonPersonalizedAds: true),
       listener: BannerAdListener(
         onAdLoaded: (_) {

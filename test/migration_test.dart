@@ -19,6 +19,7 @@ import 'package:sasang/screens/map_screen.dart';
 import 'package:sasang/screens/map_store_screen.dart';
 import 'package:sasang/screens/more_screen.dart';
 import 'package:sasang/screens/places_screen.dart';
+import 'package:sasang/widgets/ad_banner.dart';
 
 void main() {
   test('decodes the legacy Zustand persist envelope', () {
@@ -90,6 +91,52 @@ void main() {
 
     expect(identical(first, second), isTrue);
     expect((await first).regions, isNotEmpty);
+  });
+
+  test('selects production banner units by platform and placement', () {
+    const expected = <(TargetPlatform, AdPlacement), String>{
+      (TargetPlatform.android, AdPlacement.home):
+          'ca-app-pub-6638972080325593/8388425749',
+      (TargetPlatform.android, AdPlacement.places):
+          'ca-app-pub-6638972080325593/1709240829',
+      (TargetPlatform.android, AdPlacement.more):
+          'ca-app-pub-6638972080325593/5864108254',
+      (TargetPlatform.iOS, AdPlacement.home):
+          'ca-app-pub-6638972080325593/6737134392',
+      (TargetPlatform.iOS, AdPlacement.places):
+          'ca-app-pub-6638972080325593/8050216064',
+      (TargetPlatform.iOS, AdPlacement.more):
+          'ca-app-pub-6638972080325593/2115363102',
+    };
+    for (final entry in expected.entries) {
+      expect(
+        adUnitIdFor(
+          platform: entry.key.$1,
+          placement: entry.key.$2,
+          useTestAds: false,
+        ),
+        entry.value,
+      );
+    }
+  });
+
+  test('uses platform-specific Google test banner units in debug', () {
+    expect(
+      adUnitIdFor(
+        placement: AdPlacement.home,
+        platform: TargetPlatform.android,
+        useTestAds: true,
+      ),
+      'ca-app-pub-3940256099942544/6300978111',
+    );
+    expect(
+      adUnitIdFor(
+        placement: AdPlacement.home,
+        platform: TargetPlatform.iOS,
+        useTestAds: true,
+      ),
+      'ca-app-pub-3940256099942544/2934735716',
+    );
   });
 
   test('preserves multipolygon region metadata and photo transforms', () {
