@@ -385,14 +385,35 @@ class _MapScreenState extends State<MapScreen> {
   }
 }
 
-class _PhotoThumb extends StatelessWidget {
+class _PhotoThumb extends StatefulWidget {
   const _PhotoThumb({required this.uri, required this.storage});
   final String? uri;
   final SasangStorage storage;
 
   @override
+  State<_PhotoThumb> createState() => _PhotoThumbState();
+}
+
+class _PhotoThumbState extends State<_PhotoThumb> {
+  late Future<File?> _image;
+
+  @override
+  void initState() {
+    super.initState();
+    _image = widget.storage.resolveImage(widget.uri);
+  }
+
+  @override
+  void didUpdateWidget(covariant _PhotoThumb oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.uri != widget.uri || oldWidget.storage != widget.storage) {
+      _image = widget.storage.resolveImage(widget.uri);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) => FutureBuilder<File?>(
-    future: storage.resolveImage(uri),
+    future: _image,
     builder: (context, snapshot) => ClipOval(
       child: snapshot.data == null
           ? const ColoredBox(

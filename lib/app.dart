@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/theme/sasang_theme.dart';
 import 'features/more/info_content.dart';
@@ -66,6 +67,9 @@ class _SasangAppState extends State<SasangApp> {
       navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: false,
       title: '사상',
+      locale: const Locale('ko', 'KR'),
+      supportedLocales: const [Locale('ko', 'KR')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       theme: SasangTheme.light,
       builder: (context, child) => CupertinoTheme(
         data: const CupertinoThemeData(

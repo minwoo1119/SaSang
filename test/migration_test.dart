@@ -2,12 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sasang/core/theme/sasang_theme.dart';
 import 'package:sasang/core/storage/sasang_storage.dart';
 import 'package:sasang/core/layout/sasang_layout.dart';
 import 'package:sasang/features/map/map_mode_selector.dart';
 import 'package:sasang/features/map/map_preview.dart';
+import 'package:sasang/features/map/map_repository.dart';
 import 'package:sasang/features/map/region_map_view.dart';
 import 'package:sasang/features/photos/photo_date.dart';
 import 'package:sasang/features/photos/photo_date_dialog.dart';
@@ -59,6 +61,35 @@ void main() {
       pickerTheme.textTheme.dateTimePickerTextStyle.color,
       SasangColors.ink,
     );
+  });
+
+  testWidgets('photo date picker uses Korean localization', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('ko', 'KR'),
+        supportedLocales: const [Locale('ko', 'KR')],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        home: PhotoDatePicker(
+          initialDate: DateTime(2025, 3, 9),
+          maximumDate: DateTime(2026),
+          onChanged: (_) {},
+        ),
+      ),
+    );
+
+    final pickerContext = tester.element(
+      find.byKey(const Key('photo-date-picker')),
+    );
+    expect(Localizations.localeOf(pickerContext), const Locale('ko', 'KR'));
+  });
+
+  test('reuses the loaded map future to avoid tab-return flicker', () async {
+    final repository = MapRepository();
+    final first = repository.load(MapMode.korea);
+    final second = repository.load(MapMode.korea);
+
+    expect(identical(first, second), isTrue);
+    expect((await first).regions, isNotEmpty);
   });
 
   test('preserves multipolygon region metadata and photo transforms', () {
