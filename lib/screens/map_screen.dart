@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -42,8 +43,29 @@ class _MapScreenState extends State<MapScreen> {
   final _maps = MapRepository();
   final _picker = PhotoPickerService();
   final _search = TextEditingController();
+  final Map<MapMode, RegionMapAsset> _mapAssets = {};
+  late final Map<MapMode, Future<RegionMapAsset>> _mapLoads;
   bool _saving = false;
   bool _adShown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _mapLoads = {for (final mode in MapMode.values) mode: _maps.load(mode)};
+    for (final mode in MapMode.values) {
+      unawaited(_rememberMapAsset(mode));
+    }
+  }
+
+  Future<void> _rememberMapAsset(MapMode mode) async {
+    try {
+      final asset = await _mapLoads[mode]!;
+      if (!mounted) return;
+      setState(() => _mapAssets[mode] = asset);
+    } on Object {
+      // The persistent map layer presents the asset loading failure.
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -147,158 +169,162 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     final mode = widget.state.mode;
-    return FutureBuilder<RegionMapAsset>(
-      future: _maps.load(mode),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: CupertinoActivityIndicator());
-        }
-        final map = snapshot.data!;
-        final selected = map.regions
-            .where((region) => region.code == widget.state.selectedRegionCode)
-            .firstOrNull;
-        final query = _search.text.trim().toLowerCase();
-        final results = query.isEmpty
-            ? const <MapRegion>[]
-            : map.regions
-                  .where(
-                    (region) =>
-                        '${region.name} ${region.englishName ?? ''} ${region.provinceName ?? ''}'
-                            .toLowerCase()
-                            .contains(query),
-                  )
-                  .take(6)
-                  .toList();
-        final count = map.regions
+    final map = _mapAssets[mode];
+    final selected = map?.regions
+        .where((region) => region.code == widget.state.selectedRegionCode)
+        .firstOrNull;
+    final query = _search.text.trim().toLowerCase();
+    final results = query.isEmpty || map == null
+        ? const <MapRegion>[]
+        : map.regions
+              .where(
+                (region) =>
+                    '${region.name} ${region.englishName ?? ''} ${region.provinceName ?? ''}'
+                        .toLowerCase()
+                        .contains(query),
+              )
+              .take(6)
+              .toList();
+    final count =
+        map?.regions
             .where(
               (region) => widget.state.regionPhotos.containsKey(
                 regionPhotoKey(mode, region.code),
               ),
             )
-            .length;
-        final safeBottom = MediaQuery.paddingOf(context).bottom;
-        final bottomOverlayOffset = sasangMapOverlayBottomOffset(safeBottom);
-        return Stack(
-          children: [
-            Positioned.fill(
-              child: RegionMapView(
-                key: ValueKey(mode),
-                asset: map,
-                mode: mode,
-                photos: widget.state.regionPhotos,
-                selectedRegionCode: widget.state.selectedRegionCode,
-                onSelectRegion: widget.state.selectRegion,
-                storage: widget.state.storage,
-              ),
-            ),
-            SafeArea(
-              minimum: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    MapTopBar(
-                      count: count,
-                      mode: mode,
-                      onModeChanged: (next) {
-                        _search.clear();
-                        widget.state.setMode(next);
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    MapSearchBar(
-                      controller: _search,
-                      mode: mode,
-                      onChanged: (_) => setState(() {}),
-                      onClear: () {
-                        _search.clear();
-                        setState(() {});
-                      },
-                    ),
-                    if (query.isNotEmpty)
-                      SasangSurface(
-                        blur: true,
-                        radius: 18,
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: results.isEmpty
-                            ? const Padding(
-                                padding: EdgeInsets.all(14),
-                                child: Text('검색 결과 없음'),
-                              )
-                            : Column(
-                                children: [
-                                  for (final region in results)
-                                    CupertinoButton(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 14,
-                                        vertical: 8,
-                                      ),
-                                      onPressed: () {
-                                        widget.state.selectRegion(region.code);
-                                        _search.text = region.name;
-                                        FocusScope.of(context).unfocus();
-                                      },
-                                      child: Row(
-                                        children: [
-                                          const Icon(
-                                            CupertinoIcons.circle_fill,
-                                            color: SasangColors.accent,
-                                            size: 8,
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  region.name,
-                                                  style: const TextStyle(
-                                                    color: SasangColors.ink,
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  regionDisplaySubtitle(
-                                                    region,
-                                                    mode,
-                                                  ),
-                                                  style: const TextStyle(
-                                                    color:
-                                                        SasangColors.secondary,
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const Icon(
-                                            CupertinoIcons.chevron_forward,
-                                            color: SasangColors.secondary,
-                                            size: 16,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                ],
-                              ),
-                      ),
-                  ],
+            .length ??
+        0;
+    final safeBottom = MediaQuery.paddingOf(context).bottom;
+    final bottomOverlayOffset = sasangMapOverlayBottomOffset(safeBottom);
+    return Stack(
+      children: [
+        Positioned.fill(
+          // Each RegionMapView owns decoded ui.Image instances. Keeping both
+          // layers mounted avoids decoding every saved photo again on a mode
+          // round trip; IndexedStack paints only the active map.
+          child: IndexedStack(
+            index: mode.index,
+            sizing: StackFit.expand,
+            children: [
+              for (final layerMode in MapMode.values)
+                _PersistentMapLayer(
+                  key: ValueKey(layerMode),
+                  future: _mapLoads[layerMode]!,
+                  mode: layerMode,
+                  photos: widget.state.regionPhotos,
+                  selectedRegionCode: widget.state.selectedRegionCode,
+                  onSelectRegion: widget.state.selectRegion,
+                  storage: widget.state.storage,
                 ),
-              ),
+            ],
+          ),
+        ),
+        SafeArea(
+          minimum: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                MapTopBar(
+                  count: count,
+                  mode: mode,
+                  onModeChanged: (next) {
+                    _search.clear();
+                    widget.state.setMode(next);
+                  },
+                ),
+                const SizedBox(height: 12),
+                MapSearchBar(
+                  controller: _search,
+                  mode: mode,
+                  onChanged: (_) => setState(() {}),
+                  onClear: () {
+                    _search.clear();
+                    setState(() {});
+                  },
+                ),
+                if (query.isNotEmpty)
+                  SasangSurface(
+                    blur: true,
+                    radius: 18,
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: results.isEmpty
+                        ? const Padding(
+                            padding: EdgeInsets.all(14),
+                            child: Text('검색 결과 없음'),
+                          )
+                        : Column(
+                            children: [
+                              for (final region in results)
+                                CupertinoButton(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 8,
+                                  ),
+                                  onPressed: () {
+                                    widget.state.selectRegion(region.code);
+                                    _search.text = region.name;
+                                    FocusScope.of(context).unfocus();
+                                  },
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        CupertinoIcons.circle_fill,
+                                        color: SasangColors.accent,
+                                        size: 8,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              region.name,
+                                              style: const TextStyle(
+                                                color: SasangColors.ink,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                            Text(
+                                              regionDisplaySubtitle(
+                                                region,
+                                                mode,
+                                              ),
+                                              style: const TextStyle(
+                                                color: SasangColors.secondary,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const Icon(
+                                        CupertinoIcons.chevron_forward,
+                                        color: SasangColors.secondary,
+                                        size: 16,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                  ),
+              ],
             ),
-            Positioned(
-              left: 24,
-              right: 24,
-              bottom: bottomOverlayOffset,
-              child: selected == null
-                  ? _selectionHint()
-                  : _regionControl(selected, mode),
-            ),
-          ],
-        );
-      },
+          ),
+        ),
+        if (map != null)
+          Positioned(
+            left: 24,
+            right: 24,
+            bottom: bottomOverlayOffset,
+            child: selected == null
+                ? _selectionHint()
+                : _regionControl(selected, mode),
+          ),
+      ],
     );
   }
 
@@ -383,6 +409,47 @@ class _MapScreenState extends State<MapScreen> {
       ),
     );
   }
+}
+
+class _PersistentMapLayer extends StatelessWidget {
+  const _PersistentMapLayer({
+    required this.future,
+    required this.mode,
+    required this.photos,
+    required this.selectedRegionCode,
+    required this.onSelectRegion,
+    required this.storage,
+    super.key,
+  });
+
+  final Future<RegionMapAsset> future;
+  final MapMode mode;
+  final Map<String, RegionPhoto> photos;
+  final String? selectedRegionCode;
+  final ValueChanged<String?> onSelectRegion;
+  final SasangStorage storage;
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<RegionMapAsset>(
+    future: future,
+    builder: (context, snapshot) {
+      final asset = snapshot.data;
+      if (asset != null) {
+        return RegionMapView(
+          asset: asset,
+          mode: mode,
+          photos: photos,
+          selectedRegionCode: selectedRegionCode,
+          onSelectRegion: onSelectRegion,
+          storage: storage,
+        );
+      }
+      if (snapshot.hasError) {
+        return const Center(child: Text('지도를 불러오지 못했어요.'));
+      }
+      return const Center(child: CupertinoActivityIndicator());
+    },
+  );
 }
 
 class _PhotoThumb extends StatefulWidget {
