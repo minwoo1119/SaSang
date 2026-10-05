@@ -228,6 +228,7 @@ class _MapScreenState extends State<MapScreen> {
               children: [
                 MapTopBar(
                   count: count,
+                  totalCount: map?.regions.length ?? 0,
                   mode: mode,
                   onModeChanged: (next) {
                     _search.clear();
@@ -500,60 +501,82 @@ class _PhotoThumbState extends State<_PhotoThumb> {
 class MapTopBar extends StatelessWidget {
   const MapTopBar({
     required this.count,
+    required this.totalCount,
     required this.mode,
     required this.onModeChanged,
     super.key,
   });
 
   final int count;
+  final int totalCount;
   final MapMode mode;
   final ValueChanged<MapMode> onModeChanged;
 
   @override
-  Widget build(BuildContext context) => Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Semantics(
-        label: '$count개의 여행 기록',
-        button: false,
-        child: Container(
-          key: const Key('map-record-summary'),
-          height: 38,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: .94),
-            borderRadius: BorderRadius.circular(19),
-            border: Border.all(color: SasangOverlayStyle.border, width: .6),
-            boxShadow: SasangOverlayStyle.shadows,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                '여행 기록',
-                style: TextStyle(
-                  color: SasangColors.secondary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+  Widget build(BuildContext context) {
+    final percentage = travelProgressPercent(count, totalCount);
+    final unit = mode == MapMode.korea ? '지역' : '국가';
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Semantics(
+          label: '현재 지도 $totalCount개 $unit 중 $count개 여행, $percentage퍼센트',
+          button: false,
+          child: Container(
+            key: const Key('map-record-summary'),
+            height: 38,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: .94),
+              borderRadius: BorderRadius.circular(19),
+              border: Border.all(color: SasangOverlayStyle.border, width: .6),
+              boxShadow: SasangOverlayStyle.shadows,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '$count개 $unit',
+                  key: const Key('map-record-count'),
+                  style: const TextStyle(
+                    color: SasangColors.secondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '$count',
-                key: const Key('map-record-count'),
-                style: const TextStyle(
-                  color: SasangColors.ink,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
+                const SizedBox(width: 6),
+                const Text(
+                  '·',
+                  style: TextStyle(
+                    color: Color(0xFFB4B4BA),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 6),
+                Text(
+                  '$percentage%',
+                  key: const Key('map-travel-percentage'),
+                  style: const TextStyle(
+                    color: SasangColors.accent,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      MapModeSelector(value: mode, onChanged: onModeChanged, elevated: true),
-    ],
-  );
+        MapModeSelector(value: mode, onChanged: onModeChanged, elevated: true),
+      ],
+    );
+  }
+}
+
+int travelProgressPercent(int visitedCount, int totalCount) {
+  if (totalCount <= 0 || visitedCount <= 0) return 0;
+  final safeVisitedCount = visitedCount.clamp(0, totalCount);
+  return (safeVisitedCount * 100 / totalCount).floor();
 }
 
 class MapSearchBar extends StatelessWidget {

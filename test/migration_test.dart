@@ -324,20 +324,31 @@ void main() {
     expect(foreground.border!.top.color, const Color(0xFF007AFF));
   });
 
-  testWidgets('map top bar uses a compact count summary without branding', (
-    tester,
-  ) async {
+  test('travel progress drops decimals and stays within 0 to 100 percent', () {
+    expect(travelProgressPercent(3, 161), 1);
+    expect(travelProgressPercent(1, 175), 0);
+    expect(travelProgressPercent(161, 161), 100);
+    expect(travelProgressPercent(200, 161), 100);
+    expect(travelProgressPercent(0, 0), 0);
+  });
+
+  testWidgets('map top bar shows a compact travel percentage', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: MapTopBar(count: 3, mode: MapMode.korea, onModeChanged: (_) {}),
+          body: MapTopBar(
+            count: 3,
+            totalCount: 161,
+            mode: MapMode.korea,
+            onModeChanged: (_) {},
+          ),
         ),
       ),
     );
 
     expect(find.byKey(const Key('map-record-summary')), findsOneWidget);
-    expect(find.text('여행 기록'), findsOneWidget);
-    expect(find.text('3'), findsOneWidget);
+    expect(find.text('3개 지역'), findsOneWidget);
+    expect(find.text('1%'), findsOneWidget);
     expect(find.byType(MapModeSelector), findsOneWidget);
     expect(find.byType(Image), findsNothing);
   });
