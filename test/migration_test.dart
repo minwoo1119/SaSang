@@ -761,11 +761,21 @@ void main() {
     );
     final sortDecoration = sortSurface.decoration! as BoxDecoration;
     expect(sortDecoration.boxShadow, isNotEmpty);
-    final emptySurface = tester.widget<Container>(
+    final emptyState = tester.widget<Padding>(
       find.byKey(const Key('places-empty-state')),
     );
-    final emptyDecoration = emptySurface.decoration! as BoxDecoration;
-    expect(emptyDecoration.boxShadow, sortDecoration.boxShadow);
+    expect(emptyState.padding, const EdgeInsets.fromLTRB(24, 46, 24, 38));
+    final emptyAction = tester.widget<CupertinoButton>(
+      find.byKey(const Key('places-empty-action')),
+    );
+    expect(emptyAction.color, isNull);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('places-empty-state')),
+        matching: find.byType(Icon),
+      ),
+      findsNothing,
+    );
 
     final selectorRect = tester.getRect(find.byType(MapModeSelector));
     final sortRect = tester.getRect(
