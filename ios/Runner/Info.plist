@@ -47,6 +47,8 @@
 		</dict>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>여행 사진을 선택하여 지역 지도에 표시하기 위해 사진 보관함 접근이 필요합니다.</string>
+		<key>NSPhotoLibraryAddUsageDescription</key>
+		<string>사상에서 만든 여행 지도 사진과 영상을 사진 보관함에 저장하기 위해 권한이 필요합니다.</string>
 		<key>UIUserInterfaceStyle</key>
 		<string>Automatic</string>
 		<key>LSRequiresIPhoneOS</key>

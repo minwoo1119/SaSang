@@ -13,6 +13,7 @@ import 'package:sasang/features/map/map_repository.dart';
 import 'package:sasang/features/map/region_map_view.dart';
 import 'package:sasang/features/photos/photo_date.dart';
 import 'package:sasang/features/photos/photo_date_dialog.dart';
+import 'package:sasang/features/share/map_share_service.dart';
 import 'package:sasang/features/state/sasang_state.dart';
 import 'package:sasang/models/map_models.dart';
 import 'package:sasang/screens/map_screen.dart';
@@ -169,6 +170,68 @@ void main() {
     });
     expect(photo.toJson()['scale'], 1.5);
     expect(photo.toJson()['offsetY'], -4.0);
+  });
+
+  test('builds a chronological map timeline for the selected map only', () {
+    const asset = RegionMapAsset(
+      version: 'test',
+      width: 100,
+      height: 100,
+      regions: [
+        MapRegion(
+          code: 'A',
+          name: '첫 번째',
+          geometryType: 'Polygon',
+          polygonCount: 1,
+          bounds: RegionBounds(x: 0, y: 0, width: 10, height: 10),
+          pathData: 'M 0 0 L 10 0 L 10 10 Z',
+        ),
+        MapRegion(
+          code: 'B',
+          name: '두 번째',
+          geometryType: 'Polygon',
+          polygonCount: 1,
+          bounds: RegionBounds(x: 10, y: 10, width: 10, height: 10),
+          pathData: 'M 10 10 L 20 10 L 20 20 Z',
+        ),
+      ],
+    );
+    const earlier = RegionPhoto(
+      id: 'earlier',
+      uri: 'file:///earlier.jpg',
+      width: 100,
+      height: 100,
+      scale: 1,
+      offsetX: 0,
+      offsetY: 0,
+      createdAt: '2025-02-01T00:00:00Z',
+      takenAt: '2024-01-01',
+    );
+    const later = RegionPhoto(
+      id: 'later',
+      uri: 'file:///later.jpg',
+      width: 100,
+      height: 100,
+      scale: 1,
+      offsetX: 0,
+      offsetY: 0,
+      createdAt: '2025-01-01T00:00:00Z',
+      takenAt: '2024-06-01',
+    );
+
+    final timeline = buildMapTimeline(
+      asset: asset,
+      mode: MapMode.korea,
+      photos: {'korea:A': later, 'korea:B': earlier, 'world:A': earlier},
+    );
+
+    expect(timeline.map((item) => item.region.code), ['B', 'A']);
+    final compactMotion = timelineMotionSteps(timeline.length);
+    expect(compactMotion.travelFrames, 5);
+    expect(compactMotion.revealFrames, 4);
+    expect(compactMotion.holdFrames, 3);
+    expect(timelineMotionSteps(80).travelFrames, 1);
+    expect(mapTravelPercentage(2, 175), 1);
   });
 
   test('region subtitles hide internal administrative codes', () {
@@ -340,6 +403,7 @@ void main() {
             count: 3,
             totalCount: 161,
             mode: MapMode.korea,
+            onShare: () {},
             onModeChanged: (_) {},
           ),
         ),
@@ -349,6 +413,7 @@ void main() {
     expect(find.byKey(const Key('map-record-summary')), findsOneWidget);
     expect(find.text('3개 지역'), findsOneWidget);
     expect(find.text('1%'), findsOneWidget);
+    expect(find.byKey(const Key('map-share-button')), findsOneWidget);
     expect(find.byType(MapModeSelector), findsOneWidget);
     expect(find.byType(Image), findsNothing);
   });

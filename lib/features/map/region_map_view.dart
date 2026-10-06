@@ -281,6 +281,7 @@ class RegionMapPainter extends CustomPainter {
     required this.images,
     required this.selectedRegionCode,
     required this.transformationController,
+    this.photoOpacities = const {},
   }) : super(repaint: transformationController);
 
   final RegionMapAsset asset;
@@ -290,6 +291,7 @@ class RegionMapPainter extends CustomPainter {
   final Map<String, ui.Image> images;
   final String? selectedRegionCode;
   final TransformationController transformationController;
+  final Map<String, double> photoOpacities;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -313,7 +315,14 @@ class RegionMapPainter extends CustomPainter {
       final photo = photos[key];
       final image = images[key];
       if (photo != null && image != null) {
-        _drawPhoto(canvas, path, region, photo, image);
+        _drawPhoto(
+          canvas,
+          path,
+          region,
+          photo,
+          image,
+          photoOpacities[key] ?? 1,
+        );
       } else {
         canvas.drawPath(path, Paint()..color = const Color(0xFFFFFFFF));
       }
@@ -352,6 +361,7 @@ class RegionMapPainter extends CustomPainter {
     MapRegion region,
     RegionPhoto photo,
     ui.Image image,
+    double opacity,
   ) {
     final bounds = Rect.fromLTWH(
       region.bounds.x,
@@ -383,7 +393,9 @@ class RegionMapPainter extends CustomPainter {
       image,
       source,
       bounds,
-      Paint()..filterQuality = FilterQuality.medium,
+      Paint()
+        ..filterQuality = FilterQuality.medium
+        ..color = Colors.white.withValues(alpha: opacity.clamp(0, 1)),
     );
     canvas.restore();
   }

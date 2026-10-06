@@ -13,6 +13,7 @@ import '../features/map/region_map_view.dart';
 import '../features/photos/photo_date.dart';
 import '../features/photos/photo_date_dialog.dart';
 import '../features/photos/photo_picker_service.dart';
+import '../features/share/map_share_service.dart';
 import '../features/state/sasang_state.dart';
 import '../models/map_models.dart';
 import '../widgets/ad_banner.dart';
@@ -45,12 +46,14 @@ class _MapScreenState extends State<MapScreen> {
   final _search = TextEditingController();
   final Map<MapMode, RegionMapAsset> _mapAssets = {};
   late final Map<MapMode, Future<RegionMapAsset>> _mapLoads;
+  late final MapShareService _shareService;
   bool _saving = false;
   bool _adShown = false;
 
   @override
   void initState() {
     super.initState();
+    _shareService = MapShareService(widget.state.storage);
     _mapLoads = {for (final mode in MapMode.values) mode: _maps.load(mode)};
     for (final mode in MapMode.values) {
       unawaited(_rememberMapAsset(mode));
@@ -166,6 +169,146 @@ class _MapScreenState extends State<MapScreen> {
     ),
   );
 
+  Future<void> _openShareSheet(RegionMapAsset map, MapMode mode) async {
+    final hasPhotos = widget.state.regionPhotos.keys.any(
+      (key) => key.startsWith('${mode.storageKey}:'),
+    );
+    if (!hasPhotos) {
+      _showError('공유할 여행 기록이 없어요', '지도에 사진을 먼저 추가해 주세요.');
+      return;
+    }
+    final format = await showSasangSheet<MapShareFormat>(
+      context,
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Center(
+            child: SizedBox(
+              width: 36,
+              child: Divider(thickness: 4, color: Color(0xFFD4D4D8)),
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            '여행 지도 공유',
+            style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 5),
+          const Text(
+            '사진 보관함에 저장한 뒤 Instagram을 포함한 다른 앱으로 공유할 수 있어요.',
+            style: TextStyle(color: SasangColors.secondary, height: 1.4),
+          ),
+          const SizedBox(height: 18),
+          _ShareOptionRow(
+            key: const Key('share-map-image'),
+            icon: CupertinoIcons.photo,
+            title: '사진으로 내보내기',
+            subtitle: '9:16 여행 지도 · 방문 비율 포함',
+            onTap: () => Navigator.pop(context, MapShareFormat.image),
+          ),
+          const SizedBox(height: 10),
+          _ShareOptionRow(
+            key: const Key('share-map-video'),
+            icon: CupertinoIcons.play_rectangle,
+            title: '타임라인 영상으로 내보내기',
+            subtitle: '촬영일 순으로 지도가 채워지는 9:16 MP4',
+            onTap: () => Navigator.pop(context, MapShareFormat.video),
+          ),
+        ],
+      ),
+    );
+    if (format == null || !mounted) return;
+    await _exportMap(map: map, mode: mode, format: format);
+  }
+
+  Future<void> _exportMap({
+    required RegionMapAsset map,
+    required MapMode mode,
+    required MapShareFormat format,
+  }) async {
+    final progress = ValueNotifier<double>(0);
+    final dialogReady = Completer<void>();
+    BuildContext? exportDialogContext;
+    unawaited(
+      showCupertinoDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) {
+          exportDialogContext = dialogContext;
+          if (!dialogReady.isCompleted) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!dialogReady.isCompleted) dialogReady.complete();
+            });
+          }
+          return ValueListenableBuilder<double>(
+            valueListenable: progress,
+            builder: (context, value, _) => CupertinoAlertDialog(
+              title: Text(
+                format == MapShareFormat.image
+                    ? '여행 지도를 만드는 중'
+                    : '여행 타임라인을 만드는 중',
+              ),
+              content: Padding(
+                padding: const EdgeInsets.only(top: 14),
+                child: Column(
+                  children: [
+                    CupertinoActivityIndicator(radius: 12 + value * 2),
+                    const SizedBox(height: 12),
+                    Text(
+                      format == MapShareFormat.image
+                          ? '사진을 정리하고 있어요.'
+                          : '${(value * 100).floor()}% 진행됐어요.',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    await dialogReady.future;
+    try {
+      final result = format == MapShareFormat.image
+          ? await _shareService.exportImage(
+              asset: map,
+              mode: mode,
+              photos: widget.state.regionPhotos,
+            )
+          : await _shareService.exportTimelineVideo(
+              asset: map,
+              mode: mode,
+              photos: widget.state.regionPhotos,
+              onProgress: (value) => progress.value = value,
+            );
+      if (!mounted) return;
+      final dialogContext = exportDialogContext;
+      if (dialogContext != null && dialogContext.mounted) {
+        Navigator.of(dialogContext).pop();
+      }
+      final box = context.findRenderObject() as RenderBox?;
+      final origin = box == null
+          ? Rect.fromLTWH(0, 0, MediaQuery.sizeOf(context).width, 1)
+          : box.localToGlobal(Offset.zero) & box.size;
+      if (!result.savedToGallery && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('사진 보관함에 저장하지 못했지만 바로 공유할 수 있어요.')),
+        );
+      }
+      await _shareService.share(result, origin);
+    } on Object catch (error) {
+      if (!mounted) return;
+      final dialogContext = exportDialogContext;
+      if (dialogContext != null && dialogContext.mounted) {
+        Navigator.of(dialogContext).pop();
+      }
+      _showError('내보내기를 완료하지 못했어요', error);
+    } finally {
+      progress.dispose();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final mode = widget.state.mode;
@@ -230,6 +373,9 @@ class _MapScreenState extends State<MapScreen> {
                   count: count,
                   totalCount: map?.regions.length ?? 0,
                   mode: mode,
+                  onShare: map == null
+                      ? null
+                      : () => _openShareSheet(map, mode),
                   onModeChanged: (next) {
                     _search.clear();
                     widget.state.setMode(next);
@@ -503,6 +649,7 @@ class MapTopBar extends StatelessWidget {
     required this.count,
     required this.totalCount,
     required this.mode,
+    required this.onShare,
     required this.onModeChanged,
     super.key,
   });
@@ -510,6 +657,7 @@ class MapTopBar extends StatelessWidget {
   final int count;
   final int totalCount;
   final MapMode mode;
+  final VoidCallback? onShare;
   final ValueChanged<MapMode> onModeChanged;
 
   @override
@@ -567,10 +715,107 @@ class MapTopBar extends StatelessWidget {
             ),
           ),
         ),
-        MapModeSelector(value: mode, onChanged: onModeChanged, elevated: true),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 38,
+              height: 38,
+              child: SasangSurface(
+                blur: true,
+                radius: 19,
+                padding: EdgeInsets.zero,
+                child: CupertinoButton(
+                  key: const Key('map-share-button'),
+                  padding: EdgeInsets.zero,
+                  borderRadius: BorderRadius.circular(19),
+                  onPressed: onShare,
+                  child: const Icon(
+                    CupertinoIcons.share,
+                    size: 18,
+                    color: SasangColors.ink,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            MapModeSelector(
+              value: mode,
+              onChanged: onModeChanged,
+              elevated: true,
+            ),
+          ],
+        ),
       ],
     );
   }
+}
+
+class _ShareOptionRow extends StatelessWidget {
+  const _ShareOptionRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    super.key,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => SasangSurface(
+    radius: 18,
+    child: CupertinoButton(
+      padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+      onPressed: onTap,
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: const BoxDecoration(
+              color: Color(0xFFEAF3FF),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: SasangColors.accent, size: 21),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: SasangColors.ink,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: SasangColors.secondary,
+                    fontSize: 12,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            CupertinoIcons.chevron_forward,
+            size: 17,
+            color: SasangColors.secondary,
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 int travelProgressPercent(int visitedCount, int totalCount) {
