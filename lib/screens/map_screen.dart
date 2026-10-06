@@ -773,7 +773,7 @@ class _ShareSheetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(4, 6, 4, 8),
+    padding: const EdgeInsets.fromLTRB(4, 4, 4, 10),
     child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -788,75 +788,52 @@ class _ShareSheetContent extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 24),
-        Text(
-          title,
-          style: const TextStyle(
-            color: SasangColors.ink,
-            fontSize: 21,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.4,
-          ),
+        const SizedBox(height: 18),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: SasangColors.ink,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 34,
+              height: 34,
+              child: CupertinoButton(
+                key: const Key('share-sheet-close'),
+                padding: EdgeInsets.zero,
+                borderRadius: BorderRadius.circular(17),
+                color: const Color(0xFFF4F4F5),
+                onPressed: onCancel,
+                child: const Icon(
+                  CupertinoIcons.xmark,
+                  size: 14,
+                  color: SasangColors.secondary,
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 7),
+        const SizedBox(height: 6),
         Text(
           subtitle,
           style: const TextStyle(
             color: SasangColors.secondary,
-            fontSize: 13,
+            fontSize: 14,
             height: 1.45,
+            letterSpacing: -0.15,
           ),
         ),
-        const SizedBox(height: 22),
-        _ShareActionGroup(children: actions),
-        const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: CupertinoButton(
-            key: const Key('share-sheet-cancel'),
-            padding: EdgeInsets.zero,
-            borderRadius: BorderRadius.circular(16),
-            color: const Color(0xFFF4F4F5),
-            onPressed: onCancel,
-            child: const Text(
-              '취소',
-              style: TextStyle(
-                color: SasangColors.ink,
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _ShareActionGroup extends StatelessWidget {
-  const _ShareActionGroup({required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    clipBehavior: Clip.antiAlias,
-    decoration: BoxDecoration(
-      color: const Color(0xFFF7F7F8),
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: SasangColors.divider, width: .6),
-    ),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var index = 0; index < children.length; index++) ...[
-          children[index],
-          if (index != children.length - 1)
-            const Padding(
-              padding: EdgeInsets.only(left: 66),
-              child: Divider(height: 1, thickness: .6),
-            ),
+        const SizedBox(height: 18),
+        for (var index = 0; index < actions.length; index++) ...[
+          actions[index],
+          if (index != actions.length - 1) const SizedBox(height: 2),
         ],
       ],
     ),
@@ -879,21 +856,20 @@ class _ShareOptionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => CupertinoButton(
-    padding: const EdgeInsets.fromLTRB(14, 13, 12, 13),
+    padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 12),
     onPressed: onTap,
     child: Row(
       children: [
         Container(
-          width: 38,
-          height: 38,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: SasangColors.divider, width: .6),
+          width: 44,
+          height: 44,
+          decoration: const BoxDecoration(
+            color: Color(0xFFEAF3FF),
+            shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: SasangColors.accent, size: 19),
+          child: Icon(icon, color: SasangColors.accent, size: 20),
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -902,18 +878,19 @@ class _ShareOptionRow extends StatelessWidget {
                 title,
                 style: const TextStyle(
                   color: SasangColors.ink,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.2,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
                 ),
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: 4),
               Text(
                 subtitle,
                 style: const TextStyle(
                   color: SasangColors.secondary,
-                  fontSize: 12,
-                  height: 1.3,
+                  fontSize: 13,
+                  height: 1.35,
+                  letterSpacing: -0.1,
                 ),
               ),
             ],
@@ -921,8 +898,8 @@ class _ShareOptionRow extends StatelessWidget {
         ),
         const Icon(
           CupertinoIcons.chevron_forward,
-          size: 15,
-          color: Color(0xFFB4B4BA),
+          size: 16,
+          color: Color(0xFFC4C4C8),
         ),
       ],
     ),
@@ -943,69 +920,78 @@ class _ShareExportProgressDialog extends StatelessWidget {
     final isVideo = format == MapShareFormat.video;
     final safeProgress = progress.clamp(0, 1).toDouble();
     return Center(
-      child: Container(
-        key: const Key('share-export-progress-dialog'),
-        width: math.min(MediaQuery.sizeOf(context).width - 48, 320),
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 22),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFDFDFD),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: SasangOverlayStyle.border, width: .6),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x2418181B),
-              blurRadius: 32,
-              offset: Offset(0, 14),
-            ),
-          ],
+      child: DefaultTextStyle(
+        style: CupertinoTheme.of(context).textTheme.textStyle.copyWith(
+          color: SasangColors.ink,
+          decoration: TextDecoration.none,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const CupertinoActivityIndicator(radius: 11),
-                const SizedBox(width: 12),
-                Expanded(
+        child: Container(
+          key: const Key('share-export-progress-dialog'),
+          width: math.min(MediaQuery.sizeOf(context).width - 48, 320),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 22),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFDFDFD),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: SasangOverlayStyle.border, width: .6),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x2418181B),
+                blurRadius: 32,
+                offset: Offset(0, 14),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const CupertinoActivityIndicator(radius: 11),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      isVideo ? '여행 영상을 만들고 있어요' : '여행 지도를 만들고 있어요',
+                      style: const TextStyle(
+                        color: SasangColors.ink,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                isVideo ? '사진을 날짜순으로 정리하는 중이에요.' : '사진과 방문 기록을 정리하는 중이에요.',
+                style: const TextStyle(
+                  color: SasangColors.secondary,
+                  fontSize: 13,
+                  height: 1.4,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+              if (isVideo) ...[
+                const SizedBox(height: 20),
+                _ShareProgressBar(progress: safeProgress),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
                   child: Text(
-                    isVideo ? '여행 영상을 만들고 있어요' : '여행 지도를 만들고 있어요',
+                    '${(safeProgress * 100).floor()}%',
                     style: const TextStyle(
-                      color: SasangColors.ink,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.3,
+                      color: SasangColors.secondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      decoration: TextDecoration.none,
                     ),
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              isVideo ? '사진을 날짜순으로 정리하는 중이에요.' : '사진과 방문 기록을 정리하는 중이에요.',
-              style: const TextStyle(
-                color: SasangColors.secondary,
-                fontSize: 13,
-                height: 1.4,
-              ),
-            ),
-            if (isVideo) ...[
-              const SizedBox(height: 20),
-              _ShareProgressBar(progress: safeProgress),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  '${(safeProgress * 100).floor()}%',
-                  style: const TextStyle(
-                    color: SasangColors.secondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
             ],
-          ],
+          ),
         ),
       ),
     );
