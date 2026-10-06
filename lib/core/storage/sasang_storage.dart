@@ -14,18 +14,73 @@ Map<String, dynamic> decodeZustandState(String source) {
   return <String, dynamic>{};
 }
 
+class DecodedPhotoState {
+  const DecodedPhotoState({required this.photos, required this.albums});
+
+  final Map<String, RegionPhoto> photos;
+  final Map<String, RegionPhotoAlbum> albums;
+}
+
+DecodedPhotoState decodeStoredPhotoState(Map<String, dynamic> map) {
+  final photos = <String, RegionPhoto>{};
+  final photoJson = map['regionPhotos'];
+  if (photoJson is Map<String, dynamic>) {
+    for (final entry in photoJson.entries) {
+      if (entry.value is Map<String, dynamic>) {
+        photos[entry.key] = RegionPhoto.fromJson(
+          entry.value as Map<String, dynamic>,
+        );
+      }
+    }
+  }
+  final albums = <String, RegionPhotoAlbum>{};
+  final albumJson = map['regionPhotoAlbums'];
+  if (albumJson is Map<String, dynamic>) {
+    for (final entry in albumJson.entries) {
+      if (entry.value is! Map<String, dynamic>) continue;
+      final album = RegionPhotoAlbum.fromJson(
+        entry.value as Map<String, dynamic>,
+      );
+      if (album.photos.isNotEmpty) albums[entry.key] = album;
+    }
+  }
+  for (final entry in photos.entries) {
+    final album = albums[entry.key];
+    if (album == null || album.photos.isEmpty) {
+      albums[entry.key] = RegionPhotoAlbum.fromLegacy(entry.value);
+      continue;
+    }
+    if (!album.photos.any((photo) => photo.id == entry.value.id)) {
+      albums[entry.key] = RegionPhotoAlbum(
+        photos: List.unmodifiable([...album.photos, entry.value]),
+        coverPhotoId: entry.value.id,
+      );
+    }
+  }
+  photos
+    ..clear()
+    ..addEntries(
+      albums.entries
+          .where((entry) => entry.value.coverPhoto != null)
+          .map((entry) => MapEntry(entry.key, entry.value.coverPhoto!)),
+    );
+  return DecodedPhotoState(photos: photos, albums: albums);
+}
+
 class StoredSasangState {
   const StoredSasangState({
     required this.hasStarted,
     required this.name,
     required this.profileImageUri,
     required this.regionPhotos,
+    required this.regionPhotoAlbums,
   });
 
   final bool hasStarted;
   final String name;
   final String? profileImageUri;
   final Map<String, RegionPhoto> regionPhotos;
+  final Map<String, RegionPhotoAlbum> regionPhotoAlbums;
 }
 
 /// Reads and writes the exact envelope produced by Zustand persist.
@@ -55,23 +110,14 @@ class SasangStorage {
     final session = await _readStore(_sessionKey);
     final profile = await _readStore(_profileKey);
     final map = await _readStore(_mapKey);
-    final photos = <String, RegionPhoto>{};
-    final photoJson = map['regionPhotos'];
-    if (photoJson is Map<String, dynamic>) {
-      for (final entry in photoJson.entries) {
-        if (entry.value is Map<String, dynamic>) {
-          photos[entry.key] = RegionPhoto.fromJson(
-            entry.value as Map<String, dynamic>,
-          );
-        }
-      }
-    }
+    final decodedPhotos = decodeStoredPhotoState(map);
     await _writeMigrationMarker();
     return StoredSasangState(
       hasStarted: session['hasStarted'] as bool? ?? false,
       name: profile['name'] as String? ?? '여행자',
       profileImageUri: profile['profileImageUri'] as String?,
-      regionPhotos: photos,
+      regionPhotos: decodedPhotos.photos,
+      regionPhotoAlbums: decodedPhotos.albums,
     );
   }
 
@@ -98,10 +144,24 @@ class SasangStorage {
         'profileImageUri': profileImageUri,
       });
 
-  Future<void> writePhotos(Map<String, RegionPhoto> photos) => _writeStore(
-    _mapKey,
-    {'regionPhotos': photos.map((key, value) => MapEntry(key, value.toJson()))},
+  Future<void> writePhotos(Map<String, RegionPhoto> photos) => writePhotoAlbums(
+    photos.map(
+      (key, photo) => MapEntry(key, RegionPhotoAlbum.fromLegacy(photo)),
+    ),
   );
+
+  Future<void> writePhotoAlbums(
+    Map<String, RegionPhotoAlbum> albums,
+  ) => _writeStore(_mapKey, {
+    // Keep the deployed single-photo field as a cover-photo projection so an
+    // older app version can still display every visited region.
+    'regionPhotos': albums.map(
+      (key, album) => MapEntry(key, album.coverPhoto?.toJson()),
+    )..removeWhere((_, value) => value == null),
+    'regionPhotoAlbums': albums.map(
+      (key, album) => MapEntry(key, album.toJson()),
+    ),
+  });
 
   Future<void> _writeStore(String key, Map<String, dynamic> state) async {
     await _initialize();

@@ -7,12 +7,12 @@ import '../core/theme/sasang_theme.dart';
 import '../features/map/map_mode_selector.dart';
 import '../features/map/map_repository.dart';
 import '../features/photos/photo_date.dart';
-import '../features/photos/photo_date_dialog.dart';
 import '../features/photos/photo_picker_service.dart';
+import '../features/photos/region_photo_album_sheet.dart';
+import '../features/photos/region_photo_flow.dart';
 import '../features/state/sasang_state.dart';
 import '../models/map_models.dart';
 import '../widgets/ad_banner.dart';
-import '../widgets/sasang_ui.dart';
 
 class PlacesScreen extends StatefulWidget {
   const PlacesScreen({
@@ -34,93 +34,23 @@ class _PlacesScreenState extends State<PlacesScreen> {
   final _picker = PhotoPickerService();
   bool _newest = true;
 
-  Future<void> _manage(_Place item) async {
-    await showSasangSheet<void>(
-      context,
-      Padding(
-        padding: const EdgeInsets.only(top: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _StoredImage(
-              uri: item.photo.uri,
-              storage: widget.state.storage,
-              height: 190,
-              radius: 18,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              item.region.name,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 14),
-            SizedBox(
-              width: double.infinity,
-              child: SasangPrimaryButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _replace(item);
-                },
-                label: '새 사진으로 변경',
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SasangTextButton(
-                  onPressed: () => Navigator.pop(context),
-                  label: '닫기',
-                ),
-                SasangTextButton(
-                  onPressed: () {
-                    widget.state.removeRegionPhoto(item.mode, item.region.code);
-                    Navigator.pop(context);
-                  },
-                  label: '삭제',
-                  destructive: true,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Future<void> _manage(_Place item) => showRegionPhotoAlbumSheet(
+    context: context,
+    state: widget.state,
+    mode: item.mode,
+    region: item.region,
+    onAdd: () => _add(item.mode, item.region),
+  );
 
-  Future<void> _replace(_Place item) async {
-    final picked = await _picker.pick();
-    if (picked == null || !mounted) return;
-    final metadata = await readPhotoTakenDate(picked.file);
-    final now = DateTime.now();
-    final valid = metadata != null && !metadata.isAfter(now);
-    if (!mounted) return;
-    final selected = await showPhotoDateDialog(
-      context,
-      photo: picked.file,
-      initialDate: valid ? metadata : now,
-      dateFromMetadata: valid,
+  Future<void> _add(MapMode mode, MapRegion region) async {
+    final photo = await pickRegionPhoto(
+      context: context,
+      picker: _picker,
+      storage: widget.state.storage,
+      mode: mode,
+      region: region,
     );
-    if (selected == null) return;
-    final saved = await widget.state.storage.copyImage(
-      picked.file,
-      'photos',
-      '${item.mode.storageKey}-${item.region.code}',
-    );
-    widget.state.setRegionPhoto(
-      item.mode,
-      item.region.code,
-      RegionPhoto(
-        id: picked.id,
-        uri: saved.uri.toString(),
-        width: picked.width,
-        height: picked.height,
-        scale: 1,
-        offsetX: 0,
-        offsetY: 0,
-        createdAt: DateTime.now().toUtc().toIso8601String(),
-        takenAt: photoDateKey(selected),
-      ),
-    );
+    if (photo != null) widget.state.addRegionPhoto(mode, region.code, photo);
   }
 
   @override
@@ -137,19 +67,16 @@ class _PlacesScreenState extends State<PlacesScreen> {
             for (final region in snapshot.data!.regions) region.code: region,
           };
           final items = <_Place>[];
-          for (final entry in widget.state.regionPhotos.entries) {
+          for (final entry in widget.state.regionPhotoAlbums.entries) {
             final parts = entry.key.split(':');
             if (parts.length != 2 || parts.first != mode.storageKey) continue;
             final region = regions[parts.last];
-            if (region != null) {
+            if (region != null && entry.value.coverPhoto != null) {
               items.add(_Place(mode, region, entry.value));
             }
           }
           items.sort((a, b) {
-            final compared = regionPhotoDate(
-              a.photo.takenAt,
-              a.photo.createdAt,
-            ).compareTo(regionPhotoDate(b.photo.takenAt, b.photo.createdAt));
+            final compared = a.latestDate.compareTo(b.latestDate);
             return _newest ? -compared : compared;
           });
           return Column(
@@ -267,9 +194,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
                                                       BorderRadius.circular(10),
                                                 ),
                                                 child: Text(
-                                                  mode == MapMode.korea
-                                                      ? '국내'
-                                                      : '해외',
+                                                  '${item.album.photos.length}장',
                                                   style: const TextStyle(
                                                     color: SasangColors.accent,
                                                     fontSize: 11,
@@ -441,10 +366,16 @@ class _SortButton extends StatelessWidget {
 }
 
 class _Place {
-  const _Place(this.mode, this.region, this.photo);
+  const _Place(this.mode, this.region, this.album);
   final MapMode mode;
   final MapRegion region;
-  final RegionPhoto photo;
+  final RegionPhotoAlbum album;
+
+  RegionPhoto get photo => album.coverPhoto!;
+
+  DateTime get latestDate => album.photos
+      .map((photo) => regionPhotoDate(photo.takenAt, photo.createdAt))
+      .reduce((a, b) => a.isAfter(b) ? a : b);
 }
 
 class _StoredImage extends StatelessWidget {
@@ -452,11 +383,9 @@ class _StoredImage extends StatelessWidget {
     required this.uri,
     required this.storage,
     required this.radius,
-    this.height,
   });
   final String uri;
   final SasangStorage storage;
-  final double? height;
   final double radius;
 
   @override
@@ -465,11 +394,10 @@ class _StoredImage extends StatelessWidget {
     builder: (context, snapshot) => ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: snapshot.data == null
-          ? Container(height: height, color: const Color(0xFFF4F4F5))
+          ? const ColoredBox(color: Color(0xFFF4F4F5))
           : Image.file(
               snapshot.data!,
               width: double.infinity,
-              height: height,
               fit: BoxFit.cover,
             ),
     ),

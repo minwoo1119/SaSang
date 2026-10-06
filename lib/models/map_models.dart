@@ -114,6 +114,53 @@ class RegionPhoto {
   };
 }
 
+class RegionPhotoAlbum {
+  const RegionPhotoAlbum({required this.photos, required this.coverPhotoId});
+
+  factory RegionPhotoAlbum.fromJson(Map<String, dynamic> json) {
+    final photos = <RegionPhoto>[];
+    final values = json['photos'];
+    if (values is List<dynamic>) {
+      for (final value in values) {
+        if (value is Map<String, dynamic>) {
+          photos.add(RegionPhoto.fromJson(value));
+        }
+      }
+    }
+    final requestedCover = json['coverPhotoId'] as String?;
+    final coverExists = photos.any((photo) => photo.id == requestedCover);
+    return RegionPhotoAlbum(
+      photos: List.unmodifiable(photos),
+      coverPhotoId: coverExists
+          ? requestedCover!
+          : photos.isEmpty
+          ? ''
+          : photos.first.id,
+    );
+  }
+
+  factory RegionPhotoAlbum.fromLegacy(RegionPhoto photo) => RegionPhotoAlbum(
+    photos: List.unmodifiable([photo]),
+    coverPhotoId: photo.id,
+  );
+
+  final List<RegionPhoto> photos;
+  final String coverPhotoId;
+
+  RegionPhoto? get coverPhoto {
+    for (final photo in photos) {
+      if (photo.id == coverPhotoId) return photo;
+    }
+    return photos.isEmpty ? null : photos.first;
+  }
+
+  Map<String, dynamic> toJson() => {
+    'version': 1,
+    'coverPhotoId': coverPhoto?.id ?? '',
+    'photos': photos.map((photo) => photo.toJson()).toList(growable: false),
+  };
+}
+
 class RegionMapAsset {
   const RegionMapAsset({
     required this.version,

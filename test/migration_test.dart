@@ -13,6 +13,7 @@ import 'package:sasang/features/map/map_repository.dart';
 import 'package:sasang/features/map/region_map_view.dart';
 import 'package:sasang/features/photos/photo_date.dart';
 import 'package:sasang/features/photos/photo_date_dialog.dart';
+import 'package:sasang/features/photos/region_photo_album_sheet.dart';
 import 'package:sasang/features/share/map_share_service.dart';
 import 'package:sasang/features/state/sasang_state.dart';
 import 'package:sasang/models/map_models.dart';
@@ -241,6 +242,125 @@ void main() {
       .5,
     );
     expect(regionFocusZoom(asset.regions.first, asset), 4.2);
+  });
+
+  test('wraps legacy region photos in backward-compatible albums', () {
+    final decoded = decodeStoredPhotoState({
+      'regionPhotos': {
+        'korea:11680': {
+          'id': 'legacy',
+          'uri': 'file:///legacy.jpg',
+          'width': 100,
+          'height': 80,
+          'scale': 1,
+          'offsetX': 0,
+          'offsetY': 0,
+          'createdAt': '2025-01-01T00:00:00Z',
+        },
+      },
+    });
+
+    expect(decoded.albums['korea:11680']!.photos, hasLength(1));
+    expect(decoded.albums['korea:11680']!.coverPhoto!.id, 'legacy');
+    expect(decoded.photos['korea:11680']!.uri, 'file:///legacy.jpg');
+  });
+
+  test('keeps multiple photos and the selected cover in timeline order', () {
+    const region = MapRegion(
+      code: 'A',
+      name: '지역',
+      geometryType: 'Polygon',
+      polygonCount: 1,
+      bounds: RegionBounds(x: 0, y: 0, width: 10, height: 10),
+      pathData: 'M 0 0 L 10 0 L 10 10 Z',
+    );
+    const asset = RegionMapAsset(
+      version: 'test',
+      width: 100,
+      height: 100,
+      regions: [region],
+    );
+    final old = _photo('old', '2024-01-01');
+    final recent = _photo('recent', '2025-01-01');
+    final album = RegionPhotoAlbum(
+      photos: [recent, old],
+      coverPhotoId: recent.id,
+    );
+    final timeline = buildMapTimeline(
+      asset: asset,
+      mode: MapMode.korea,
+      photos: {'korea:A': recent},
+      albums: {'korea:A': album},
+    );
+
+    expect(timeline.map((item) => item.photo.id), ['old', 'recent']);
+    expect(album.coverPhoto!.id, 'recent');
+  });
+
+  test(
+    'adds, changes cover, and removes album photos without losing legacy cover',
+    () async {
+      final storage = _MemoryStorage();
+      final state = SasangState(storage);
+      final first = _photo('first', '2025-01-01');
+      final second = _photo('second', '2025-02-01');
+
+      state.addRegionPhoto(MapMode.korea, 'A', first);
+      state.addRegionPhoto(MapMode.korea, 'A', second);
+      expect(state.regionAlbum(MapMode.korea, 'A')!.photos, hasLength(2));
+      expect(state.regionPhotos['korea:A']!.id, 'first');
+
+      state.setRegionCoverPhoto(MapMode.korea, 'A', second.id);
+      expect(state.regionPhotos['korea:A']!.id, 'second');
+      state.removePhoto(MapMode.korea, 'A', second.id);
+      expect(state.regionPhotos['korea:A']!.id, 'first');
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+      expect(storage.albums['korea:A']!.photos.single.id, 'first');
+    },
+  );
+
+  testWidgets('region album shows photos and a final add card', (tester) async {
+    final storage = _MemoryStorage();
+    final state = SasangState(storage);
+    state.addRegionPhoto(MapMode.korea, 'A', _photo('one', '2025-01-01'));
+    state.addRegionPhoto(MapMode.korea, 'A', _photo('two', '2025-02-01'));
+    const region = MapRegion(
+      code: 'A',
+      name: '테스트 지역',
+      geometryType: 'Polygon',
+      polygonCount: 1,
+      bounds: RegionBounds(x: 0, y: 0, width: 10, height: 10),
+      pathData: 'M 0 0 L 10 0 L 10 10 Z',
+    );
+
+    await tester.pumpWidget(
+      CupertinoApp(
+        home: CupertinoPageScaffold(
+          child: RegionPhotoAlbumSheet(
+            state: state,
+            mode: MapMode.korea,
+            region: region,
+            onAdd: () async {},
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('사진 2장'), findsOneWidget);
+    expect(find.byKey(const Key('region-photo-carousel')), findsOneWidget);
+    await tester.drag(
+      find.byKey(const Key('region-photo-carousel')),
+      const Offset(-600, 0),
+    );
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.byKey(const Key('region-photo-carousel')),
+      const Offset(-600, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('region-album-add-card')), findsOneWidget);
   });
 
   test('region subtitles hide internal administrative codes', () {
@@ -547,4 +667,28 @@ void main() {
     expect(find.text('수정'), findsNothing);
     expect(find.text('지도 상점'), findsOneWidget);
   });
+}
+
+RegionPhoto _photo(String id, String takenAt) => RegionPhoto(
+  id: id,
+  uri: 'file:///$id.jpg',
+  width: 100,
+  height: 100,
+  scale: 1,
+  offsetX: 0,
+  offsetY: 0,
+  createdAt: '${takenAt}T00:00:00Z',
+  takenAt: takenAt,
+);
+
+class _MemoryStorage extends SasangStorage {
+  Map<String, RegionPhotoAlbum> albums = {};
+
+  @override
+  Future<void> writePhotoAlbums(Map<String, RegionPhotoAlbum> albums) async {
+    this.albums = Map.of(albums);
+  }
+
+  @override
+  Future<File?> resolveImage(String? uri) async => null;
 }

@@ -9,12 +9,14 @@ class SasangState extends ChangeNotifier {
   SasangState(this.storage);
 
   final SasangStorage storage;
+  Future<void> _photoWrite = Future.value();
   bool hasStarted = false;
   String name = '여행자';
   String? profileImageUri;
   MapMode mode = MapMode.korea;
   String? selectedRegionCode;
   final Map<String, RegionPhoto> regionPhotos = {};
+  final Map<String, RegionPhotoAlbum> regionPhotoAlbums = {};
 
   Future<void> load() async {
     final stored = await storage.read();
@@ -24,6 +26,9 @@ class SasangState extends ChangeNotifier {
     regionPhotos
       ..clear()
       ..addAll(stored.regionPhotos);
+    regionPhotoAlbums
+      ..clear()
+      ..addAll(stored.regionPhotoAlbums);
     notifyListeners();
   }
 
@@ -58,15 +63,105 @@ class SasangState extends ChangeNotifier {
   }
 
   void setRegionPhoto(MapMode photoMode, String code, RegionPhoto photo) {
-    regionPhotos[regionPhotoKey(photoMode, code)] = photo;
+    final key = regionPhotoKey(photoMode, code);
+    final current = regionPhotoAlbums[key];
+    if (current == null || current.photos.isEmpty) {
+      regionPhotoAlbums[key] = RegionPhotoAlbum.fromLegacy(photo);
+    } else {
+      final coverId = current.coverPhoto?.id;
+      regionPhotoAlbums[key] = RegionPhotoAlbum(
+        photos: List.unmodifiable([
+          for (final existing in current.photos)
+            if (existing.id == coverId) photo else existing,
+        ]),
+        coverPhotoId: photo.id,
+      );
+    }
+    _syncCoverProjection();
     notifyListeners();
-    unawaited(storage.writePhotos(regionPhotos));
+    _persistPhotoAlbums();
+  }
+
+  void addRegionPhoto(MapMode photoMode, String code, RegionPhoto photo) {
+    final key = regionPhotoKey(photoMode, code);
+    final current = regionPhotoAlbums[key];
+    regionPhotoAlbums[key] = RegionPhotoAlbum(
+      photos: List.unmodifiable([...?current?.photos, photo]),
+      coverPhotoId: current?.coverPhoto?.id ?? photo.id,
+    );
+    _syncCoverProjection();
+    notifyListeners();
+    _persistPhotoAlbums();
+  }
+
+  void setRegionCoverPhoto(MapMode photoMode, String code, String photoId) {
+    final key = regionPhotoKey(photoMode, code);
+    final current = regionPhotoAlbums[key];
+    if (current == null ||
+        !current.photos.any((photo) => photo.id == photoId)) {
+      return;
+    }
+    regionPhotoAlbums[key] = RegionPhotoAlbum(
+      photos: current.photos,
+      coverPhotoId: photoId,
+    );
+    _syncCoverProjection();
+    notifyListeners();
+    _persistPhotoAlbums();
+  }
+
+  void removePhoto(MapMode photoMode, String code, String photoId) {
+    final key = regionPhotoKey(photoMode, code);
+    final current = regionPhotoAlbums[key];
+    if (current == null) return;
+    final nextPhotos = current.photos
+        .where((photo) => photo.id != photoId)
+        .toList(growable: false);
+    if (nextPhotos.isEmpty) {
+      regionPhotoAlbums.remove(key);
+    } else {
+      regionPhotoAlbums[key] = RegionPhotoAlbum(
+        photos: nextPhotos,
+        coverPhotoId: current.coverPhotoId == photoId
+            ? nextPhotos.first.id
+            : current.coverPhotoId,
+      );
+    }
+    _syncCoverProjection();
+    notifyListeners();
+    _persistPhotoAlbums();
   }
 
   void removeRegionPhoto(MapMode photoMode, String code) {
-    regionPhotos.remove(regionPhotoKey(photoMode, code));
+    regionPhotoAlbums.remove(regionPhotoKey(photoMode, code));
+    _syncCoverProjection();
     notifyListeners();
-    unawaited(storage.writePhotos(regionPhotos));
+    _persistPhotoAlbums();
+  }
+
+  RegionPhotoAlbum? regionAlbum(MapMode photoMode, String code) =>
+      regionPhotoAlbums[regionPhotoKey(photoMode, code)];
+
+  void _syncCoverProjection() {
+    regionPhotos
+      ..clear()
+      ..addEntries(
+        regionPhotoAlbums.entries
+            .where((entry) => entry.value.coverPhoto != null)
+            .map((entry) => MapEntry(entry.key, entry.value.coverPhoto!)),
+      );
+  }
+
+  void _persistPhotoAlbums() {
+    final snapshot = Map<String, RegionPhotoAlbum>.unmodifiable(
+      regionPhotoAlbums,
+    );
+    _photoWrite = _photoWrite
+        .then((_) => storage.writePhotoAlbums(snapshot))
+        .catchError((Object error, StackTrace stackTrace) {
+          debugPrint('Failed to persist region photo albums: $error');
+        });
+    unawaited(_photoWrite);
   }
 
   Future<void> clearAllData() async {
@@ -75,11 +170,13 @@ class SasangState extends ChangeNotifier {
     mode = MapMode.korea;
     selectedRegionCode = null;
     regionPhotos.clear();
+    regionPhotoAlbums.clear();
     hasStarted = false;
     notifyListeners();
+    await _photoWrite;
     await storage.clearState();
     await storage.writeProfile(name, null);
-    await storage.writePhotos(regionPhotos);
+    await storage.writePhotoAlbums(regionPhotoAlbums);
     await storage.writeSession(false);
   }
 }

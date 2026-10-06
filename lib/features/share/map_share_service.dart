@@ -43,12 +43,23 @@ List<MapTimelineItem> buildMapTimeline({
   required RegionMapAsset asset,
   required MapMode mode,
   required Map<String, RegionPhoto> photos,
+  Map<String, RegionPhotoAlbum> albums = const {},
 }) {
   final regions = {for (final region in asset.regions) region.code: region};
   final prefix = '${mode.storageKey}:';
   final items = <MapTimelineItem>[];
-  for (final entry in photos.entries) {
+  for (final entry in albums.entries) {
     if (!entry.key.startsWith(prefix)) continue;
+    final region = regions[entry.key.substring(prefix.length)];
+    if (region == null) continue;
+    for (final photo in entry.value.photos) {
+      items.add(MapTimelineItem(key: entry.key, region: region, photo: photo));
+    }
+  }
+  for (final entry in photos.entries) {
+    if (!entry.key.startsWith(prefix) || albums.containsKey(entry.key)) {
+      continue;
+    }
     final region = regions[entry.key.substring(prefix.length)];
     if (region == null) continue;
     items.add(
@@ -136,10 +147,16 @@ class MapShareService {
     required RegionMapAsset asset,
     required MapMode mode,
     required Map<String, RegionPhoto> photos,
+    Map<String, RegionPhotoAlbum> albums = const {},
     ValueChanged<double>? onProgress,
     bool saveToGallery = true,
   }) async {
-    final timeline = buildMapTimeline(asset: asset, mode: mode, photos: photos);
+    final timeline = buildMapTimeline(
+      asset: asset,
+      mode: mode,
+      photos: photos,
+      albums: albums,
+    );
     if (timeline.isEmpty) {
       throw StateError('영상으로 만들 여행 기록이 없어요.');
     }
@@ -157,6 +174,7 @@ class MapShareService {
       asset: asset,
       mode: mode,
       photos: photos,
+      albums: albums,
       storage: storage,
     );
 
@@ -381,14 +399,12 @@ class _MapShareRenderer {
   _MapShareRenderer({
     required this.asset,
     required this.mode,
-    required this.photos,
     required this.images,
     required this.paths,
   });
 
   final RegionMapAsset asset;
   final MapMode mode;
-  final Map<String, RegionPhoto> photos;
   final Map<String, ui.Image> images;
   final Map<String, Path> paths;
 
@@ -396,15 +412,22 @@ class _MapShareRenderer {
     required RegionMapAsset asset,
     required MapMode mode,
     required Map<String, RegionPhoto> photos,
+    Map<String, RegionPhotoAlbum> albums = const {},
     required SasangStorage storage,
   }) async {
     final images = <String, ui.Image>{};
-    for (final entry in photos.entries) {
-      if (!entry.key.startsWith('${mode.storageKey}:')) continue;
-      final file = await storage.resolveImage(entry.value.uri);
+    final candidates = <RegionPhoto>[
+      for (final entry in photos.entries)
+        if (entry.key.startsWith('${mode.storageKey}:')) entry.value,
+      for (final entry in albums.entries)
+        if (entry.key.startsWith('${mode.storageKey}:')) ...entry.value.photos,
+    ];
+    for (final photo in candidates) {
+      if (images.containsKey(photo.uri)) continue;
+      final file = await storage.resolveImage(photo.uri);
       if (file == null) continue;
       try {
-        final targetWidth = math.min(entry.value.width.round(), 1440);
+        final targetWidth = math.min(photo.width.round(), 1440);
         final codec = await ui.instantiateImageCodec(
           await file.readAsBytes(),
           targetWidth: math.max(1, targetWidth),
@@ -412,7 +435,7 @@ class _MapShareRenderer {
         );
         final frame = await codec.getNextFrame();
         codec.dispose();
-        images[entry.key] = frame.image;
+        images[photo.uri] = frame.image;
       } on Object {
         // A missing/corrupt photo leaves its region unfilled in the export.
       }
@@ -420,7 +443,6 @@ class _MapShareRenderer {
     return _MapShareRenderer(
       asset: asset,
       mode: mode,
-      photos: photos,
       images: images,
       paths: {
         for (final region in asset.regions)
@@ -498,7 +520,10 @@ class _MapShareRenderer {
       mode: mode,
       paths: paths,
       photos: visiblePhotos,
-      images: images,
+      images: {
+        for (final entry in visiblePhotos.entries)
+          if (images[entry.value.uri] case final image?) entry.key: image,
+      },
       selectedRegionCode: current?.region.code,
       transformationController: controller,
       photoOpacities: photoOpacities,

@@ -11,9 +11,9 @@ import '../core/layout/sasang_layout.dart';
 import '../features/map/map_mode_selector.dart';
 import '../features/map/map_repository.dart';
 import '../features/map/region_map_view.dart';
-import '../features/photos/photo_date.dart';
-import '../features/photos/photo_date_dialog.dart';
 import '../features/photos/photo_picker_service.dart';
+import '../features/photos/region_photo_album_sheet.dart';
+import '../features/photos/region_photo_flow.dart';
 import '../features/share/map_share_service.dart';
 import '../features/state/sasang_state.dart';
 import '../models/map_models.dart';
@@ -118,45 +118,30 @@ class _MapScreenState extends State<MapScreen> {
     if (_saving) return;
     setState(() => _saving = true);
     try {
-      final picked = await _picker.pick();
-      if (picked == null || !mounted) return;
-      final metadataDate = await readPhotoTakenDate(picked.file);
-      final now = DateTime.now();
-      final validMetadata = metadataDate != null && !metadataDate.isAfter(now);
-      if (!mounted) return;
-      final selectedDate = await showPhotoDateDialog(
-        context,
-        photo: picked.file,
-        initialDate: validMetadata ? metadataDate : now,
-        dateFromMetadata: validMetadata,
+      final mode = widget.state.mode;
+      final photo = await pickRegionPhoto(
+        context: context,
+        picker: _picker,
+        storage: widget.state.storage,
+        mode: mode,
+        region: region,
       );
-      if (selectedDate == null) return;
-      final saved = await widget.state.storage.copyImage(
-        picked.file,
-        'photos',
-        '${widget.state.mode.storageKey}-${region.code}',
-      );
-      widget.state.setRegionPhoto(
-        widget.state.mode,
-        region.code,
-        RegionPhoto(
-          id: picked.id,
-          uri: saved.uri.toString(),
-          width: picked.width,
-          height: picked.height,
-          scale: 1,
-          offsetX: 0,
-          offsetY: 0,
-          createdAt: DateTime.now().toUtc().toIso8601String(),
-          takenAt: photoDateKey(selectedDate),
-        ),
-      );
+      if (photo != null) widget.state.addRegionPhoto(mode, region.code, photo);
     } on Object catch (error) {
       if (mounted) _showError('사진을 추가할 수 없어요', error);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
   }
+
+  Future<void> _openRegionAlbum(MapRegion region, MapMode mode) =>
+      showRegionPhotoAlbumSheet(
+        context: context,
+        state: widget.state,
+        mode: mode,
+        region: region,
+        onAdd: () => _pickPhoto(region),
+      );
 
   void _showError(String title, Object error) => showCupertinoDialog<void>(
     context: context,
@@ -249,6 +234,7 @@ class _MapScreenState extends State<MapScreen> {
               asset: map,
               mode: mode,
               photos: widget.state.regionPhotos,
+              albums: widget.state.regionPhotoAlbums,
               onProgress: (value) => progress.value = value,
               saveToGallery: false,
             );
@@ -495,70 +481,83 @@ class _MapScreenState extends State<MapScreen> {
 
   Widget _regionControl(MapRegion region, MapMode mode) {
     final photo = widget.state.regionPhotos[regionPhotoKey(mode, region.code)];
-    return SasangSurface(
-      blur: true,
-      radius: 30,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-      child: Row(
-        children: [
-          _PhotoThumb(uri: photo?.uri, storage: widget.state.storage),
-          const SizedBox(width: 11),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  region.name,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  regionDisplaySubtitle(region, mode),
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: SasangColors.secondary,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (photo != null)
-            SasangTextButton(
-              onPressed: () =>
-                  widget.state.removeRegionPhoto(mode, region.code),
-              label: '삭제',
-            ),
-          SizedBox(
-            width: 46,
-            height: 46,
-            child: CupertinoButton(
-              color: SasangColors.accent,
-              borderRadius: BorderRadius.circular(23),
-              padding: EdgeInsets.zero,
-              onPressed: _saving ? null : () => _pickPhoto(region),
-              child: _saving
-                  ? const CupertinoActivityIndicator(color: Colors.white)
-                  : photo == null
-                  ? const Icon(
-                      CupertinoIcons.add,
-                      color: Colors.white,
-                      size: 24,
-                    )
-                  : const Text(
-                      '수정',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
+    final photoCount =
+        widget.state.regionAlbum(mode, region.code)?.photos.length ?? 0;
+    return CupertinoButton(
+      key: const Key('selected-region-album-button'),
+      padding: EdgeInsets.zero,
+      onPressed: () => _openRegionAlbum(region, mode),
+      child: SasangSurface(
+        blur: true,
+        radius: 30,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        child: Row(
+          children: [
+            _PhotoThumb(uri: photo?.uri, storage: widget.state.storage),
+            const SizedBox(width: 11),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    region.name,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: SasangColors.ink,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                     ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    photoCount == 0 ? '눌러서 사진 추가' : '$photoCount장의 여행 사진',
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: SasangColors.secondary,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            if (photoCount > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0x14007AFF),
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Text(
+                  '$photoCount장',
+                  style: const TextStyle(
+                    color: SasangColors.accent,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              )
+            else
+              Container(
+                width: 38,
+                height: 38,
+                decoration: const BoxDecoration(
+                  color: SasangColors.accent,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  CupertinoIcons.add,
+                  color: CupertinoColors.white,
+                  size: 21,
+                ),
+              ),
+            const SizedBox(width: 5),
+            const Icon(
+              CupertinoIcons.chevron_forward,
+              color: Color(0xFFB4B4BA),
+              size: 15,
+            ),
+          ],
+        ),
       ),
     );
   }

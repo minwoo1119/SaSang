@@ -106,7 +106,24 @@ void main() {
       createdAt: '2026-01-02T00:00:00Z',
       takenAt: '2026-01-01',
     );
+    const secondPhoto = RegionPhoto(
+      id: 'test-second',
+      uri: 'file:///test-source.png',
+      width: 256,
+      height: 256,
+      scale: 1,
+      offsetX: 0,
+      offsetY: 0,
+      createdAt: '2026-02-02T00:00:00Z',
+      takenAt: '2026-02-01',
+    );
     const photos = {'korea:TEST': photo};
+    const albums = {
+      'korea:TEST': RegionPhotoAlbum(
+        photos: [photo, secondPhoto],
+        coverPhotoId: 'test',
+      ),
+    };
 
     final imageResult = await service.exportImage(
       asset: asset,
@@ -132,6 +149,7 @@ void main() {
       asset: asset,
       mode: MapMode.korea,
       photos: photos,
+      albums: albums,
       saveToGallery: false,
     );
     expect(await videoResult.file.exists(), isTrue);
