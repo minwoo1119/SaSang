@@ -384,71 +384,17 @@ class _MapScreenState extends State<MapScreen> {
                   },
                 ),
                 if (query.isNotEmpty)
-                  SasangSurface(
-                    blur: true,
-                    radius: 18,
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    child: results.isEmpty
-                        ? const Padding(
-                            padding: EdgeInsets.all(14),
-                            child: Text('검색 결과 없음'),
-                          )
-                        : Column(
-                            children: [
-                              for (final region in results)
-                                CupertinoButton(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 8,
-                                  ),
-                                  onPressed: () {
-                                    widget.state.selectRegion(region.code);
-                                    _search.text = region.name;
-                                    FocusScope.of(context).unfocus();
-                                  },
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        CupertinoIcons.circle_fill,
-                                        color: SasangColors.accent,
-                                        size: 8,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              region.name,
-                                              style: const TextStyle(
-                                                color: SasangColors.ink,
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                            ),
-                                            Text(
-                                              regionDisplaySubtitle(
-                                                region,
-                                                mode,
-                                              ),
-                                              style: const TextStyle(
-                                                color: SasangColors.secondary,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const Icon(
-                                        CupertinoIcons.chevron_forward,
-                                        color: SasangColors.secondary,
-                                        size: 16,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                            ],
-                          ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: MapSearchResults(
+                      results: results,
+                      mode: mode,
+                      onSelected: (region) {
+                        widget.state.selectRegion(region.code);
+                        _search.text = region.name;
+                        FocusScope.of(context).unfocus();
+                      },
+                    ),
                   ),
               ],
             ),
@@ -1073,6 +1019,125 @@ class MapSearchBar extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
           onSuffixTap: onClear,
+        ),
+      ),
+    ),
+  );
+}
+
+class MapSearchResults extends StatelessWidget {
+  const MapSearchResults({
+    required this.results,
+    required this.mode,
+    required this.onSelected,
+    super.key,
+  });
+
+  final List<MapRegion> results;
+  final MapMode mode;
+  final ValueChanged<MapRegion> onSelected;
+
+  @override
+  Widget build(BuildContext context) => SasangSurface(
+    blur: true,
+    radius: 20,
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: results.isEmpty
+        ? const SizedBox(
+            key: Key('map-search-empty'),
+            height: 56,
+            child: Center(
+              child: Text(
+                '일치하는 지역이 없어요',
+                style: TextStyle(
+                  color: SasangColors.secondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          )
+        : Column(
+            key: const Key('map-search-results'),
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var index = 0; index < results.length; index++) ...[
+                _MapSearchResultRow(
+                  region: results[index],
+                  mode: mode,
+                  onPressed: () => onSelected(results[index]),
+                ),
+                if (index != results.length - 1)
+                  const Padding(
+                    padding: EdgeInsets.only(left: 16),
+                    child: Divider(height: 1, thickness: .6),
+                  ),
+              ],
+            ],
+          ),
+  );
+}
+
+class _MapSearchResultRow extends StatelessWidget {
+  const _MapSearchResultRow({
+    required this.region,
+    required this.mode,
+    required this.onPressed,
+  });
+
+  final MapRegion region;
+  final MapMode mode;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => CupertinoButton(
+    key: Key('map-search-result-${region.code}'),
+    padding: EdgeInsets.zero,
+    pressedOpacity: .55,
+    onPressed: onPressed,
+    child: SizedBox(
+      height: 58,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    region.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: SasangColors.ink,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -.2,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    regionDisplaySubtitle(region, mode),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: SasangColors.secondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Icon(
+              CupertinoIcons.chevron_forward,
+              color: Color(0xFFAEAEB2),
+              size: 13,
+            ),
+          ],
         ),
       ),
     ),

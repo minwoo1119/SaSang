@@ -650,6 +650,74 @@ void main() {
     expect(editable.focusNode.hasFocus, isFalse);
   });
 
+  testWidgets('map search results use a minimal separated list', (
+    tester,
+  ) async {
+    MapRegion? selected;
+    const results = [
+      MapRegion(
+        code: '11680',
+        name: '강남구',
+        provinceName: '서울특별시',
+        geometryType: 'Polygon',
+        polygonCount: 1,
+        bounds: RegionBounds(x: 0, y: 0, width: 10, height: 10),
+        pathData: 'M 0 0 L 10 0 L 10 10 Z',
+      ),
+      MapRegion(
+        code: '11740',
+        name: '강동구',
+        provinceName: '서울특별시',
+        geometryType: 'Polygon',
+        polygonCount: 1,
+        bounds: RegionBounds(x: 0, y: 0, width: 10, height: 10),
+        pathData: 'M 0 0 L 10 0 L 10 10 Z',
+      ),
+    ];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: MapSearchResults(
+            results: results,
+            mode: MapMode.korea,
+            onSelected: (region) => selected = region,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const Key('map-search-results')), findsOneWidget);
+    expect(find.byType(Divider), findsOneWidget);
+    expect(find.byIcon(CupertinoIcons.circle_fill), findsNothing);
+    expect(find.text('서울특별시'), findsNWidgets(2));
+    expect(
+      tester.getSize(find.byKey(const Key('map-search-result-11680'))).height,
+      58,
+    );
+
+    await tester.tap(find.byKey(const Key('map-search-result-11740')));
+    expect(selected?.code, '11740');
+  });
+
+  testWidgets('map search empty state stays text-only', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: MapSearchResults(
+            results: const [],
+            mode: MapMode.world,
+            onSelected: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const Key('map-search-empty')), findsOneWidget);
+    expect(find.text('일치하는 지역이 없어요'), findsOneWidget);
+    expect(find.byType(Icon), findsNothing);
+  });
+
   testWidgets('places restores the compact filter bar and card empty state', (
     tester,
   ) async {
