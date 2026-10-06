@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path/path.dart' as p;
@@ -13,6 +13,40 @@ import 'package:sasang/models/map_models.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('iOS H.264 encoding preserves all four frame corners', (
+    tester,
+  ) async {
+    if (!Platform.isIOS) return;
+    final directory = await getTemporaryDirectory();
+    final frame = File(p.join(directory.path, 'sasang-orientation-frame.png'));
+    final output = File(p.join(directory.path, 'sasang-orientation-video.mp4'));
+    await frame.writeAsBytes(await _orientationImageBytes());
+    const channel = MethodChannel('com.sasang.app/timeline');
+    final encoded = await channel.invokeMethod<bool>('encodeTimeline', {
+      'framePaths': [frame.path],
+      'repeats': [4],
+      'outputPath': output.path,
+      'width': 720,
+      'height': 1280,
+      'fps': 12,
+      'bitrate': 5000000,
+    });
+    expect(encoded, isTrue);
+    final decodedBytes = await channel.invokeMethod<Uint8List>(
+      'decodeTimelineFrame',
+      {'path': output.path},
+    );
+    expect(decodedBytes, isNotNull);
+    final decoded = await _decode(decodedBytes!);
+    final pixels = await decoded.toByteData(format: ui.ImageByteFormat.rawRgba);
+    expect(pixels, isNotNull);
+    _expectDominantColor(pixels!, decoded.width, 80, 80, 0);
+    _expectDominantColor(pixels, decoded.width, 640, 80, 1);
+    _expectDominantColor(pixels, decoded.width, 80, 1200, 2);
+    _expectDominantColor(pixels, decoded.width, 640, 1200, 0, green: true);
+    decoded.dispose();
+  });
 
   testWidgets('exports a 9:16 map image and H.264 timeline video', (
     tester,
@@ -115,6 +149,27 @@ List<int> _pixelAt(ByteData data, int width, int x, int y) {
   ];
 }
 
+void _expectDominantColor(
+  ByteData data,
+  int width,
+  int x,
+  int y,
+  int channel, {
+  bool green = false,
+}) {
+  final pixel = _pixelAt(data, width, x, y);
+  if (green) {
+    expect(pixel[0], greaterThan(180));
+    expect(pixel[1], greaterThan(180));
+    expect(pixel[2], lessThan(80));
+    return;
+  }
+  expect(pixel[channel], greaterThan(180));
+  for (var index = 0; index < 3; index++) {
+    if (index != channel) expect(pixel[index], lessThan(80));
+  }
+}
+
 class _TestStorage extends SasangStorage {
   _TestStorage(this.image);
 
@@ -137,6 +192,31 @@ Future<List<int>> _testImageBytes() async {
     Paint()..color = const Color(0xFFFFD166),
   );
   final image = await recorder.endRecording().toImage(256, 256);
+  final data = await image.toByteData(format: ui.ImageByteFormat.png);
+  image.dispose();
+  return data!.buffer.asUint8List();
+}
+
+Future<List<int>> _orientationImageBytes() async {
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder);
+  canvas.drawRect(
+    const Rect.fromLTWH(0, 0, 360, 640),
+    Paint()..color = const Color(0xFFFF0000),
+  );
+  canvas.drawRect(
+    const Rect.fromLTWH(360, 0, 360, 640),
+    Paint()..color = const Color(0xFF00FF00),
+  );
+  canvas.drawRect(
+    const Rect.fromLTWH(0, 640, 360, 640),
+    Paint()..color = const Color(0xFF0000FF),
+  );
+  canvas.drawRect(
+    const Rect.fromLTWH(360, 640, 360, 640),
+    Paint()..color = const Color(0xFFFFFF00),
+  );
+  final image = await recorder.endRecording().toImage(720, 1280);
   final data = await image.toByteData(format: ui.ImageByteFormat.png);
   image.dispose();
   return data!.buffer.asUint8List();

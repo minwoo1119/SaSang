@@ -15,6 +15,32 @@ import UIKit
         binaryMessenger: controller.binaryMessenger
       )
       channel.setMethodCallHandler { call, result in
+        if call.method == "decodeTimelineFrame" {
+          guard
+            let arguments = call.arguments as? [String: Any],
+            let path = arguments["path"] as? String
+          else {
+            result(FlutterError(code: "invalid_arguments", message: nil, details: nil))
+            return
+          }
+          TimelineVideoExporter.decodeFirstFrame(path: path) { decodeResult in
+            DispatchQueue.main.async {
+              switch decodeResult {
+              case .success(let data):
+                result(FlutterStandardTypedData(bytes: data))
+              case .failure(let error):
+                result(
+                  FlutterError(
+                    code: "timeline_decode_failed",
+                    message: error.localizedDescription,
+                    details: nil
+                  )
+                )
+              }
+            }
+          }
+          return
+        }
         guard call.method == "encodeTimeline" else {
           result(FlutterMethodNotImplemented)
           return
@@ -72,6 +98,27 @@ private enum TimelineVideoError: LocalizedError {
 }
 
 private enum TimelineVideoExporter {
+  static func decodeFirstFrame(
+    path: String,
+    completion: @escaping (Result<Data, Error>) -> Void
+  ) {
+    DispatchQueue.global(qos: .userInitiated).async {
+      do {
+        let asset = AVURLAsset(url: URL(fileURLWithPath: path))
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        var actualTime = CMTime.zero
+        let image = try generator.copyCGImage(at: .zero, actualTime: &actualTime)
+        guard let data = UIImage(cgImage: image).pngData() else {
+          throw TimelineVideoError.cannotDecodeFrame(path)
+        }
+        completion(.success(data))
+      } catch {
+        completion(.failure(error))
+      }
+    }
+  }
+
   static func encode(
     arguments: [String: Any],
     completion: @escaping (Result<Void, Error>) -> Void
@@ -232,10 +279,8 @@ private enum TimelineVideoExporter {
     context.setFillColor(UIColor(red: 0.98, green: 0.98, blue: 0.98, alpha: 1).cgColor)
     context.fill(CGRect(x: 0, y: 0, width: width, height: height))
     guard let cgImage = image.cgImage else { return nil }
-    // The BGRA video buffer mirrors Core Graphics horizontally. Compensate on
-    // that axis only; a UIKit-style vertical flip would turn the MP4 upside down.
-    context.translateBy(x: CGFloat(width), y: 0)
-    context.scaleBy(x: -1, y: 1)
+    // Draw directly into the BGRA video buffer. Applying UIKit's usual image
+    // coordinate flip here mirrors the final AVAssetWriter frame.
     context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
     return pixelBuffer
   }
