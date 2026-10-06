@@ -232,8 +232,10 @@ private enum TimelineVideoExporter {
     context.setFillColor(UIColor(red: 0.98, green: 0.98, blue: 0.98, alpha: 1).cgColor)
     context.fill(CGRect(x: 0, y: 0, width: width, height: height))
     guard let cgImage = image.cgImage else { return nil }
-    context.translateBy(x: 0, y: CGFloat(height))
-    context.scaleBy(x: 1, y: -1)
+    // The BGRA video buffer mirrors Core Graphics horizontally. Compensate on
+    // that axis only; a UIKit-style vertical flip would turn the MP4 upside down.
+    context.translateBy(x: CGFloat(width), y: 0)
+    context.scaleBy(x: -1, y: 1)
     context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
     return pixelBuffer
   }

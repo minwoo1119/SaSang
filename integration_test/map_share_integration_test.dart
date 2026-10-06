@@ -35,6 +35,30 @@ void main() {
           bounds: RegionBounds(x: 10, y: 10, width: 80, height: 80),
           pathData: 'M 10 10 L 90 10 L 90 90 L 10 90 Z',
         ),
+        MapRegion(
+          code: 'EMPTY_1',
+          name: '빈 지역 1',
+          geometryType: 'Polygon',
+          polygonCount: 1,
+          bounds: RegionBounds(x: 0, y: 0, width: 5, height: 5),
+          pathData: 'M 0 0 L 5 0 L 5 5 Z',
+        ),
+        MapRegion(
+          code: 'EMPTY_2',
+          name: '빈 지역 2',
+          geometryType: 'Polygon',
+          polygonCount: 1,
+          bounds: RegionBounds(x: 90, y: 0, width: 5, height: 5),
+          pathData: 'M 90 0 L 95 0 L 95 5 Z',
+        ),
+        MapRegion(
+          code: 'EMPTY_3',
+          name: '빈 지역 3',
+          geometryType: 'Polygon',
+          polygonCount: 1,
+          bounds: RegionBounds(x: 0, y: 90, width: 5, height: 5),
+          pathData: 'M 0 90 L 5 90 L 5 95 Z',
+        ),
       ],
     );
     const photo = RegionPhoto(
@@ -59,6 +83,15 @@ void main() {
     final image = await _decode(await imageResult.file.readAsBytes());
     expect(image.width, 1080);
     expect(image.height, 1920);
+    final pixels = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    expect(pixels, isNotNull);
+    expect(_pixelAt(pixels!, image.width, 150, 1805), const [0, 122, 255, 255]);
+    expect(_pixelAt(pixels, image.width, 500, 1805), const [
+      228,
+      228,
+      231,
+      255,
+    ]);
     image.dispose();
 
     final videoResult = await service.exportTimelineVideo(
@@ -70,6 +103,16 @@ void main() {
     expect(await videoResult.file.exists(), isTrue);
     expect(await videoResult.file.length(), greaterThan(1024));
   });
+}
+
+List<int> _pixelAt(ByteData data, int width, int x, int y) {
+  final offset = (y * width + x) * 4;
+  return [
+    data.getUint8(offset),
+    data.getUint8(offset + 1),
+    data.getUint8(offset + 2),
+    data.getUint8(offset + 3),
+  ];
 }
 
 class _TestStorage extends SasangStorage {

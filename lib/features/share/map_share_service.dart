@@ -69,6 +69,16 @@ int mapTravelPercentage(int visitedCount, int totalCount) {
   return (visitedCount.clamp(0, totalCount) * 100 / totalCount).floor();
 }
 
+double mapTravelProgress({
+  required RegionMapAsset asset,
+  required MapMode mode,
+  required Map<String, RegionPhoto> photos,
+}) {
+  if (asset.regions.isEmpty) return 0;
+  return buildMapTimeline(asset: asset, mode: mode, photos: photos).length /
+      asset.regions.length;
+}
+
 class MapShareService {
   MapShareService(this.storage);
 
@@ -92,11 +102,16 @@ class MapShareService {
       storage: storage,
     );
     try {
+      final travelProgress = mapTravelProgress(
+        asset: asset,
+        mode: mode,
+        photos: photos,
+      );
       final bytes = await renderer.renderPng(
         width: 1080,
         height: 1920,
         visiblePhotos: photos,
-        progress: 1,
+        progress: travelProgress,
       );
       final directory = await getTemporaryDirectory();
       final file = File(
@@ -109,7 +124,7 @@ class MapShareService {
       return MapShareResult(
         file: file,
         savedToGallery: saveToGallery
-            ? await _saveToGallery(file, MapShareFormat.image)
+            ? await this.saveToGallery(file, MapShareFormat.image)
             : false,
       );
     } finally {
@@ -166,14 +181,16 @@ class MapShareService {
       for (var index = 0; index < timeline.length; index++) {
         final item = timeline[index];
         final destination = _regionCenter(item.region);
-        final departure = route.isEmpty
-            ? _timelineEntryPoint(destination, asset)
-            : route.last;
-        if (route.isEmpty) route.add(departure);
+        final focusZoom = regionFocusZoom(item.region, asset);
 
         for (var step = 1; step <= motion.travelFrames; step++) {
           final phase = _easeInOut(step / motion.travelFrames);
+          final isFirst = index == 0;
+          final departure = isFirst ? destination : route.last;
           final plane = Offset.lerp(departure, destination, phase)!;
+          final previousZoom = isFirst
+              ? 1.0
+              : regionFocusZoom(timeline[index - 1].region, asset);
           framePaths.add(
             await _writeTimelineFrame(
               renderer: renderer,
@@ -182,10 +199,14 @@ class MapShareService {
               visiblePhotos: visible,
               progress: (index + phase * .55) / timeline.length,
               current: item,
-              mapZoom: 1 + .65 * phase,
-              focusAssetPoint: destination,
-              routeAssetPoints: [...route, plane],
-              planeAssetPoint: plane,
+              mapZoom: isFirst
+                  ? ui.lerpDouble(1, focusZoom * .82, phase)!
+                  : _travelZoom(previousZoom, focusZoom, phase),
+              focusAssetPoint: isFirst
+                  ? destination
+                  : Offset.lerp(departure, destination, phase),
+              routeAssetPoints: isFirst ? const [] : [...route, plane],
+              planeAssetPoint: isFirst ? null : plane,
             ),
           );
           repeats.add(1);
@@ -203,7 +224,7 @@ class MapShareService {
               visiblePhotos: visible,
               progress: (index + .55 + phase * .45) / timeline.length,
               current: item,
-              mapZoom: 1.65 - .25 * phase,
+              mapZoom: ui.lerpDouble(focusZoom * .82, focusZoom, phase)!,
               focusAssetPoint: destination,
               routeAssetPoints: route,
               planeAssetPoint: destination,
@@ -246,7 +267,7 @@ class MapShareService {
       }
       onProgress?.call(.92);
       final saved = saveToGallery
-          ? await _saveToGallery(output, MapShareFormat.video)
+          ? await this.saveToGallery(output, MapShareFormat.video)
           : false;
       onProgress?.call(1);
       return MapShareResult(file: output, savedToGallery: saved);
@@ -296,7 +317,7 @@ class MapShareService {
     return file.path;
   }
 
-  Future<bool> _saveToGallery(File file, MapShareFormat format) async {
+  Future<bool> saveToGallery(File file, MapShareFormat format) async {
     try {
       if (format == MapShareFormat.image) {
         await Gal.putImage(file.path);
@@ -337,10 +358,18 @@ Offset _regionCenter(MapRegion region) => Offset(
   region.bounds.y + region.bounds.height / 2,
 );
 
-Offset _timelineEntryPoint(Offset destination, RegionMapAsset asset) => Offset(
-  destination.dx < asset.width / 2 ? 0 : asset.width,
-  (destination.dy - asset.height * .12).clamp(0, asset.height),
-);
+double regionFocusZoom(MapRegion region, RegionMapAsset asset) {
+  final widthZoom = asset.width / math.max(region.bounds.width, 1) * .42;
+  final heightZoom = asset.height / math.max(region.bounds.height, 1) * .42;
+  return math.min(widthZoom, heightZoom).clamp(2.1, 4.5).toDouble();
+}
+
+double _travelZoom(double previousZoom, double nextZoom, double phase) {
+  if (phase <= .5) {
+    return ui.lerpDouble(previousZoom, 1.25, _easeInOut(phase * 2))!;
+  }
+  return ui.lerpDouble(1.25, nextZoom * .82, _easeInOut((phase - .5) * 2))!;
+}
 
 double _easeInOut(double value) =>
     (1 - math.cos(value.clamp(0, 1) * math.pi)) / 2;
@@ -448,7 +477,7 @@ class _MapShareRenderer {
       width - margin * 2,
       mapHeight,
     );
-    final safeZoom = mapZoom.clamp(1, 2.2).toDouble();
+    final safeZoom = mapZoom.clamp(1, 4.5).toDouble();
     final contentRect = mapContentRect(mapRect.size, asset);
     final focus = focusAssetPoint == null
         ? mapRect.size.center(Offset.zero)

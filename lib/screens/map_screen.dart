@@ -19,6 +19,8 @@ import '../models/map_models.dart';
 import '../widgets/ad_banner.dart';
 import '../widgets/sasang_ui.dart';
 
+enum _ExportDestination { gallery, share }
+
 class MapScreen extends StatefulWidget {
   const MapScreen({required this.state, super.key});
   final SasangState state;
@@ -196,7 +198,7 @@ class _MapScreenState extends State<MapScreen> {
           ),
           const SizedBox(height: 5),
           const Text(
-            '사진 보관함에 저장한 뒤 Instagram을 포함한 다른 앱으로 공유할 수 있어요.',
+            '만든 뒤 사진 보관함에 저장하거나 Instagram을 포함한 다른 앱으로 공유할 수 있어요.',
             style: TextStyle(color: SasangColors.secondary, height: 1.4),
           ),
           const SizedBox(height: 18),
@@ -275,28 +277,21 @@ class _MapScreenState extends State<MapScreen> {
               asset: map,
               mode: mode,
               photos: widget.state.regionPhotos,
+              saveToGallery: false,
             )
           : await _shareService.exportTimelineVideo(
               asset: map,
               mode: mode,
               photos: widget.state.regionPhotos,
               onProgress: (value) => progress.value = value,
+              saveToGallery: false,
             );
       if (!mounted) return;
       final dialogContext = exportDialogContext;
       if (dialogContext != null && dialogContext.mounted) {
         Navigator.of(dialogContext).pop();
       }
-      final box = context.findRenderObject() as RenderBox?;
-      final origin = box == null
-          ? Rect.fromLTWH(0, 0, MediaQuery.sizeOf(context).width, 1)
-          : box.localToGlobal(Offset.zero) & box.size;
-      if (!result.savedToGallery && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('사진 보관함에 저장하지 못했지만 바로 공유할 수 있어요.')),
-        );
-      }
-      await _shareService.share(result, origin);
+      await _completeExport(result, format);
     } on Object catch (error) {
       if (!mounted) return;
       final dialogContext = exportDialogContext;
@@ -307,6 +302,60 @@ class _MapScreenState extends State<MapScreen> {
     } finally {
       progress.dispose();
     }
+  }
+
+  Future<void> _completeExport(
+    MapShareResult result,
+    MapShareFormat format,
+  ) async {
+    final destination = await showSasangSheet<_ExportDestination>(
+      context,
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '내보내기 완료',
+            style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 5),
+          const Text(
+            '한 곳을 선택해 저장하거나 공유해 주세요.',
+            style: TextStyle(color: SasangColors.secondary, height: 1.4),
+          ),
+          const SizedBox(height: 18),
+          _ShareOptionRow(
+            icon: CupertinoIcons.arrow_down_to_line,
+            title: '사진 보관함에 저장',
+            subtitle: '기기에 한 번만 저장해요',
+            onTap: () => Navigator.pop(context, _ExportDestination.gallery),
+          ),
+          const SizedBox(height: 10),
+          _ShareOptionRow(
+            icon: CupertinoIcons.share,
+            title: '다른 앱으로 공유',
+            subtitle: 'Instagram 등 공유할 앱을 선택해요',
+            onTap: () => Navigator.pop(context, _ExportDestination.share),
+          ),
+        ],
+      ),
+    );
+    if (destination == null || !mounted) return;
+    if (destination == _ExportDestination.gallery) {
+      final saved = await _shareService.saveToGallery(result.file, format);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(saved ? '사진 보관함에 저장했어요.' : '사진 보관함에 저장하지 못했어요.'),
+        ),
+      );
+      return;
+    }
+    final box = context.findRenderObject() as RenderBox?;
+    final origin = box == null
+        ? Rect.fromLTWH(0, 0, MediaQuery.sizeOf(context).width, 1)
+        : box.localToGlobal(Offset.zero) & box.size;
+    await _shareService.share(result, origin);
   }
 
   @override

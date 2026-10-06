@@ -232,6 +232,15 @@ void main() {
     expect(compactMotion.holdFrames, 3);
     expect(timelineMotionSteps(80).travelFrames, 1);
     expect(mapTravelPercentage(2, 175), 1);
+    expect(
+      mapTravelProgress(
+        asset: asset,
+        mode: MapMode.korea,
+        photos: {'korea:B': earlier, 'world:A': earlier},
+      ),
+      .5,
+    );
+    expect(regionFocusZoom(asset.regions.first, asset), 4.2);
   });
 
   test('region subtitles hide internal administrative codes', () {
