@@ -350,6 +350,10 @@ void main() {
 
     expect(find.text('사진 2장'), findsOneWidget);
     expect(find.byKey(const Key('region-photo-carousel')), findsOneWidget);
+    final tiltedCard = tester.widget<Transform>(
+      find.byKey(const Key('region-album-card-tilt-0')),
+    );
+    expect(tiltedCard.transform.entry(0, 1).abs(), greaterThan(.01));
     await tester.drag(
       find.byKey(const Key('region-photo-carousel')),
       const Offset(-600, 0),

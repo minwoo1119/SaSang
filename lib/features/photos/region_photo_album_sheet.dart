@@ -176,10 +176,15 @@ class _RegionPhotoAlbumSheetState extends State<RegionPhotoAlbumSheet> {
                     : safePage.toDouble();
                 final distance = (index - page).clamp(-1.0, 1.0);
                 final scale = 1 - distance.abs() * .065;
-                final angle = distance * .045;
+                final isPhoto = index < photos.length;
+                final restingAngle = isPhoto
+                    ? (index.isEven ? -.026 : .022)
+                    : 0.0;
+                final angle = restingAngle + distance * .035;
                 return Transform.translate(
                   offset: Offset(0, distance.abs() * 9),
                   child: Transform.rotate(
+                    key: Key('region-album-card-tilt-$index'),
                     angle: angle,
                     child: Transform.scale(
                       scale: scale,
@@ -311,41 +316,44 @@ class _AlbumPhotoCardState extends State<_AlbumPhotoCard> {
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            FutureBuilder<File?>(
-              future: _file,
-              builder: (context, snapshot) => snapshot.data == null
-                  ? const ColoredBox(color: Color(0xFFF4F4F5))
-                  : Image.file(snapshot.data!, fit: BoxFit.cover),
-            ),
-            if (widget.isCover)
-              Positioned(
-                left: 14,
-                top: 14,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: CupertinoColors.white.withValues(alpha: .92),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Text(
-                    '대표 사진',
-                    style: TextStyle(
-                      color: SasangColors.ink,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
+      child: Padding(
+        padding: const EdgeInsets.all(5),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              FutureBuilder<File?>(
+                future: _file,
+                builder: (context, snapshot) => snapshot.data == null
+                    ? const ColoredBox(color: Color(0xFFF4F4F5))
+                    : Image.file(snapshot.data!, fit: BoxFit.cover),
+              ),
+              if (widget.isCover)
+                Positioned(
+                  left: 12,
+                  top: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: CupertinoColors.white.withValues(alpha: .92),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Text(
+                      '대표 사진',
+                      style: TextStyle(
+                        color: SasangColors.ink,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
