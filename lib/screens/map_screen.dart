@@ -181,43 +181,47 @@ class _MapScreenState extends State<MapScreen> {
     }
     final format = await showSasangSheet<MapShareFormat>(
       context,
-      Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Center(
-            child: SizedBox(
-              width: 36,
-              child: Divider(thickness: 4, color: Color(0xFFD4D4D8)),
+      Padding(
+        key: const Key('share-format-sheet-content'),
+        padding: const EdgeInsets.fromLTRB(4, 8, 4, 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Center(
+              child: SizedBox(
+                width: 36,
+                child: Divider(thickness: 4, color: Color(0xFFD4D4D8)),
+              ),
             ),
-          ),
-          const SizedBox(height: 14),
-          const Text(
-            '여행 지도 공유',
-            style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 5),
-          const Text(
-            '만든 뒤 사진 보관함에 저장하거나 Instagram을 포함한 다른 앱으로 공유할 수 있어요.',
-            style: TextStyle(color: SasangColors.secondary, height: 1.4),
-          ),
-          const SizedBox(height: 18),
-          _ShareOptionRow(
-            key: const Key('share-map-image'),
-            icon: CupertinoIcons.photo,
-            title: '사진으로 내보내기',
-            subtitle: '9:16 여행 지도 · 방문 비율 포함',
-            onTap: () => Navigator.pop(context, MapShareFormat.image),
-          ),
-          const SizedBox(height: 10),
-          _ShareOptionRow(
-            key: const Key('share-map-video'),
-            icon: CupertinoIcons.play_rectangle,
-            title: '타임라인 영상으로 내보내기',
-            subtitle: '촬영일 순으로 지도가 채워지는 9:16 MP4',
-            onTap: () => Navigator.pop(context, MapShareFormat.video),
-          ),
-        ],
+            const SizedBox(height: 20),
+            const Text(
+              '여행 지도 공유',
+              style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              '만든 뒤 사진 보관함에 저장하거나 Instagram을 포함한 다른 앱으로 공유할 수 있어요.',
+              style: TextStyle(color: SasangColors.secondary, height: 1.5),
+            ),
+            const SizedBox(height: 24),
+            _ShareOptionRow(
+              key: const Key('share-map-image'),
+              icon: CupertinoIcons.photo,
+              title: '사진으로 내보내기',
+              subtitle: '9:16 여행 지도 · 방문 비율 포함',
+              onTap: () => Navigator.pop(context, MapShareFormat.image),
+            ),
+            const SizedBox(height: 12),
+            _ShareOptionRow(
+              key: const Key('share-map-video'),
+              icon: CupertinoIcons.play_rectangle,
+              title: '타임라인 영상으로 내보내기',
+              subtitle: '촬영일 순으로 지도가 채워지는 9:16 MP4',
+              onTap: () => Navigator.pop(context, MapShareFormat.video),
+            ),
+          ],
+        ),
       ),
     );
     if (format == null || !mounted) return;
@@ -310,34 +314,38 @@ class _MapScreenState extends State<MapScreen> {
   ) async {
     final destination = await showSasangSheet<_ExportDestination>(
       context,
-      Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '내보내기 완료',
-            style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 5),
-          const Text(
-            '한 곳을 선택해 저장하거나 공유해 주세요.',
-            style: TextStyle(color: SasangColors.secondary, height: 1.4),
-          ),
-          const SizedBox(height: 18),
-          _ShareOptionRow(
-            icon: CupertinoIcons.arrow_down_to_line,
-            title: '사진 보관함에 저장',
-            subtitle: '기기에 한 번만 저장해요',
-            onTap: () => Navigator.pop(context, _ExportDestination.gallery),
-          ),
-          const SizedBox(height: 10),
-          _ShareOptionRow(
-            icon: CupertinoIcons.share,
-            title: '다른 앱으로 공유',
-            subtitle: 'Instagram 등 공유할 앱을 선택해요',
-            onTap: () => Navigator.pop(context, _ExportDestination.share),
-          ),
-        ],
+      Padding(
+        key: const Key('share-destination-sheet-content'),
+        padding: const EdgeInsets.fromLTRB(4, 12, 4, 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '내보내기 완료',
+              style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              '한 곳을 선택해 저장하거나 공유해 주세요.',
+              style: TextStyle(color: SasangColors.secondary, height: 1.5),
+            ),
+            const SizedBox(height: 24),
+            _ShareOptionRow(
+              icon: CupertinoIcons.arrow_down_to_line,
+              title: '사진 보관함에 저장',
+              subtitle: '기기에 한 번만 저장해요',
+              onTap: () => Navigator.pop(context, _ExportDestination.gallery),
+            ),
+            const SizedBox(height: 12),
+            _ShareOptionRow(
+              icon: CupertinoIcons.share,
+              title: '다른 앱으로 공유',
+              subtitle: 'Instagram 등 공유할 앱을 선택해요',
+              onTap: () => Navigator.pop(context, _ExportDestination.share),
+            ),
+          ],
+        ),
       ),
     );
     if (destination == null || !mounted) return;
@@ -818,7 +826,7 @@ class _ShareOptionRow extends StatelessWidget {
   Widget build(BuildContext context) => SasangSurface(
     radius: 18,
     child: CupertinoButton(
-      padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+      padding: const EdgeInsets.fromLTRB(16, 15, 14, 15),
       onPressed: onTap,
       child: Row(
         children: [
