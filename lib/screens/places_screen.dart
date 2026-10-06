@@ -251,9 +251,21 @@ class _PlacesScreenState extends State<PlacesScreen> {
   Widget _empty() => ListView(
     padding: const EdgeInsets.fromLTRB(16, 8, 16, 112),
     children: [
-      Padding(
+      Container(
         key: const Key('places-empty-state'),
-        padding: const EdgeInsets.fromLTRB(24, 46, 24, 38),
+        padding: const EdgeInsets.fromLTRB(24, 28, 24, 22),
+        decoration: BoxDecoration(
+          color: CupertinoColors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: SasangOverlayStyle.border, width: .6),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0D18181B),
+              blurRadius: 16,
+              offset: Offset(0, 5),
+            ),
+          ],
+        ),
         child: Column(
           children: [
             const Text(
@@ -281,8 +293,10 @@ class _PlacesScreenState extends State<PlacesScreen> {
             const SizedBox(height: 12),
             CupertinoButton(
               key: const Key('places-empty-action'),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 10),
               minimumSize: const Size(44, 44),
+              color: const Color(0xFFF0F6FF),
+              borderRadius: BorderRadius.circular(22),
               onPressed: widget.onOpenMap,
               child: const Text(
                 '지도에서 시작하기',
