@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -181,47 +182,27 @@ class _MapScreenState extends State<MapScreen> {
     }
     final format = await showSasangSheet<MapShareFormat>(
       context,
-      Padding(
+      _ShareSheetContent(
         key: const Key('share-format-sheet-content'),
-        padding: const EdgeInsets.fromLTRB(4, 8, 4, 10),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Center(
-              child: SizedBox(
-                width: 36,
-                child: Divider(thickness: 4, color: Color(0xFFD4D4D8)),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              '여행 지도 공유',
-              style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              '만든 뒤 사진 보관함에 저장하거나 Instagram을 포함한 다른 앱으로 공유할 수 있어요.',
-              style: TextStyle(color: SasangColors.secondary, height: 1.5),
-            ),
-            const SizedBox(height: 24),
-            _ShareOptionRow(
-              key: const Key('share-map-image'),
-              icon: CupertinoIcons.photo,
-              title: '사진으로 내보내기',
-              subtitle: '9:16 여행 지도 · 방문 비율 포함',
-              onTap: () => Navigator.pop(context, MapShareFormat.image),
-            ),
-            const SizedBox(height: 12),
-            _ShareOptionRow(
-              key: const Key('share-map-video'),
-              icon: CupertinoIcons.play_rectangle,
-              title: '타임라인 영상으로 내보내기',
-              subtitle: '촬영일 순으로 지도가 채워지는 9:16 MP4',
-              onTap: () => Navigator.pop(context, MapShareFormat.video),
-            ),
-          ],
-        ),
+        title: '여행 지도 내보내기',
+        subtitle: '원하는 형식을 선택해 주세요.',
+        onCancel: () => Navigator.pop(context),
+        actions: [
+          _ShareOptionRow(
+            key: const Key('share-map-image'),
+            icon: CupertinoIcons.photo,
+            title: '사진으로 내보내기',
+            subtitle: '9:16 이미지 · 여행 비율 포함',
+            onTap: () => Navigator.pop(context, MapShareFormat.image),
+          ),
+          _ShareOptionRow(
+            key: const Key('share-map-video'),
+            icon: CupertinoIcons.play_rectangle,
+            title: '영상으로 내보내기',
+            subtitle: '촬영일 순 여행 타임라인 · 9:16 MP4',
+            onTap: () => Navigator.pop(context, MapShareFormat.video),
+          ),
+        ],
       ),
     );
     if (format == null || !mounted) return;
@@ -249,27 +230,8 @@ class _MapScreenState extends State<MapScreen> {
           }
           return ValueListenableBuilder<double>(
             valueListenable: progress,
-            builder: (context, value, _) => CupertinoAlertDialog(
-              title: Text(
-                format == MapShareFormat.image
-                    ? '여행 지도를 만드는 중'
-                    : '여행 타임라인을 만드는 중',
-              ),
-              content: Padding(
-                padding: const EdgeInsets.only(top: 14),
-                child: Column(
-                  children: [
-                    CupertinoActivityIndicator(radius: 12 + value * 2),
-                    const SizedBox(height: 12),
-                    Text(
-                      format == MapShareFormat.image
-                          ? '사진을 정리하고 있어요.'
-                          : '${(value * 100).floor()}% 진행됐어요.',
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            builder: (context, value, _) =>
+                _ShareExportProgressDialog(format: format, progress: value),
           );
         },
       ),
@@ -314,38 +276,25 @@ class _MapScreenState extends State<MapScreen> {
   ) async {
     final destination = await showSasangSheet<_ExportDestination>(
       context,
-      Padding(
+      _ShareSheetContent(
         key: const Key('share-destination-sheet-content'),
-        padding: const EdgeInsets.fromLTRB(4, 12, 4, 10),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              '내보내기 완료',
-              style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              '한 곳을 선택해 저장하거나 공유해 주세요.',
-              style: TextStyle(color: SasangColors.secondary, height: 1.5),
-            ),
-            const SizedBox(height: 24),
-            _ShareOptionRow(
-              icon: CupertinoIcons.arrow_down_to_line,
-              title: '사진 보관함에 저장',
-              subtitle: '기기에 한 번만 저장해요',
-              onTap: () => Navigator.pop(context, _ExportDestination.gallery),
-            ),
-            const SizedBox(height: 12),
-            _ShareOptionRow(
-              icon: CupertinoIcons.share,
-              title: '다른 앱으로 공유',
-              subtitle: 'Instagram 등 공유할 앱을 선택해요',
-              onTap: () => Navigator.pop(context, _ExportDestination.share),
-            ),
-          ],
-        ),
+        title: '내보내기 완료',
+        subtitle: '저장하거나 다른 앱으로 바로 공유할 수 있어요.',
+        onCancel: () => Navigator.pop(context),
+        actions: [
+          _ShareOptionRow(
+            icon: CupertinoIcons.arrow_down_to_line,
+            title: '사진 보관함에 저장',
+            subtitle: '이 기기에 한 번 저장',
+            onTap: () => Navigator.pop(context, _ExportDestination.gallery),
+          ),
+          _ShareOptionRow(
+            icon: CupertinoIcons.share,
+            title: '다른 앱으로 공유',
+            subtitle: 'Instagram 등 앱 선택',
+            onTap: () => Navigator.pop(context, _ExportDestination.share),
+          ),
+        ],
       ),
     );
     if (destination == null || !mounted) return;
@@ -808,6 +757,112 @@ class MapTopBar extends StatelessWidget {
   }
 }
 
+class _ShareSheetContent extends StatelessWidget {
+  const _ShareSheetContent({
+    required this.title,
+    required this.subtitle,
+    required this.actions,
+    required this.onCancel,
+    super.key,
+  });
+
+  final String title;
+  final String subtitle;
+  final List<Widget> actions;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(4, 6, 4, 8),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Center(
+          child: Container(
+            width: 34,
+            height: 5,
+            decoration: BoxDecoration(
+              color: const Color(0xFFD4D4D8),
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          title,
+          style: const TextStyle(
+            color: SasangColors.ink,
+            fontSize: 21,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.4,
+          ),
+        ),
+        const SizedBox(height: 7),
+        Text(
+          subtitle,
+          style: const TextStyle(
+            color: SasangColors.secondary,
+            fontSize: 13,
+            height: 1.45,
+          ),
+        ),
+        const SizedBox(height: 22),
+        _ShareActionGroup(children: actions),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: CupertinoButton(
+            key: const Key('share-sheet-cancel'),
+            padding: EdgeInsets.zero,
+            borderRadius: BorderRadius.circular(16),
+            color: const Color(0xFFF4F4F5),
+            onPressed: onCancel,
+            child: const Text(
+              '취소',
+              style: TextStyle(
+                color: SasangColors.ink,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _ShareActionGroup extends StatelessWidget {
+  const _ShareActionGroup({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    clipBehavior: Clip.antiAlias,
+    decoration: BoxDecoration(
+      color: const Color(0xFFF7F7F8),
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: SasangColors.divider, width: .6),
+    ),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var index = 0; index < children.length; index++) ...[
+          children[index],
+          if (index != children.length - 1)
+            const Padding(
+              padding: EdgeInsets.only(left: 66),
+              child: Divider(height: 1, thickness: .6),
+            ),
+        ],
+      ],
+    ),
+  );
+}
+
 class _ShareOptionRow extends StatelessWidget {
   const _ShareOptionRow({
     required this.icon,
@@ -823,53 +878,163 @@ class _ShareOptionRow extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => SasangSurface(
-    radius: 18,
-    child: CupertinoButton(
-      padding: const EdgeInsets.fromLTRB(16, 15, 14, 15),
-      onPressed: onTap,
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: const BoxDecoration(
-              color: Color(0xFFEAF3FF),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: SasangColors.accent, size: 21),
+  Widget build(BuildContext context) => CupertinoButton(
+    padding: const EdgeInsets.fromLTRB(14, 13, 12, 13),
+    onPressed: onTap,
+    child: Row(
+      children: [
+        Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: SasangColors.divider, width: .6),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: SasangColors.ink,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                  ),
+          child: Icon(icon, color: SasangColors.accent, size: 19),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: SasangColors.ink,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.2,
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: SasangColors.secondary,
-                    fontSize: 12,
-                    height: 1.3,
+              ),
+              const SizedBox(height: 3),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: SasangColors.secondary,
+                  fontSize: 12,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Icon(
+          CupertinoIcons.chevron_forward,
+          size: 15,
+          color: Color(0xFFB4B4BA),
+        ),
+      ],
+    ),
+  );
+}
+
+class _ShareExportProgressDialog extends StatelessWidget {
+  const _ShareExportProgressDialog({
+    required this.format,
+    required this.progress,
+  });
+
+  final MapShareFormat format;
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final isVideo = format == MapShareFormat.video;
+    final safeProgress = progress.clamp(0, 1).toDouble();
+    return Center(
+      child: Container(
+        key: const Key('share-export-progress-dialog'),
+        width: math.min(MediaQuery.sizeOf(context).width - 48, 320),
+        padding: const EdgeInsets.fromLTRB(24, 24, 24, 22),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFDFDFD),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: SasangOverlayStyle.border, width: .6),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x2418181B),
+              blurRadius: 32,
+              offset: Offset(0, 14),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const CupertinoActivityIndicator(radius: 11),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    isVideo ? '여행 영상을 만들고 있어요' : '여행 지도를 만들고 있어요',
+                    style: const TextStyle(
+                      color: SasangColors.ink,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.3,
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
-          const Icon(
-            CupertinoIcons.chevron_forward,
-            size: 17,
-            color: SasangColors.secondary,
-          ),
-        ],
+            const SizedBox(height: 10),
+            Text(
+              isVideo ? '사진을 날짜순으로 정리하는 중이에요.' : '사진과 방문 기록을 정리하는 중이에요.',
+              style: const TextStyle(
+                color: SasangColors.secondary,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+            if (isVideo) ...[
+              const SizedBox(height: 20),
+              _ShareProgressBar(progress: safeProgress),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  '${(safeProgress * 100).floor()}%',
+                  style: const TextStyle(
+                    color: SasangColors.secondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ShareProgressBar extends StatelessWidget {
+  const _ShareProgressBar({required this.progress});
+
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => Container(
+      key: const Key('share-video-progress'),
+      height: 5,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE4E4E7),
+        borderRadius: BorderRadius.circular(3),
+      ),
+      alignment: Alignment.centerLeft,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        width: constraints.maxWidth * progress,
+        decoration: BoxDecoration(
+          color: SasangColors.accent,
+          borderRadius: BorderRadius.circular(3),
+        ),
       ),
     ),
   );
