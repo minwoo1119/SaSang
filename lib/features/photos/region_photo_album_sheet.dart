@@ -276,6 +276,11 @@ class _AlbumPhotoCard extends StatefulWidget {
 class _AlbumPhotoCardState extends State<_AlbumPhotoCard> {
   late Future<File?> _file;
 
+  bool get _isLandscape => widget.photo.width > widget.photo.height;
+
+  double get _landscapeAspectRatio =>
+      (widget.photo.width / widget.photo.height).clamp(4 / 3, 16 / 9);
+
   @override
   void initState() {
     super.initState();
@@ -292,56 +297,65 @@ class _AlbumPhotoCardState extends State<_AlbumPhotoCard> {
   }
 
   @override
-  Widget build(BuildContext context) => Container(
-    decoration: BoxDecoration(
-      color: CupertinoColors.white,
-      borderRadius: BorderRadius.circular(24),
-      boxShadow: const [
-        BoxShadow(
-          color: Color(0x2218181B),
-          blurRadius: 24,
-          offset: Offset(0, 10),
-        ),
-      ],
-    ),
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          FutureBuilder<File?>(
-            future: _file,
-            builder: (context, snapshot) => snapshot.data == null
-                ? const ColoredBox(color: Color(0xFFF4F4F5))
-                : Image.file(snapshot.data!, fit: BoxFit.cover),
+  Widget build(BuildContext context) {
+    final card = Container(
+      key: Key('region-album-photo-card-${widget.photo.id}'),
+      decoration: BoxDecoration(
+        color: CupertinoColors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x2218181B),
+            blurRadius: 24,
+            offset: Offset(0, 10),
           ),
-          if (widget.isCover)
-            Positioned(
-              left: 14,
-              top: 14,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: CupertinoColors.white.withValues(alpha: .92),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Text(
-                  '대표 사진',
-                  style: TextStyle(
-                    color: SasangColors.ink,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            FutureBuilder<File?>(
+              future: _file,
+              builder: (context, snapshot) => snapshot.data == null
+                  ? const ColoredBox(color: Color(0xFFF4F4F5))
+                  : Image.file(snapshot.data!, fit: BoxFit.cover),
+            ),
+            if (widget.isCover)
+              Positioned(
+                left: 14,
+                top: 14,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: CupertinoColors.white.withValues(alpha: .92),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Text(
+                    '대표 사진',
+                    style: TextStyle(
+                      color: SasangColors.ink,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
+
+    if (!_isLandscape) return card;
+    return Align(
+      alignment: Alignment.center,
+      child: AspectRatio(aspectRatio: _landscapeAspectRatio, child: card),
+    );
+  }
 }
 
 class _AddPhotoCard extends StatelessWidget {

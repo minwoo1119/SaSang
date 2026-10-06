@@ -363,6 +363,58 @@ void main() {
     expect(find.byKey(const Key('region-album-add-card')), findsOneWidget);
   });
 
+  testWidgets('region album uses a landscape card for a landscape photo', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final storage = _MemoryStorage();
+    final state = SasangState(storage);
+    state.addRegionPhoto(
+      MapMode.korea,
+      'A',
+      RegionPhoto(
+        id: 'landscape',
+        uri: 'file:///landscape.jpg',
+        width: 1600,
+        height: 900,
+        scale: 1,
+        offsetX: 0,
+        offsetY: 0,
+        createdAt: '2025-01-01T00:00:00Z',
+        takenAt: '2025-01-01',
+      ),
+    );
+    const region = MapRegion(
+      code: 'A',
+      name: '테스트 지역',
+      geometryType: 'Polygon',
+      polygonCount: 1,
+      bounds: RegionBounds(x: 0, y: 0, width: 10, height: 10),
+      pathData: 'M 0 0 L 10 0 L 10 10 Z',
+    );
+
+    await tester.pumpWidget(
+      CupertinoApp(
+        home: CupertinoPageScaffold(
+          child: RegionPhotoAlbumSheet(
+            state: state,
+            mode: MapMode.korea,
+            region: region,
+            onAdd: () async {},
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final size = tester.getSize(
+      find.byKey(const Key('region-album-photo-card-landscape')),
+    );
+    expect(size.width / size.height, closeTo(16 / 9, .01));
+    expect(size.height, lessThan(310));
+  });
+
   test('region subtitles hide internal administrative codes', () {
     const antarctica = MapRegion(
       code: 'AQ',
