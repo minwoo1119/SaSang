@@ -749,7 +749,7 @@ void main() {
     expect(find.text('최신순'), findsOneWidget);
     expect(find.byKey(const Key('places-empty-state')), findsOneWidget);
     expect(find.text('아직 기록이 없어요'), findsOneWidget);
-    expect(find.text('지도에서 기록하기'), findsOneWidget);
+    expect(find.text('지도에서 시작하기'), findsOneWidget);
     expect(find.byIcon(CupertinoIcons.map_pin_ellipse), findsNothing);
 
     final mapSelector = tester.widget<MapModeSelector>(
@@ -764,22 +764,15 @@ void main() {
     final emptyState = tester.widget<Container>(
       find.byKey(const Key('places-empty-state')),
     );
-    expect(emptyState.padding, const EdgeInsets.fromLTRB(18, 20, 18, 4));
     final emptyDecoration = emptyState.decoration! as BoxDecoration;
     expect(emptyDecoration.color, CupertinoColors.white);
     expect(emptyDecoration.border, isNotNull);
-    expect(emptyDecoration.boxShadow, isNotEmpty);
+    expect(emptyDecoration.boxShadow, sortDecoration.boxShadow);
     final emptyAction = tester.widget<CupertinoButton>(
       find.byKey(const Key('places-empty-action')),
     );
-    expect(emptyAction.color, isNull);
-    expect(
-      find.descendant(
-        of: find.byKey(const Key('places-empty-state')),
-        matching: find.byType(Icon),
-      ),
-      findsNothing,
-    );
+    expect(emptyAction.color, SasangColors.accent);
+    expect(find.byIcon(CupertinoIcons.arrow_right), findsOneWidget);
 
     final selectorRect = tester.getRect(find.byType(MapModeSelector));
     final sortRect = tester.getRect(

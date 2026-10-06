@@ -253,18 +253,12 @@ class _PlacesScreenState extends State<PlacesScreen> {
     children: [
       Container(
         key: const Key('places-empty-state'),
-        padding: const EdgeInsets.fromLTRB(18, 20, 18, 4),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
         decoration: BoxDecoration(
           color: CupertinoColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(color: SasangOverlayStyle.border, width: .6),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x0A18181B),
-              blurRadius: 12,
-              offset: Offset(0, 4),
-            ),
-          ],
+          boxShadow: SasangOverlayStyle.shadows,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,48 +267,55 @@ class _PlacesScreenState extends State<PlacesScreen> {
               '아직 기록이 없어요',
               style: TextStyle(
                 color: SasangColors.ink,
-                fontSize: 16,
-                height: 1.35,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -.2,
+                fontSize: 22,
+                height: 1.32,
+                fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 5),
             const Text(
-              '지도에서 사진을 추가하면 여기에 모여요.',
+              '지도에서 첫 사진을 추가해보세요.',
               style: TextStyle(
                 color: SasangColors.secondary,
-                fontSize: 13,
-                height: 1.45,
+                fontSize: 14,
+                height: 1.43,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 18),
-            const SizedBox(
-              height: .6,
-              child: ColoredBox(color: SasangColors.divider),
-            ),
-            CupertinoButton(
-              key: const Key('places-empty-action'),
-              padding: EdgeInsets.zero,
-              minimumSize: const Size(double.infinity, 46),
-              onPressed: widget.onOpenMap,
-              child: const SizedBox(
-                width: double.infinity,
-                child: Text(
-                  '지도에서 기록하기',
-                  style: TextStyle(
-                    color: SasangColors.accent,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
+            const SizedBox(height: 22),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: CupertinoButton(
+                key: const Key('places-empty-action'),
+                padding: const EdgeInsets.symmetric(horizontal: 17),
+                borderRadius: BorderRadius.circular(16),
+                color: SasangColors.accent,
+                onPressed: widget.onOpenMap,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '지도에서 시작하기',
+                      style: TextStyle(
+                        color: CupertinoColors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    Icon(
+                      CupertinoIcons.arrow_right,
+                      color: CupertinoColors.white,
+                      size: 18,
+                    ),
+                  ],
                 ),
               ),
             ),
           ],
         ),
       ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 36),
       const AdBanner(placement: AdPlacement.places),
     ],
   );
