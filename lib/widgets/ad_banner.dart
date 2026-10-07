@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+
+import '../core/ads/sasang_ads.dart';
 
 enum AdPlacement { home, places, more }
 
@@ -49,13 +53,19 @@ class _AdBannerState extends State<AdBanner> {
   @override
   void initState() {
     super.initState();
+    unawaited(_loadAd());
+  }
+
+  Future<void> _loadAd() async {
+    final adsReady = await sasangAds.ready;
+    if (!adsReady || !mounted) return;
     final adUnitId = adUnitIdFor(
       placement: widget.placement,
       platform: defaultTargetPlatform,
       useTestAds: kDebugMode,
     );
     if (adUnitId == null) return;
-    _ad = BannerAd(
+    final ad = BannerAd(
       size: AdSize.banner,
       adUnitId: adUnitId,
       request: const AdRequest(nonPersonalizedAds: true),
@@ -65,7 +75,9 @@ class _AdBannerState extends State<AdBanner> {
         },
         onAdFailedToLoad: (ad, _) => ad.dispose(),
       ),
-    )..load();
+    );
+    _ad = ad;
+    await ad.load();
   }
 
   @override

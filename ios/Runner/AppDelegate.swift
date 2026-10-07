@@ -1,4 +1,5 @@
 import AVFoundation
+import AppTrackingTransparency
 import Flutter
 import UIKit
 
@@ -10,6 +11,26 @@ import UIKit
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
     if let controller = window?.rootViewController as? FlutterViewController {
+      let privacyChannel = FlutterMethodChannel(
+        name: "com.sasang.app/privacy",
+        binaryMessenger: controller.binaryMessenger
+      )
+      privacyChannel.setMethodCallHandler { call, result in
+        guard call.method == "requestTrackingAuthorization" else {
+          result(FlutterMethodNotImplemented)
+          return
+        }
+        if #available(iOS 14, *) {
+          ATTrackingManager.requestTrackingAuthorization { status in
+            DispatchQueue.main.async {
+              result(Int(status.rawValue))
+            }
+          }
+        } else {
+          result(-1)
+        }
+      }
+
       let channel = FlutterMethodChannel(
         name: "com.sasang.app/timeline",
         binaryMessenger: controller.binaryMessenger
