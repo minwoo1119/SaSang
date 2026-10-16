@@ -155,6 +155,135 @@ void main() {
     expect(await videoResult.file.exists(), isTrue);
     expect(await videoResult.file.length(), greaterThan(1024));
   });
+
+  testWidgets('exports review-ready domestic and world travel videos', (
+    tester,
+  ) async {
+    final temporary = await getTemporaryDirectory();
+    final documents = await getApplicationDocumentsDirectory();
+    final source = File(p.join(temporary.path, 'sasang-review-source.png'));
+    await source.writeAsBytes(await _testImageBytes());
+    final service = MapShareService(_TestStorage(source));
+    final korea = RegionMapAsset.fromJsonString(
+      await rootBundle.loadString('assets/maps/korea/regions.json'),
+    );
+    final world = RegionMapAsset.fromJsonString(
+      await rootBundle.loadString('assets/maps/world/countries.json'),
+    );
+
+    const domesticPhotos = {
+      'korea:11000': RegionPhoto(
+        id: 'seoul',
+        uri: 'file:///review.png',
+        width: 256,
+        height: 256,
+        scale: 1,
+        offsetX: 0,
+        offsetY: 0,
+        createdAt: '2024-01-10T00:00:00Z',
+        takenAt: '2024-01-10',
+      ),
+      'korea:26000': RegionPhoto(
+        id: 'busan',
+        uri: 'file:///review.png',
+        width: 256,
+        height: 256,
+        scale: 1,
+        offsetX: 0,
+        offsetY: 0,
+        createdAt: '2024-04-12T00:00:00Z',
+        takenAt: '2024-04-12',
+      ),
+      'korea:50110': RegionPhoto(
+        id: 'jeju',
+        uri: 'file:///review.png',
+        width: 256,
+        height: 256,
+        scale: 1,
+        offsetX: 0,
+        offsetY: 0,
+        createdAt: '2024-08-18T00:00:00Z',
+        takenAt: '2024-08-18',
+      ),
+    };
+    const worldPhotos = {
+      'world:JP': RegionPhoto(
+        id: 'japan',
+        uri: 'file:///review.png',
+        width: 256,
+        height: 256,
+        scale: 1,
+        offsetX: 0,
+        offsetY: 0,
+        createdAt: '2024-01-10T00:00:00Z',
+        takenAt: '2024-01-10',
+        latitude: 35.6762,
+        longitude: 139.6503,
+      ),
+      'world:US': RegionPhoto(
+        id: 'united-states',
+        uri: 'file:///review.png',
+        width: 256,
+        height: 256,
+        scale: 1,
+        offsetX: 0,
+        offsetY: 0,
+        createdAt: '2024-05-20T00:00:00Z',
+        takenAt: '2024-05-20',
+        latitude: 37.7749,
+        longitude: -122.4194,
+      ),
+      'world:FR': RegionPhoto(
+        id: 'france',
+        uri: 'file:///review.png',
+        width: 256,
+        height: 256,
+        scale: 1,
+        offsetX: 0,
+        offsetY: 0,
+        createdAt: '2024-09-02T00:00:00Z',
+        takenAt: '2024-09-02',
+        latitude: 48.8566,
+        longitude: 2.3522,
+      ),
+    };
+
+    final phases = <MapExportPhase>[];
+    final domestic = await service.exportTimelineVideo(
+      asset: korea,
+      mode: MapMode.korea,
+      photos: domesticPhotos,
+      onProgress: (progress) => phases.add(progress.phase),
+      saveToGallery: false,
+    );
+    final worldResult = await service.exportTimelineVideo(
+      asset: world,
+      mode: MapMode.world,
+      photos: worldPhotos,
+      onProgress: (progress) => phases.add(progress.phase),
+      saveToGallery: false,
+    );
+    final domesticArtifact = await domestic.file.copy(
+      p.join(documents.path, 'sasang-domestic-improved.mp4'),
+    );
+    final worldArtifact = await worldResult.file.copy(
+      p.join(documents.path, 'sasang-world-improved.mp4'),
+    );
+
+    expect(
+      phases,
+      containsAllInOrder(const [
+        MapExportPhase.preparing,
+        MapExportPhase.rendering,
+        MapExportPhase.encoding,
+        MapExportPhase.ready,
+      ]),
+    );
+    expect(await domesticArtifact.length(), greaterThan(1024));
+    expect(await worldArtifact.length(), greaterThan(1024));
+    debugPrint('DOMESTIC_ARTIFACT=${domesticArtifact.path}');
+    debugPrint('WORLD_ARTIFACT=${worldArtifact.path}');
+  });
 }
 
 List<int> _pixelAt(ByteData data, int width, int x, int y) {

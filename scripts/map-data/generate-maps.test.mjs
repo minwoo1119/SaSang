@@ -26,6 +26,12 @@ function assertValidMap(map, codePattern) {
     assert.ok(Number.isFinite(region.bounds.y));
     assert.ok(region.bounds.width > 0);
     assert.ok(region.bounds.height > 0);
+    assert.ok(Number.isFinite(region.anchor.x));
+    assert.ok(Number.isFinite(region.anchor.y));
+    assert.ok(region.anchorBounds.width > 0);
+    assert.ok(region.anchorBounds.height > 0);
+    assert.ok(region.anchorBounds.width <= region.bounds.width);
+    assert.ok(region.anchorBounds.height <= region.bounds.height);
     assert.ok(["Polygon", "MultiPolygon"].includes(region.geometryType));
     if (region.geometryType === "MultiPolygon") {
       assert.ok(region.polygonCount > 1);
@@ -116,6 +122,13 @@ test("generates world countries with ISO alpha-2 codes", () => {
     "Turkish Republic of Northern Cyprus",
     "Somaliland",
   ]);
+  assert.equal(result.projection.geographic, true);
+  const france = result.regions.find(({ code }) => code === "FR");
+  assert.ok(france.anchor.x > 350 && france.anchor.x < 380);
+  assert.ok(france.anchor.y > 70 && france.anchor.y < 100);
+  assert.ok(france.anchorBounds.width < france.bounds.width / 3);
+  const unitedStates = result.regions.find(({ code }) => code === "US");
+  assert.ok(unitedStates.anchorBounds.width < unitedStates.bounds.width);
 });
 
 test("generation is deterministic", () => {

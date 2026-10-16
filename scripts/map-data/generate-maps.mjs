@@ -46,7 +46,7 @@ export const MAP_CONFIGS = {
     mergeByProvinceCodes: MERGED_SPECIAL_AND_METROPOLITAN_CITY_CODES,
     mergeCityDistricts: true,
     metadata: {
-      version: "sgis-sigungu-2025-2q-v5",
+      version: "sgis-sigungu-2025-2q-v6",
       generatedAt: "2025-06-30T00:00:00.000Z",
       source:
         "https://www.data.go.kr/data/15129688/fileData.do (bnd_sigungu_00_2025_2Q)",
@@ -58,12 +58,13 @@ export const MAP_CONFIGS = {
     },
   },
   world: {
+    geographic: true,
     viewBox: { width: 720, height: 360, padding: 10 },
     minimumProjectedPolygonSize: 0,
     codePattern: /^[A-Z]{2}$/,
     regionProperties: null,
     metadata: {
-      version: "natural-earth-admin0-5.1.2-110m-v2",
+      version: "natural-earth-admin0-5.1.2-110m-v3",
       generatedAt: "2026-05-13T00:00:00.000Z",
       source:
         "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip",
@@ -90,6 +91,82 @@ function dissolvePolygons(polygons) {
 
 function formatNumber(value) {
   return Number(value.toFixed(2)).toString();
+}
+
+function signedRingArea(ring) {
+  let area = 0;
+  for (let index = 0; index < ring.length - 1; index += 1) {
+    area +=
+      ring[index][0] * ring[index + 1][1] -
+      ring[index + 1][0] * ring[index][1];
+  }
+  return area / 2;
+}
+
+function pointInRing(point, ring) {
+  let inside = false;
+  for (let current = 0, previous = ring.length - 1; current < ring.length; previous = current++) {
+    const [x, y] = ring[current];
+    const [previousX, previousY] = ring[previous];
+    if (
+      y > point[1] !== previousY > point[1] &&
+      point[0] < ((previousX - x) * (point[1] - y)) / (previousY - y) + x
+    ) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+function pointInPolygon(point, polygon) {
+  return (
+    pointInRing(point, polygon[0]) &&
+    polygon.slice(1).every((hole) => !pointInRing(point, hole))
+  );
+}
+
+function representativePoint(polygon) {
+  const ring = polygon[0];
+  const area = signedRingArea(ring);
+  if (area !== 0) {
+    let x = 0;
+    let y = 0;
+    for (let index = 0; index < ring.length - 1; index += 1) {
+      const cross =
+        ring[index][0] * ring[index + 1][1] -
+        ring[index + 1][0] * ring[index][1];
+      x += (ring[index][0] + ring[index + 1][0]) * cross;
+      y += (ring[index][1] + ring[index + 1][1]) * cross;
+    }
+    const centroid = [x / (6 * area), y / (6 * area)];
+    if (pointInPolygon(centroid, polygon)) return centroid;
+  }
+
+  const xs = ring.map(([x]) => x);
+  const ys = ring.map(([, y]) => y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const center = [(minX + maxX) / 2, (minY + maxY) / 2];
+  let best = null;
+  let bestDistance = Infinity;
+  for (let row = 0; row <= 32; row += 1) {
+    for (let column = 0; column <= 32; column += 1) {
+      const candidate = [
+        minX + ((maxX - minX) * (column + 0.5)) / 33,
+        minY + ((maxY - minY) * (row + 0.5)) / 33,
+      ];
+      if (!pointInPolygon(candidate, polygon)) continue;
+      const distance =
+        (candidate[0] - center[0]) ** 2 + (candidate[1] - center[1]) ** 2;
+      if (distance < bestDistance) {
+        best = candidate;
+        bestDistance = distance;
+      }
+    }
+  }
+  return best ?? ring[0];
 }
 
 function getProjectedPolygonSize(polygon, project) {
@@ -251,6 +328,16 @@ export function generateMap(source, config) {
         project,
         config.minimumProjectedPolygonSize,
       );
+      const primaryPolygon = polygons.reduce((largest, polygon) =>
+        Math.abs(signedRingArea(polygon[0])) >
+        Math.abs(signedRingArea(largest[0]))
+          ? polygon
+          : largest,
+      );
+      const anchor = project(representativePoint(primaryPolygon));
+      const anchorPoints = primaryPolygon.flatMap((ring) => ring).map(project);
+      const anchorXs = anchorPoints.map(([x]) => x);
+      const anchorYs = anchorPoints.map(([, y]) => y);
       const projectedPoints = polygons.flat(2).map(project);
       const projectedXs = projectedPoints.map(([x]) => x);
       const projectedYs = projectedPoints.map(([, y]) => y);
@@ -291,6 +378,20 @@ export function generateMap(source, config) {
         geometryType: polygons.length === 1 ? "Polygon" : "MultiPolygon",
         polygonCount: polygons.length,
         bounds,
+        anchor: {
+          x: Number(anchor[0].toFixed(2)),
+          y: Number(anchor[1].toFixed(2)),
+        },
+        anchorBounds: {
+          x: Number(Math.min(...anchorXs).toFixed(2)),
+          y: Number(Math.min(...anchorYs).toFixed(2)),
+          width: Number(
+            (Math.max(...anchorXs) - Math.min(...anchorXs)).toFixed(2),
+          ),
+          height: Number(
+            (Math.max(...anchorYs) - Math.min(...anchorYs)).toFixed(2),
+          ),
+        },
         path,
       };
     })
@@ -302,6 +403,14 @@ export function generateMap(source, config) {
     notice: "THIS FILE IS GENERATED. DO NOT EDIT MANUALLY.",
     metadata: config.metadata,
     viewBox: config.viewBox,
+    projection: {
+      geographic: config.geographic === true,
+      minX,
+      maxY,
+      scale,
+      originX,
+      originY,
+    },
     regions,
   };
 }

@@ -8,7 +8,6 @@ import 'package:sasang/core/theme/sasang_theme.dart';
 import 'package:sasang/core/storage/sasang_storage.dart';
 import 'package:sasang/core/layout/sasang_layout.dart';
 import 'package:sasang/features/map/map_mode_selector.dart';
-import 'package:sasang/features/map/map_preview.dart';
 import 'package:sasang/features/map/map_repository.dart';
 import 'package:sasang/features/map/region_map_view.dart';
 import 'package:sasang/features/photos/photo_date.dart';
@@ -228,10 +227,10 @@ void main() {
 
     expect(timeline.map((item) => item.region.code), ['B', 'A']);
     final compactMotion = timelineMotionSteps(timeline.length);
-    expect(compactMotion.travelFrames, 5);
-    expect(compactMotion.revealFrames, 4);
-    expect(compactMotion.holdFrames, 3);
-    expect(timelineMotionSteps(80).travelFrames, 1);
+    expect(compactMotion.travelFrames, 18);
+    expect(compactMotion.revealFrames, 10);
+    expect(compactMotion.holdFrames, 12);
+    expect(timelineMotionSteps(80).travelFrames, 8);
     expect(mapTravelPercentage(2, 175), 1);
     expect(
       mapTravelProgress(
@@ -534,7 +533,7 @@ void main() {
     expect(mapStorePriceFor(regionWithDetail(1300)), 5000);
   });
 
-  testWidgets('owned map selector restores the illustrated iOS sheet', (
+  testWidgets('owned map selector uses a compact adaptive choice sheet', (
     tester,
   ) async {
     var selectedMode = MapMode.korea;
@@ -552,24 +551,92 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('대한민국 지도'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.byType(MapModeSelector));
+    await tester.pumpAndSettle();
 
-    expect(find.text('내 지도'), findsOneWidget);
-    expect(find.text('보유한 지도'), findsOneWidget);
-    expect(find.byType(MapPreview), findsNWidgets(2));
-    expect(find.byIcon(CupertinoIcons.check_mark), findsOneWidget);
-    expect(find.byIcon(CupertinoIcons.xmark), findsOneWidget);
-    expect(find.text('새로운 지도 둘러보기'), findsOneWidget);
+    expect(find.byKey(const Key('map-mode-option-korea')), findsOneWidget);
+    expect(find.byKey(const Key('map-mode-option-world')), findsOneWidget);
+    expect(find.text('새로운 지도 둘러보기'), findsNothing);
+  });
 
-    final selectedCard = tester.widget<Container>(
-      find.byKey(const Key('map-mode-card-korea')),
+  testWidgets('video export progress floats without a blocking dialog', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: MapExportFloatingProgress(
+              progress: MapExportProgress(MapExportPhase.rendering, .42),
+            ),
+          ),
+        ),
+      ),
     );
-    expect(selectedCard.clipBehavior, Clip.none);
-    final foreground = selectedCard.foregroundDecoration! as BoxDecoration;
-    expect(foreground.border!.top.width, 1.5);
-    expect(foreground.border!.top.color, const Color(0xFF007AFF));
+
+    expect(
+      find.byKey(const Key('share-export-floating-progress')),
+      findsOneWidget,
+    );
+    expect(find.byType(CupertinoAlertDialog), findsNothing);
+    expect(find.text('42%'), findsOneWidget);
+    expect(
+      tester
+          .widget<LinearProgressIndicator>(
+            find.byKey(const Key('share-video-progress')),
+          )
+          .value,
+      .42,
+    );
+  });
+
+  testWidgets('export format picker uses a Cupertino action sheet on iOS', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(platform: TargetPlatform.iOS),
+        home: Builder(
+          builder: (context) => CupertinoButton(
+            onPressed: () => showAdaptiveExportFormatPicker(context),
+            child: const Text('열기'),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('열기'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CupertinoActionSheet), findsOneWidget);
+    expect(find.byKey(const Key('share-map-image')), findsOneWidget);
+    expect(find.byKey(const Key('share-map-video')), findsOneWidget);
+  });
+
+  testWidgets('encoding progress does not display a fabricated percentage', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: MapExportFloatingProgress(
+            progress: MapExportProgress(MapExportPhase.encoding),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('영상을 저장하고 있어요'), findsOneWidget);
+    expect(find.byKey(const Key('share-video-progress-percent')), findsNothing);
+    expect(
+      tester
+          .widget<LinearProgressIndicator>(
+            find.byKey(const Key('share-video-progress')),
+          )
+          .value,
+      isNull,
+    );
   });
 
   test('travel progress drops decimals and stays within 0 to 100 percent', () {

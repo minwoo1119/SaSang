@@ -15,8 +15,35 @@ import '../../core/theme/sasang_theme.dart';
 import '../../models/map_models.dart';
 import '../map/region_map_view.dart';
 import '../photos/photo_date.dart';
+import 'geo_route.dart';
 
 enum MapShareFormat { image, video }
+
+enum MapExportPhase { preparing, rendering, encoding, ready, cancelled, failed }
+
+class MapExportProgress {
+  const MapExportProgress(this.phase, [this.fraction]);
+
+  final MapExportPhase phase;
+  final double? fraction;
+}
+
+class MapExportCancellationToken {
+  bool _cancelled = false;
+
+  bool get isCancelled => _cancelled;
+  void cancel() => _cancelled = true;
+  void throwIfCancelled() {
+    if (_cancelled) throw const MapExportCancelledException();
+  }
+}
+
+class MapExportCancelledException implements Exception {
+  const MapExportCancelledException();
+
+  @override
+  String toString() => '영상 내보내기가 취소되었습니다.';
+}
 
 class MapShareResult {
   const MapShareResult({required this.file, required this.savedToGallery});
@@ -96,7 +123,7 @@ class MapShareService {
   static const _timelineChannel = MethodChannel('com.sasang.app/timeline');
   static const _videoWidth = 720;
   static const _videoHeight = 1280;
-  static const _videoFps = 12;
+  static const _videoFps = 30;
 
   final SasangStorage storage;
 
@@ -148,14 +175,24 @@ class MapShareService {
     required MapMode mode,
     required Map<String, RegionPhoto> photos,
     Map<String, RegionPhotoAlbum> albums = const {},
-    ValueChanged<double>? onProgress,
+    ValueChanged<MapExportProgress>? onProgress,
+    MapExportCancellationToken? cancellationToken,
     bool saveToGallery = true,
   }) async {
+    onProgress?.call(const MapExportProgress(MapExportPhase.preparing));
+    final snapshotPhotos = Map<String, RegionPhoto>.unmodifiable(photos);
+    final snapshotAlbums = Map<String, RegionPhotoAlbum>.unmodifiable({
+      for (final entry in albums.entries)
+        entry.key: RegionPhotoAlbum(
+          photos: List<RegionPhoto>.unmodifiable(entry.value.photos),
+          coverPhotoId: entry.value.coverPhotoId,
+        ),
+    });
     final timeline = buildMapTimeline(
       asset: asset,
       mode: mode,
-      photos: photos,
-      albums: albums,
+      photos: snapshotPhotos,
+      albums: snapshotAlbums,
     );
     if (timeline.isEmpty) {
       throw StateError('영상으로 만들 여행 기록이 없어요.');
@@ -173,8 +210,8 @@ class MapShareService {
     final renderer = await _MapShareRenderer.create(
       asset: asset,
       mode: mode,
-      photos: photos,
-      albums: albums,
+      photos: snapshotPhotos,
+      albums: snapshotAlbums,
       storage: storage,
     );
 
@@ -182,10 +219,32 @@ class MapShareService {
       final framePaths = <String>[];
       final repeats = <int>[];
       final visible = <String, RegionPhoto>{};
-      final route = <Offset>[];
+      final anchors = [
+        for (final item in timeline)
+          const GeoAnchorResolver().resolve(
+            asset: asset,
+            region: item.region,
+            photo: item.photo,
+          ),
+      ];
+      final completedRoutes = <TravelRoute>[];
       final motion = timelineMotionSteps(timeline.length);
+      final totalRenderFrames =
+          2 + timeline.length * (motion.travelFrames + motion.revealFrames);
+      var renderedFrames = 0;
       var frameIndex = 0;
 
+      void reportRenderedFrame() {
+        renderedFrames++;
+        onProgress?.call(
+          MapExportProgress(
+            MapExportPhase.rendering,
+            renderedFrames / totalRenderFrames,
+          ),
+        );
+      }
+
+      cancellationToken?.throwIfCancelled();
       framePaths.add(
         await _writeTimelineFrame(
           renderer: renderer,
@@ -196,43 +255,72 @@ class MapShareService {
         ),
       );
       repeats.add(_videoFps);
+      reportRenderedFrame();
       for (var index = 0; index < timeline.length; index++) {
         final item = timeline[index];
-        final destination = _regionCenter(item.region);
-        final focusZoom = regionFocusZoom(item.region, asset);
+        final anchor = anchors[index];
+        final destination = anchor.point;
+        final focusZoom = regionFocusZoom(
+          item.region,
+          asset,
+          focusBounds: anchor.focusBounds,
+        );
+        final isFirst = index == 0;
+        final departure = isFirst ? destination : anchors[index - 1].point;
+        final travelRoute = isFirst
+            ? const TravelRoute([])
+            : buildTravelRoute(
+                departure: departure,
+                destination: destination,
+                asset: asset,
+                mode: mode,
+              );
 
         for (var step = 1; step <= motion.travelFrames; step++) {
+          cancellationToken?.throwIfCancelled();
           final phase = _easeInOut(step / motion.travelFrames);
-          final isFirst = index == 0;
-          final departure = isFirst ? destination : route.last;
-          final plane = Offset.lerp(departure, destination, phase)!;
           final previousZoom = isFirst
               ? 1.0
-              : regionFocusZoom(timeline[index - 1].region, asset);
+              : regionFocusZoom(
+                  timeline[index - 1].region,
+                  asset,
+                  focusBounds: anchors[index - 1].focusBounds,
+                );
+          final plane = travelRoute.pointAt(phase);
           framePaths.add(
             await _writeTimelineFrame(
               renderer: renderer,
               directory: exportRoot,
               index: frameIndex++,
               visiblePhotos: visible,
-              progress: (index + phase * .55) / timeline.length,
+              progress: (index + phase * .65) / timeline.length,
               current: item,
               mapZoom: isFirst
                   ? ui.lerpDouble(1, focusZoom * .82, phase)!
                   : _travelZoom(previousZoom, focusZoom, phase),
               focusAssetPoint: isFirst
                   ? destination
-                  : Offset.lerp(departure, destination, phase),
-              routeAssetPoints: isFirst ? const [] : [...route, plane],
-              planeAssetPoint: isFirst ? null : plane,
+                  : _cameraPointForRoute(
+                      travelRoute,
+                      phase,
+                      asset,
+                      departure,
+                      destination,
+                    ),
+              completedRoutes: completedRoutes,
+              activeRouteSegments: travelRoute.partial(phase),
+              planeAssetPoint: plane,
+              planeAngle: travelRoute.angleAt(phase),
             ),
           );
           repeats.add(1);
+          reportRenderedFrame();
         }
 
         visible[item.key] = item.photo;
-        route.add(destination);
+        if (!travelRoute.isEmpty) completedRoutes.add(travelRoute);
         for (var step = 1; step <= motion.revealFrames; step++) {
+          cancellationToken?.throwIfCancelled();
           final phase = _easeOut(step / motion.revealFrames);
           framePaths.add(
             await _writeTimelineFrame(
@@ -240,23 +328,25 @@ class MapShareService {
               directory: exportRoot,
               index: frameIndex++,
               visiblePhotos: visible,
-              progress: (index + .55 + phase * .45) / timeline.length,
+              progress: (index + .65 + phase * .35) / timeline.length,
               current: item,
               mapZoom: ui.lerpDouble(focusZoom * .82, focusZoom, phase)!,
               focusAssetPoint: destination,
-              routeAssetPoints: route,
-              planeAssetPoint: destination,
+              completedRoutes: completedRoutes,
+              arrivalAssetPoint: destination,
+              arrivalPulse: phase,
               photoOpacities: {item.key: phase},
             ),
           );
           repeats.add(
             1 + (step == motion.revealFrames ? motion.holdFrames : 0),
           );
+          reportRenderedFrame();
         }
-        onProgress?.call((index + 1) / timeline.length * .72);
         await Future<void>.delayed(Duration.zero);
       }
 
+      cancellationToken?.throwIfCancelled();
       framePaths.add(
         await _writeTimelineFrame(
           renderer: renderer,
@@ -264,12 +354,13 @@ class MapShareService {
           index: frameIndex,
           visiblePhotos: visible,
           progress: 1,
-          routeAssetPoints: route,
-          planeAssetPoint: route.last,
+          completedRoutes: completedRoutes,
         ),
       );
       repeats.add(_videoFps * 2);
+      reportRenderedFrame();
 
+      onProgress?.call(const MapExportProgress(MapExportPhase.encoding));
       final encoded = await _timelineChannel
           .invokeMethod<bool>('encodeTimeline', {
             'framePaths': framePaths,
@@ -283,14 +374,21 @@ class MapShareService {
       if (encoded != true || !await output.exists()) {
         throw StateError('타임라인 영상을 만들지 못했어요.');
       }
-      onProgress?.call(.92);
+      cancellationToken?.throwIfCancelled();
       final saved = saveToGallery
           ? await this.saveToGallery(output, MapShareFormat.video)
           : false;
-      onProgress?.call(1);
+      onProgress?.call(const MapExportProgress(MapExportPhase.ready, 1));
       return MapShareResult(file: output, savedToGallery: saved);
     } finally {
       renderer.dispose();
+      if (cancellationToken?.isCancelled == true && output.existsSync()) {
+        try {
+          output.deleteSync();
+        } on FileSystemException {
+          // The temporary directory will be cleaned by the operating system.
+        }
+      }
       for (final entity in exportRoot.listSync()) {
         if (entity is File && entity.path != output.path) {
           try {
@@ -312,8 +410,12 @@ class MapShareService {
     MapTimelineItem? current,
     double mapZoom = 1,
     Offset? focusAssetPoint,
-    List<Offset> routeAssetPoints = const [],
+    List<TravelRoute> completedRoutes = const [],
+    List<List<Offset>> activeRouteSegments = const [],
     Offset? planeAssetPoint,
+    double? planeAngle,
+    Offset? arrivalAssetPoint,
+    double arrivalPulse = 0,
     Map<String, double> photoOpacities = const {},
   }) async {
     final bytes = await renderer.renderPng(
@@ -324,8 +426,12 @@ class MapShareService {
       current: current,
       mapZoom: mapZoom,
       focusAssetPoint: focusAssetPoint,
-      routeAssetPoints: routeAssetPoints,
+      completedRoutes: completedRoutes,
+      activeRouteSegments: activeRouteSegments,
       planeAssetPoint: planeAssetPoint,
+      planeAngle: planeAngle,
+      arrivalAssetPoint: arrivalAssetPoint,
+      arrivalPulse: arrivalPulse,
       photoOpacities: photoOpacities,
     );
     final file = File(
@@ -363,30 +469,54 @@ class MapShareService {
   int itemCount,
 ) {
   if (itemCount <= 20) {
-    return (travelFrames: 5, revealFrames: 4, holdFrames: 3);
+    return (travelFrames: 18, revealFrames: 10, holdFrames: 12);
   }
   if (itemCount <= 50) {
-    return (travelFrames: 3, revealFrames: 2, holdFrames: 1);
+    return (travelFrames: 12, revealFrames: 8, holdFrames: 8);
   }
-  return (travelFrames: 1, revealFrames: 1, holdFrames: 0);
+  return (travelFrames: 8, revealFrames: 5, holdFrames: 4);
 }
 
-Offset _regionCenter(MapRegion region) => Offset(
-  region.bounds.x + region.bounds.width / 2,
-  region.bounds.y + region.bounds.height / 2,
-);
-
-double regionFocusZoom(MapRegion region, RegionMapAsset asset) {
-  final widthZoom = asset.width / math.max(region.bounds.width, 1) * .42;
-  final heightZoom = asset.height / math.max(region.bounds.height, 1) * .42;
+double regionFocusZoom(
+  MapRegion region,
+  RegionMapAsset asset, {
+  Rect? focusBounds,
+}) {
+  final bounds =
+      focusBounds ??
+      Rect.fromLTWH(
+        region.bounds.x,
+        region.bounds.y,
+        region.bounds.width,
+        region.bounds.height,
+      );
+  final widthZoom = asset.width / math.max(bounds.width, 1) * .42;
+  final heightZoom = asset.height / math.max(bounds.height, 1) * .42;
   return math.min(widthZoom, heightZoom).clamp(2.1, 4.5).toDouble();
+}
+
+Offset _cameraPointForRoute(
+  TravelRoute route,
+  double phase,
+  RegionMapAsset asset,
+  Offset departure,
+  Offset destination,
+) {
+  if (route.segments.length <= 1) {
+    return route.pointAt(phase) ?? Offset.lerp(departure, destination, phase)!;
+  }
+  final center = Offset(asset.width / 2, asset.height / 2);
+  if (phase < .5) {
+    return Offset.lerp(departure, center, _easeInOut(phase * 2))!;
+  }
+  return Offset.lerp(center, destination, _easeInOut((phase - .5) * 2))!;
 }
 
 double _travelZoom(double previousZoom, double nextZoom, double phase) {
   if (phase <= .5) {
-    return ui.lerpDouble(previousZoom, 1.25, _easeInOut(phase * 2))!;
+    return ui.lerpDouble(previousZoom, 1.08, _easeInOut(phase * 2))!;
   }
-  return ui.lerpDouble(1.25, nextZoom * .82, _easeInOut((phase - .5) * 2))!;
+  return ui.lerpDouble(1.08, nextZoom * .82, _easeInOut((phase - .5) * 2))!;
 }
 
 double _easeInOut(double value) =>
@@ -459,8 +589,12 @@ class _MapShareRenderer {
     MapTimelineItem? current,
     double mapZoom = 1,
     Offset? focusAssetPoint,
-    List<Offset> routeAssetPoints = const [],
+    List<TravelRoute> completedRoutes = const [],
+    List<List<Offset>> activeRouteSegments = const [],
     Offset? planeAssetPoint,
+    double? planeAngle,
+    Offset? arrivalAssetPoint,
+    double arrivalPulse = 0,
     Map<String, double> photoOpacities = const {},
   }) async {
     final recorder = ui.PictureRecorder();
@@ -528,11 +662,15 @@ class _MapShareRenderer {
       transformationController: controller,
       photoOpacities: photoOpacities,
     ).paint(canvas, mapRect.size);
-    _drawRoute(
+    _drawRoutes(
       canvas,
       contentRect: contentRect,
-      points: routeAssetPoints,
+      completedRoutes: completedRoutes,
+      activeRouteSegments: activeRouteSegments,
       planeAssetPoint: planeAssetPoint,
+      planeAngle: planeAngle,
+      arrivalAssetPoint: arrivalAssetPoint,
+      arrivalPulse: arrivalPulse,
       zoom: safeZoom,
     );
     canvas.restore();
@@ -615,60 +753,103 @@ class _MapShareRenderer {
     contentRect.top + point.dy / asset.height * contentRect.height,
   );
 
-  void _drawRoute(
+  void _drawRoutes(
     Canvas canvas, {
     required Rect contentRect,
-    required List<Offset> points,
+    required List<TravelRoute> completedRoutes,
+    required List<List<Offset>> activeRouteSegments,
     required Offset? planeAssetPoint,
+    required double? planeAngle,
+    required Offset? arrivalAssetPoint,
+    required double arrivalPulse,
     required double zoom,
   }) {
-    final localPoints = points
-        .map((point) => _assetToLocal(point, contentRect))
-        .toList(growable: false);
-    if (localPoints.length >= 2) {
-      final route = Path()..moveTo(localPoints.first.dx, localPoints.first.dy);
-      for (final point in localPoints.skip(1)) {
-        route.lineTo(point.dx, point.dy);
-      }
-      canvas.drawPath(
-        route,
+    final visibleCompleted = completedRoutes.length > 6
+        ? completedRoutes.sublist(completedRoutes.length - 6)
+        : completedRoutes;
+    for (var index = 0; index < visibleCompleted.length; index++) {
+      final route = visibleCompleted[index];
+      final age = visibleCompleted.length - index;
+      _drawDashedSegments(
+        canvas,
+        contentRect: contentRect,
+        segments: route.segments,
+        zoom: zoom,
+        opacity: (.34 - age * .025).clamp(.16, .30),
+      );
+    }
+    _drawDashedSegments(
+      canvas,
+      contentRect: contentRect,
+      segments: activeRouteSegments,
+      zoom: zoom,
+      opacity: .82,
+    );
+
+    if (arrivalAssetPoint != null) {
+      final arrival = _assetToLocal(arrivalAssetPoint, contentRect);
+      final phase = arrivalPulse.clamp(0, 1);
+      canvas.drawCircle(
+        arrival,
+        (5 + 18 * phase) / zoom,
         Paint()
-          ..isAntiAlias = true
           ..style = PaintingStyle.stroke
-          ..strokeCap = StrokeCap.round
-          ..strokeJoin = StrokeJoin.round
-          ..strokeWidth = 2.4 / zoom
-          ..color = SasangColors.accent.withValues(alpha: .72),
+          ..strokeWidth = 1.5 / zoom
+          ..color = SasangColors.accent.withValues(alpha: .38 * (1 - phase)),
+      );
+      canvas.drawCircle(
+        arrival,
+        3.2 / zoom,
+        Paint()..color = SasangColors.accent.withValues(alpha: .9),
       );
     }
     if (planeAssetPoint == null) return;
 
     final plane = _assetToLocal(planeAssetPoint, contentRect);
-    final previous = localPoints.length >= 2
-        ? localPoints[localPoints.length - 2]
-        : plane - const Offset(1, 0);
-    final angle = math.atan2(plane.dy - previous.dy, plane.dx - previous.dx);
-    final planeSize = 15 / zoom;
+    final planeSize = 11 / zoom;
     final planePath = Path()
-      ..moveTo(planeSize * .8, 0)
-      ..lineTo(-planeSize * .62, -planeSize * .45)
-      ..lineTo(-planeSize * .25, 0)
-      ..lineTo(-planeSize * .62, planeSize * .45)
+      ..moveTo(planeSize, 0)
+      ..lineTo(-planeSize * .58, -planeSize * .4)
+      ..lineTo(-planeSize * .2, 0)
+      ..lineTo(-planeSize * .58, planeSize * .4)
       ..close();
     canvas.save();
     canvas.translate(plane.dx, plane.dy);
-    canvas.rotate(angle);
-    canvas.drawShadow(planePath, Colors.black38, 3 / zoom, true);
-    canvas.drawPath(
-      planePath,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3 / zoom
-        ..strokeJoin = StrokeJoin.round
-        ..color = Colors.white,
-    );
+    canvas.rotate(planeAngle ?? 0);
     canvas.drawPath(planePath, Paint()..color = SasangColors.accent);
     canvas.restore();
+  }
+
+  void _drawDashedSegments(
+    Canvas canvas, {
+    required Rect contentRect,
+    required List<List<Offset>> segments,
+    required double zoom,
+    required double opacity,
+  }) {
+    for (final segment in segments) {
+      if (segment.length < 2) continue;
+      final points = segment
+          .map((point) => _assetToLocal(point, contentRect))
+          .toList(growable: false);
+      final path = Path()..moveTo(points.first.dx, points.first.dy);
+      for (final point in points.skip(1)) {
+        path.lineTo(point.dx, point.dy);
+      }
+      canvas.drawPath(
+        dashPath(
+          path,
+          dashArray: CircularIntervalList<double>([5 / zoom, 6 / zoom]),
+        ),
+        Paint()
+          ..isAntiAlias = true
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..strokeWidth = 1.7 / zoom
+          ..color = SasangColors.accent.withValues(alpha: opacity),
+      );
+    }
   }
 
   static void _drawText(

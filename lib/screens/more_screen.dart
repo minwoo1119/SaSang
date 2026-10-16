@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
+import '../core/theme/sasang_theme.dart';
 import '../features/more/info_content.dart';
 import '../features/state/sasang_state.dart';
 import '../widgets/ad_banner.dart';
@@ -84,14 +85,20 @@ class _MoreScreenState extends State<MoreScreen> {
         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
       ),
       const SizedBox(height: 12),
-      SasangSurface(
-        radius: 18,
-        child: Column(
-          children: [
-            for (final item in items)
-              SasangChevronRow(label: item.$1, onTap: item.$2),
+      Column(
+        children: [
+          for (var index = 0; index < items.length; index++) ...[
+            SasangChevronRow(label: items[index].$1, onTap: items[index].$2),
+            if (index != items.length - 1)
+              const Padding(
+                padding: EdgeInsets.only(left: 16),
+                child: SizedBox(
+                  height: .5,
+                  child: ColoredBox(color: SasangColors.divider),
+                ),
+              ),
           ],
-        ),
+        ],
       ),
     ],
   );

@@ -30,6 +30,58 @@ class RegionBounds {
   final double height;
 }
 
+class MapCoordinate {
+  const MapCoordinate({required this.x, required this.y});
+
+  factory MapCoordinate.fromJson(Map<String, dynamic> json) => MapCoordinate(
+    x: (json['x'] as num).toDouble(),
+    y: (json['y'] as num).toDouble(),
+  );
+
+  final double x;
+  final double y;
+}
+
+class MapProjection {
+  const MapProjection({
+    required this.geographic,
+    required this.minX,
+    required this.maxY,
+    required this.scale,
+    required this.originX,
+    required this.originY,
+  });
+
+  factory MapProjection.fromJson(Map<String, dynamic> json) => MapProjection(
+    geographic: json['geographic'] as bool? ?? false,
+    minX: (json['minX'] as num).toDouble(),
+    maxY: (json['maxY'] as num).toDouble(),
+    scale: (json['scale'] as num).toDouble(),
+    originX: (json['originX'] as num).toDouble(),
+    originY: (json['originY'] as num).toDouble(),
+  );
+
+  final bool geographic;
+  final double minX;
+  final double maxY;
+  final double scale;
+  final double originX;
+  final double originY;
+
+  MapCoordinate project({
+    required double latitude,
+    required double longitude,
+  }) => MapCoordinate(
+    x: originX + (longitude - minX) * scale,
+    y: originY + (maxY - latitude) * scale,
+  );
+
+  ({double latitude, double longitude}) unproject(MapCoordinate point) => (
+    latitude: maxY - (point.y - originY) / scale,
+    longitude: minX + (point.x - originX) / scale,
+  );
+}
+
 class MapRegion {
   const MapRegion({
     required this.code,
@@ -41,6 +93,8 @@ class MapRegion {
     this.englishName,
     this.provinceCode,
     this.provinceName,
+    this.anchor,
+    this.anchorBounds,
   });
 
   factory MapRegion.fromJson(Map<String, dynamic> json) => MapRegion(
@@ -49,6 +103,14 @@ class MapRegion {
     englishName: json['englishName'] as String?,
     provinceCode: json['provinceCode'] as String?,
     provinceName: json['provinceName'] as String?,
+    anchor: switch (json['anchor']) {
+      final Map<String, dynamic> value => MapCoordinate.fromJson(value),
+      _ => null,
+    },
+    anchorBounds: switch (json['anchorBounds']) {
+      final Map<String, dynamic> value => RegionBounds.fromJson(value),
+      _ => null,
+    },
     geometryType: json['geometryType'] as String,
     polygonCount: json['polygonCount'] as int,
     bounds: RegionBounds.fromJson(json['bounds'] as Map<String, dynamic>),
@@ -64,6 +126,8 @@ class MapRegion {
   final int polygonCount;
   final RegionBounds bounds;
   final String pathData;
+  final MapCoordinate? anchor;
+  final RegionBounds? anchorBounds;
 }
 
 class RegionPhoto {
@@ -77,6 +141,8 @@ class RegionPhoto {
     required this.offsetY,
     required this.createdAt,
     this.takenAt,
+    this.latitude,
+    this.longitude,
   });
 
   factory RegionPhoto.fromJson(Map<String, dynamic> json) => RegionPhoto(
@@ -89,6 +155,8 @@ class RegionPhoto {
     offsetY: (json['offsetY'] as num?)?.toDouble() ?? 0,
     createdAt: json['createdAt'] as String,
     takenAt: json['takenAt'] as String?,
+    latitude: (json['latitude'] as num?)?.toDouble(),
+    longitude: (json['longitude'] as num?)?.toDouble(),
   );
 
   final String id;
@@ -100,6 +168,8 @@ class RegionPhoto {
   final double offsetY;
   final String createdAt;
   final String? takenAt;
+  final double? latitude;
+  final double? longitude;
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -111,6 +181,8 @@ class RegionPhoto {
     'offsetY': offsetY,
     'createdAt': createdAt,
     if (takenAt != null) 'takenAt': takenAt,
+    if (latitude != null) 'latitude': latitude,
+    if (longitude != null) 'longitude': longitude,
   };
 }
 
@@ -167,6 +239,7 @@ class RegionMapAsset {
     required this.width,
     required this.height,
     required this.regions,
+    this.projection,
   });
 
   factory RegionMapAsset.fromJsonString(String source) {
@@ -181,6 +254,10 @@ class RegionMapAsset {
           .cast<Map<String, dynamic>>()
           .map(MapRegion.fromJson)
           .toList(growable: false),
+      projection: switch (json['projection']) {
+        final Map<String, dynamic> value => MapProjection.fromJson(value),
+        _ => null,
+      },
     );
   }
 
@@ -188,6 +265,7 @@ class RegionMapAsset {
   final double width;
   final double height;
   final List<MapRegion> regions;
+  final MapProjection? projection;
 }
 
 String regionPhotoKey(MapMode mode, String regionCode) =>

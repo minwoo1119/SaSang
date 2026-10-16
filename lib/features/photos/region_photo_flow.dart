@@ -15,7 +15,8 @@ Future<RegionPhoto?> pickRegionPhoto({
 }) async {
   final picked = await picker.pick();
   if (picked == null || !context.mounted) return null;
-  final metadataDate = await readPhotoTakenDate(picked.file);
+  final metadata = await readPhotoMetadata(picked.file);
+  final metadataDate = metadata.takenAt;
   final now = DateTime.now();
   final validMetadata = metadataDate != null && !metadataDate.isAfter(now);
   if (!context.mounted) return null;
@@ -42,5 +43,7 @@ Future<RegionPhoto?> pickRegionPhoto({
     offsetY: 0,
     createdAt: createdAt.toIso8601String(),
     takenAt: photoDateKey(selectedDate),
+    latitude: metadata.latitude,
+    longitude: metadata.longitude,
   );
 }
