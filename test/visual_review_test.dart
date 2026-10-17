@@ -2,8 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sasang/features/backup/backup_progress_dialog.dart';
+import 'package:sasang/features/photos/north_korea_visit_gate.dart';
+import 'package:sasang/features/share/export_progress_dialog.dart';
 import 'package:sasang/features/share/map_share_service.dart';
 import 'package:sasang/screens/map_screen.dart';
+import 'package:sasang/widgets/sasang_center_modal.dart';
 
 void main() {
   setUpAll(() async {
@@ -16,27 +20,68 @@ void main() {
     await Future.wait([loader.load(), iconLoader.load()]);
   });
 
-  testWidgets('captures the floating export progress review surface', (
-    tester,
-  ) async {
+  const progressCaptures = [
+    (name: 'preparing', progress: MapExportProgress(MapExportPhase.preparing)),
+    (
+      name: 'rendering',
+      progress: MapExportProgress(MapExportPhase.rendering, .42),
+    ),
+    (name: 'saving', progress: MapExportProgress(MapExportPhase.encoding)),
+    (name: 'failed', progress: MapExportProgress(MapExportPhase.failed)),
+  ];
+
+  for (final capture in progressCaptures) {
+    testWidgets('captures export progress ${capture.name}', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(390, 844));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: _reviewTheme(),
+          home: Scaffold(
+            body: Stack(
+              children: [
+                const Positioned.fill(child: _MapBackdrop()),
+                ExportProgressDialog(
+                  progress: capture.progress,
+                  format: MapShareFormat.video,
+                  onCancel:
+                      capture.progress.phase == MapExportPhase.preparing ||
+                          capture.progress.phase == MapExportPhase.rendering
+                      ? () {}
+                      : null,
+                  onRetry: capture.progress.phase == MapExportPhase.failed
+                      ? () {}
+                      : null,
+                  onClose: capture.progress.phase == MapExportPhase.failed
+                      ? () {}
+                      : null,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      await expectLater(
+        find.byType(Scaffold),
+        matchesGoldenFile('goldens/export_progress_${capture.name}.png'),
+      );
+    });
+  }
+
+  testWidgets('captures backup progress', (tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: _reviewTheme(),
-        home: Scaffold(
+        home: const Scaffold(
           body: Stack(
             children: [
-              const Positioned.fill(child: _MapBackdrop()),
-              const Positioned(
-                left: 24,
-                right: 24,
-                bottom: 94,
-                child: MapExportFloatingProgress(
-                  progress: MapExportProgress(MapExportPhase.rendering, .42),
-                ),
-              ),
+              Positioned.fill(child: _MapBackdrop()),
+              BackupProgressDialog(),
             ],
           ),
         ),
@@ -45,7 +90,45 @@ void main() {
 
     await expectLater(
       find.byType(Scaffold),
-      matchesGoldenFile('goldens/floating_export_progress.png'),
+      matchesGoldenFile('goldens/backup_progress.png'),
+    );
+  });
+
+  testWidgets('captures North Korea confirmation', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: _reviewTheme(),
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: Stack(
+              children: [
+                const Positioned.fill(child: _MapBackdrop()),
+                Center(
+                  child: CupertinoButton(
+                    onPressed: () => showSasangCenterConfirmDialog(
+                      context,
+                      title: '북한 방문 확인 · 1/3',
+                      message: northKoreaConfirmationMessage(1),
+                      action: '확인',
+                    ),
+                    child: const Text('북한 선택'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('북한 선택'));
+    await tester.pumpAndSettle();
+
+    await expectLater(
+      find.byType(Overlay),
+      matchesGoldenFile('goldens/north_korea_confirmation.png'),
     );
   });
 

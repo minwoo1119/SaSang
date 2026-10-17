@@ -10,6 +10,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sasang/core/theme/sasang_theme.dart';
 import 'package:sasang/core/storage/sasang_storage.dart';
 import 'package:sasang/core/layout/sasang_layout.dart';
+import 'package:sasang/features/backup/backup_progress_dialog.dart';
 import 'package:sasang/features/backup/sasang_backup_service.dart';
 import 'package:sasang/features/more/info_content.dart';
 import 'package:sasang/features/map/map_mode_selector.dart';
@@ -21,6 +22,7 @@ import 'package:sasang/features/photos/photo_date.dart';
 import 'package:sasang/features/photos/photo_date_dialog.dart';
 import 'package:sasang/features/photos/north_korea_visit_gate.dart';
 import 'package:sasang/features/photos/region_photo_album_sheet.dart';
+import 'package:sasang/features/share/export_progress_dialog.dart';
 import 'package:sasang/features/share/map_share_service.dart';
 import 'package:sasang/features/state/sasang_state.dart';
 import 'package:sasang/models/map_models.dart';
@@ -30,6 +32,7 @@ import 'package:sasang/screens/more_screen.dart';
 import 'package:sasang/screens/info_detail_screen.dart';
 import 'package:sasang/screens/places_screen.dart';
 import 'package:sasang/widgets/ad_banner.dart';
+import 'package:sasang/widgets/sasang_center_modal.dart';
 
 void main() {
   test('decodes the legacy Zustand persist envelope', () {
@@ -603,6 +606,61 @@ void main() {
     );
   });
 
+  testWidgets('world map reset token restores the Korea-centered viewport', (
+    tester,
+  ) async {
+    const asset = RegionMapAsset(
+      version: 'test',
+      width: 720,
+      height: 360,
+      regions: [
+        MapRegion(
+          code: 'KR',
+          name: '대한민국',
+          geometryType: 'Polygon',
+          polygonCount: 1,
+          bounds: RegionBounds(x: 590, y: 120, width: 8, height: 10),
+          anchor: MapCoordinate(x: 594, y: 125),
+          pathData: 'M590 120 L598 120 L598 130 Z',
+        ),
+      ],
+    );
+    final storage = _MemoryStorage();
+
+    Widget mapWithToken(int token) => MaterialApp(
+      home: SizedBox(
+        width: 390,
+        height: 844,
+        child: RegionMapView(
+          key: const ValueKey('world-map'),
+          asset: asset,
+          mode: MapMode.world,
+          photos: const {},
+          selectedRegionCode: null,
+          onSelectRegion: (_) {},
+          storage: storage,
+          resetViewToken: token,
+        ),
+      ),
+    );
+
+    await tester.pumpWidget(mapWithToken(0));
+    await tester.pump();
+    var viewer = tester.widget<InteractiveViewer>(
+      find.byType(InteractiveViewer),
+    );
+    final initial = Matrix4.copy(viewer.transformationController!.value);
+    viewer.transformationController!.value = Matrix4.identity()
+      ..translateByDouble(90, 40, 0, 1)
+      ..scaleByDouble(2, 2, 1, 1);
+
+    await tester.pumpWidget(mapWithToken(1));
+    await tester.pump();
+    viewer = tester.widget<InteractiveViewer>(find.byType(InteractiveViewer));
+
+    expect(viewer.transformationController!.value.storage, initial.storage);
+  });
+
   test('keeps the selected-region border constant while zooming', () {
     const assetToScreenScale = 1.25;
     for (final zoom in [1.0, 2.0, 6.0, 12.0]) {
@@ -1091,37 +1149,77 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('video export progress floats without a blocking dialog', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: Align(
-            alignment: Alignment.bottomCenter,
-            child: MapExportFloatingProgress(
-              progress: MapExportProgress(MapExportPhase.rendering, .42),
+  for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
+    testWidgets('export progress uses a blocking center dialog on $platform', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      var backgroundTaps = 0;
+      var cancellationRequests = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(platform: platform),
+          home: Scaffold(
+            body: Stack(
+              children: [
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: () => backgroundTaps += 1,
+                    child: const ColoredBox(color: Colors.white),
+                  ),
+                ),
+                ExportProgressDialog(
+                  progress: const MapExportProgress(
+                    MapExportPhase.rendering,
+                    .42,
+                  ),
+                  format: MapShareFormat.video,
+                  onCancel: () => cancellationRequests += 1,
+                ),
+              ],
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(
-      find.byKey(const Key('share-export-floating-progress')),
-      findsOneWidget,
-    );
-    expect(find.byType(CupertinoAlertDialog), findsNothing);
-    expect(find.text('42%'), findsOneWidget);
-    expect(
-      tester
-          .widget<LinearProgressIndicator>(
-            find.byKey(const Key('share-video-progress')),
-          )
-          .value,
-      .42,
-    );
-  });
+      expect(
+        find.byKey(const Key('share-export-progress-dialog')),
+        findsOneWidget,
+      );
+      expect(find.byType(CupertinoAlertDialog), findsNothing);
+      expect(find.text('42%'), findsOneWidget);
+      expect(find.text('내보내기 취소'), findsOneWidget);
+      expect(
+        tester
+            .widget<LinearProgressIndicator>(
+              find.byKey(const Key('share-video-progress')),
+            )
+            .value,
+        .42,
+      );
+
+      final card = tester.widget<DecoratedBox>(
+        find.byKey(const Key('share-export-progress-card')),
+      );
+      final decoration = card.decoration as BoxDecoration;
+      expect(decoration.borderRadius, BorderRadius.circular(30));
+      expect(
+        tester
+            .getSize(find.byKey(const Key('share-export-progress-card')))
+            .width,
+        closeTo(390 * .82, 1),
+      );
+
+      await tester.tapAt(const Offset(12, 12));
+      await tester.pump();
+      expect(backgroundTaps, 0);
+      await tester.tap(find.text('내보내기 취소'));
+      expect(cancellationRequests, 1);
+    });
+  }
 
   for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
     testWidgets('export format picker uses the Sasang sheet on $platform', (
@@ -1181,15 +1279,18 @@ void main() {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
-          body: MapExportFloatingProgress(
+          body: ExportProgressDialog(
             progress: MapExportProgress(MapExportPhase.encoding),
+            format: MapShareFormat.video,
           ),
         ),
       ),
     );
 
-    expect(find.text('영상을 저장하고 있어요'), findsOneWidget);
+    expect(find.text('거의 다 됐어요'), findsOneWidget);
+    expect(find.text('완성된 영상을 저장하고 있어요.'), findsOneWidget);
     expect(find.byKey(const Key('share-video-progress-percent')), findsNothing);
+    expect(find.byKey(const Key('share-export-cancel')), findsNothing);
     expect(
       tester
           .widget<LinearProgressIndicator>(
@@ -1198,6 +1299,59 @@ void main() {
           .value,
       isNull,
     );
+  });
+
+  testWidgets('backup uses the shared indeterminate center progress modal', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: Scaffold(body: BackupProgressDialog())),
+    );
+
+    expect(find.byKey(const Key('backup-progress-dialog')), findsOneWidget);
+    expect(find.text('백업 파일을 만들고 있어요'), findsOneWidget);
+    expect(find.textContaining('%'), findsNothing);
+    expect(
+      tester
+          .widget<LinearProgressIndicator>(
+            find.byKey(const Key('backup-progress-indicator')),
+          )
+          .value,
+      isNull,
+    );
+    expect(find.byType(CupertinoAlertDialog), findsNothing);
+  });
+
+  testWidgets('North Korea confirmation uses the Sasang center modal', (
+    tester,
+  ) async {
+    bool? result;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => CupertinoButton(
+            onPressed: () async {
+              result = await showSasangCenterConfirmDialog(
+                context,
+                title: '북한 방문 확인 · 1/3',
+                message: northKoreaConfirmationMessage(1),
+                action: '확인',
+              );
+            },
+            child: const Text('열기'),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('열기'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('sasang-center-confirm-card')), findsOneWidget);
+    expect(find.byType(CupertinoAlertDialog), findsNothing);
+    expect(find.text('진짜 방문하셨다고요 ?????'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('sasang-center-confirm-action')));
+    await tester.pumpAndSettle();
+    expect(result, isTrue);
   });
 
   test('travel progress drops decimals and stays within 0 to 100 percent', () {
@@ -1472,6 +1626,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('백업 파일 만들기'), findsOneWidget);
     expect(find.textContaining('암호화되지 않으므로'), findsOneWidget);
+    expect(find.byKey(const Key('sasang-center-confirm-card')), findsOneWidget);
+    expect(find.byType(CupertinoAlertDialog), findsNothing);
     await tester.tap(find.text('취소'));
     await tester.pumpAndSettle();
 

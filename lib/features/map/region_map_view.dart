@@ -21,6 +21,7 @@ class RegionMapView extends StatefulWidget {
     required this.selectedRegionCode,
     required this.onSelectRegion,
     required this.storage,
+    this.resetViewToken = 0,
     super.key,
   });
 
@@ -30,6 +31,7 @@ class RegionMapView extends StatefulWidget {
   final String? selectedRegionCode;
   final ValueChanged<String?> onSelectRegion;
   final SasangStorage storage;
+  final int resetViewToken;
 
   @override
   State<RegionMapView> createState() => _RegionMapViewState();
@@ -57,6 +59,10 @@ class _RegionMapViewState extends State<RegionMapView> {
       _controller.value = Matrix4.identity();
       _initializedAsset = null;
       _parsePaths();
+    }
+    if (oldWidget.resetViewToken != widget.resetViewToken) {
+      _controller.value = Matrix4.identity();
+      _initializedAsset = null;
     }
     unawaited(_loadImages());
   }

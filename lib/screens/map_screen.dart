@@ -15,9 +15,11 @@ import '../features/photos/north_korea_visit_gate.dart';
 import '../features/photos/region_photo_album_sheet.dart';
 import '../features/photos/region_photo_flow.dart';
 import '../features/share/map_share_service.dart';
+import '../features/share/export_progress_dialog.dart';
 import '../features/state/sasang_state.dart';
 import '../models/map_models.dart';
 import '../widgets/ad_banner.dart';
+import '../widgets/sasang_center_modal.dart';
 import '../widgets/sasang_ui.dart';
 
 enum _ExportDestination { gallery, share }
@@ -54,8 +56,10 @@ class _MapScreenState extends State<MapScreen> {
   bool _saving = false;
   bool _adShown = false;
   MapExportProgress? _exportProgress;
+  MapShareFormat? _activeExportFormat;
   MapExportCancellationToken? _exportCancellationToken;
   ({RegionMapAsset map, MapMode mode})? _videoRetry;
+  int _worldViewResetToken = 0;
 
   @override
   void initState() {
@@ -144,29 +148,12 @@ class _MapScreenState extends State<MapScreen> {
       return true;
     }
     final attempt = _northKoreaVisitGate.confirmedCount + 1;
-    final approved =
-        await showCupertinoDialog<bool>(
-          context: context,
-          builder: (context) => CupertinoAlertDialog(
-            title: Text('북한 방문 확인 · $attempt/3'),
-            content: Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(northKoreaConfirmationMessage(attempt)),
-            ),
-            actions: [
-              CupertinoDialogAction(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('취소'),
-              ),
-              CupertinoDialogAction(
-                isDefaultAction: true,
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('확인'),
-              ),
-            ],
-          ),
-        ) ??
-        false;
+    final approved = await showSasangCenterConfirmDialog(
+      context,
+      title: '북한 방문 확인 · $attempt/3',
+      message: northKoreaConfirmationMessage(attempt),
+      action: '확인',
+    );
     return _northKoreaVisitGate.registerDecision(approved);
   }
 
@@ -214,13 +201,12 @@ class _MapScreenState extends State<MapScreen> {
     if (_exportProgress != null) return;
     final isVideo = format == MapShareFormat.video;
     final cancellationToken = isVideo ? MapExportCancellationToken() : null;
-    if (isVideo) {
-      setState(() {
-        _exportProgress = const MapExportProgress(MapExportPhase.preparing);
-        _exportCancellationToken = cancellationToken;
-        _videoRetry = (map: map, mode: mode);
-      });
-    }
+    setState(() {
+      _exportProgress = const MapExportProgress(MapExportPhase.preparing);
+      _activeExportFormat = format;
+      _exportCancellationToken = cancellationToken;
+      _videoRetry = isVideo ? (map: map, mode: mode) : null;
+    });
     try {
       final result = format == MapShareFormat.image
           ? await _shareService.exportImage(
@@ -236,30 +222,35 @@ class _MapScreenState extends State<MapScreen> {
               albums: widget.state.regionPhotoAlbums,
               cancellationToken: cancellationToken,
               onProgress: (value) {
-                if (mounted) setState(() => _exportProgress = value);
+                if (mounted && cancellationToken?.isCancelled != true) {
+                  setState(() => _exportProgress = value);
+                }
               },
               saveToGallery: false,
             );
       if (!mounted) return;
-      if (isVideo) setState(_clearExportState);
+      setState(_clearExportState);
       await _completeExport(result, format);
     } on MapExportCancelledException {
-      if (mounted) setState(_clearExportState);
-    } on Object catch (error) {
-      if (!mounted) return;
-      if (isVideo) {
+      if (mounted) {
         setState(() {
-          _exportProgress = const MapExportProgress(MapExportPhase.failed);
+          _exportProgress = const MapExportProgress(MapExportPhase.cancelled);
           _exportCancellationToken = null;
         });
-      } else {
-        _showError('내보내기를 완료하지 못했어요', error);
       }
+    } on Object catch (error) {
+      if (!mounted) return;
+      debugPrint('Map export failed: $error');
+      setState(() {
+        _exportProgress = const MapExportProgress(MapExportPhase.failed);
+        _exportCancellationToken = null;
+      });
     }
   }
 
   void _clearExportState() {
     _exportProgress = null;
+    _activeExportFormat = null;
     _exportCancellationToken = null;
     _videoRetry = null;
   }
@@ -357,6 +348,9 @@ class _MapScreenState extends State<MapScreen> {
                   selectedRegionCode: widget.state.selectedRegionCode,
                   onSelectRegion: widget.state.selectRegion,
                   storage: widget.state.storage,
+                  resetViewToken: layerMode == MapMode.world
+                      ? _worldViewResetToken
+                      : 0,
                 ),
             ],
           ),
@@ -376,7 +370,10 @@ class _MapScreenState extends State<MapScreen> {
                       ? null
                       : () => _openShareSheet(map, mode),
                   onModeChanged: (next) {
-                    _search.clear();
+                    setState(() {
+                      _search.clear();
+                      if (next == MapMode.world) _worldViewResetToken++;
+                    });
                     widget.state.setMode(next);
                   },
                 ),
@@ -412,26 +409,31 @@ class _MapScreenState extends State<MapScreen> {
             left: 24,
             right: 24,
             bottom: bottomOverlayOffset,
-            child: _exportProgress != null
-                ? MapExportFloatingProgress(
-                    progress: _exportProgress!,
-                    onCancel:
-                        _exportCancellationToken == null ||
-                            _exportProgress!.phase == MapExportPhase.encoding
-                        ? null
-                        : _cancelExport,
-                    onRetry: _exportProgress!.phase == MapExportPhase.failed
-                        ? _retryVideoExport
-                        : null,
-                    onClose:
-                        _exportProgress!.phase == MapExportPhase.failed ||
-                            _exportProgress!.phase == MapExportPhase.cancelled
-                        ? () => setState(_clearExportState)
-                        : null,
-                  )
-                : selected == null
+            child: selected == null
                 ? _selectionHint()
                 : _regionControl(selected, mode),
+          ),
+        if (_exportProgress != null)
+          Positioned.fill(
+            child: ExportProgressDialog(
+              progress: _exportProgress!,
+              format: _activeExportFormat ?? MapShareFormat.video,
+              onCancel:
+                  _exportCancellationToken == null ||
+                      _exportProgress!.phase == MapExportPhase.encoding
+                  ? null
+                  : _cancelExport,
+              onRetry:
+                  _exportProgress!.phase == MapExportPhase.failed &&
+                      _videoRetry != null
+                  ? _retryVideoExport
+                  : null,
+              onClose:
+                  _exportProgress!.phase == MapExportPhase.failed ||
+                      _exportProgress!.phase == MapExportPhase.cancelled
+                  ? () => setState(_clearExportState)
+                  : null,
+            ),
           ),
       ],
     );
@@ -541,6 +543,7 @@ class _PersistentMapLayer extends StatelessWidget {
     required this.selectedRegionCode,
     required this.onSelectRegion,
     required this.storage,
+    required this.resetViewToken,
     super.key,
   });
 
@@ -550,6 +553,7 @@ class _PersistentMapLayer extends StatelessWidget {
   final String? selectedRegionCode;
   final ValueChanged<String?> onSelectRegion;
   final SasangStorage storage;
+  final int resetViewToken;
 
   @override
   Widget build(BuildContext context) => FutureBuilder<RegionMapAsset>(
@@ -564,6 +568,7 @@ class _PersistentMapLayer extends StatelessWidget {
           selectedRegionCode: selectedRegionCode,
           onSelectRegion: onSelectRegion,
           storage: storage,
+          resetViewToken: resetViewToken,
         );
       }
       if (snapshot.hasError) {
@@ -931,133 +936,6 @@ Future<_ExportDestination?> _showSasangExportDestinationPicker(
     ],
   ),
 );
-
-class MapExportFloatingProgress extends StatelessWidget {
-  const MapExportFloatingProgress({
-    required this.progress,
-    this.onCancel,
-    this.onRetry,
-    this.onClose,
-    super.key,
-  });
-
-  final MapExportProgress progress;
-  final VoidCallback? onCancel;
-  final VoidCallback? onRetry;
-  final VoidCallback? onClose;
-
-  @override
-  Widget build(BuildContext context) {
-    final fraction = progress.phase == MapExportPhase.rendering
-        ? progress.fraction?.clamp(0, 1).toDouble()
-        : null;
-    final failed = progress.phase == MapExportPhase.failed;
-    final cancelled = progress.phase == MapExportPhase.cancelled;
-    final title = switch (progress.phase) {
-      MapExportPhase.preparing => '여행 기록을 준비하고 있어요',
-      MapExportPhase.rendering => '여행 영상을 만들고 있어요',
-      MapExportPhase.encoding => '영상을 저장하고 있어요',
-      MapExportPhase.ready => '영상이 준비됐어요',
-      MapExportPhase.cancelled => '내보내기를 중단했어요',
-      MapExportPhase.failed => '영상을 만들지 못했어요',
-    };
-    return DecoratedBox(
-      key: const Key('share-export-floating-progress'),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .97),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: SasangOverlayStyle.border, width: .6),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 13, 12, 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      color: SasangColors.ink,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                if (fraction != null)
-                  Text(
-                    '${(fraction * 100).floor()}%',
-                    key: const Key('share-video-progress-percent'),
-                    style: const TextStyle(
-                      color: SasangColors.secondary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                if (onCancel != null)
-                  CupertinoButton(
-                    key: const Key('share-export-cancel'),
-                    padding: const EdgeInsets.only(left: 14),
-                    minimumSize: const Size(42, 28),
-                    onPressed: onCancel,
-                    child: const Text('중단', style: TextStyle(fontSize: 13)),
-                  ),
-              ],
-            ),
-            if (failed || cancelled) ...[
-              const SizedBox(height: 5),
-              Text(
-                failed ? '기기 저장 공간을 확인한 뒤 다시 시도해 주세요.' : '지도와 기록은 그대로 유지됩니다.',
-                style: const TextStyle(
-                  color: SasangColors.secondary,
-                  fontSize: 12,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  if (onClose != null)
-                    CupertinoButton(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      minimumSize: const Size(44, 30),
-                      onPressed: onClose,
-                      child: const Text('닫기', style: TextStyle(fontSize: 13)),
-                    ),
-                  if (onRetry != null)
-                    CupertinoButton(
-                      key: const Key('share-export-retry'),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      minimumSize: const Size(44, 30),
-                      onPressed: onRetry,
-                      child: const Text(
-                        '다시 시도',
-                        style: TextStyle(fontSize: 13),
-                      ),
-                    ),
-                ],
-              ),
-            ] else ...[
-              const SizedBox(height: 9),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(2),
-                child: LinearProgressIndicator(
-                  key: const Key('share-video-progress'),
-                  value: fraction,
-                  minHeight: 3,
-                  backgroundColor: const Color(0xFFE4E4E7),
-                  color: SasangColors.accent,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 int travelProgressPercent(int visitedCount, int totalCount) {
   if (totalCount <= 0 || visitedCount <= 0) return 0;

@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../core/theme/sasang_theme.dart';
+import '../features/backup/backup_progress_dialog.dart';
 import '../features/backup/sasang_backup_service.dart';
 import '../features/more/info_content.dart';
 import '../features/state/sasang_state.dart';
 import '../widgets/ad_banner.dart';
+import '../widgets/sasang_center_modal.dart';
 import '../widgets/sasang_ui.dart';
 
 const _backgroundColor = Color(0xFFF7F7F8);
@@ -29,10 +31,11 @@ class _MoreScreenState extends State<MoreScreen> {
   bool _backupInProgress = false;
 
   Future<void> _backup() async {
-    final approved = await _confirm(
-      '데이터 백업하기',
-      '여행 기록과 원본 사진을 하나의 파일로 만듭니다. 백업 파일은 암호화되지 않으므로 안전한 곳에 보관해 주세요.',
-      '백업 파일 만들기',
+    final approved = await showSasangCenterConfirmDialog(
+      context,
+      title: '데이터 백업하기',
+      message: '여행 기록과 원본 사진을 하나의 파일로 만듭니다. 백업 파일은 암호화되지 않으므로 안전한 곳에 보관해 주세요.',
+      action: '백업 파일 만들기',
     );
     if (!approved || !mounted) return;
     setState(() => _backupInProgress = true);
@@ -43,6 +46,7 @@ class _MoreScreenState extends State<MoreScreen> {
         albums: widget.state.regionPhotoAlbums,
       );
       if (!mounted) return;
+      setState(() => _backupInProgress = false);
       final renderBox = context.findRenderObject() as RenderBox?;
       final origin = renderBox == null
           ? Rect.fromLTWH(0, 0, MediaQuery.sizeOf(context).width, 1)
@@ -121,70 +125,81 @@ class _MoreScreenState extends State<MoreScreen> {
   );
 
   @override
-  Widget build(BuildContext context) => ColoredBox(
-    color: _backgroundColor,
-    child: SafeArea(
-      child: ListView(
-        key: const ValueKey('more-scroll-view'),
-        padding: const EdgeInsets.only(top: 22, bottom: 128),
-        children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 22),
-            child: Text(
-              '더보기',
-              key: ValueKey('more-page-title'),
-              style: TextStyle(
-                color: SasangColors.ink,
-                fontSize: 30,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.8,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          const _MoreAdArea(),
-          const SizedBox(height: 32),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 22),
-            child: _section('map', '지도', [
-              _MoreMenuItem(
-                label: '지도 상점',
-                onTap: () => Navigator.pushNamed(context, '/map-store'),
-              ),
-            ]),
-          ),
-          const SizedBox(height: 32),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 22),
-            child: _section('information', '약관 및 정보', [
-              for (final item in InfoContent.items)
-                _MoreMenuItem(
-                  label: item.label,
-                  onTap: () => Navigator.pushNamed(context, '/info/${item.id}'),
+  Widget build(BuildContext context) => Stack(
+    children: [
+      ColoredBox(
+        color: _backgroundColor,
+        child: SafeArea(
+          child: ListView(
+            key: const ValueKey('more-scroll-view'),
+            padding: const EdgeInsets.only(top: 22, bottom: 128),
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 22),
+                child: Text(
+                  '더보기',
+                  key: ValueKey('more-page-title'),
+                  style: TextStyle(
+                    color: SasangColors.ink,
+                    fontSize: 30,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.8,
+                  ),
                 ),
-            ]),
-          ),
-          const SizedBox(height: 32),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 22),
-            child: _section('account', '계정 및 데이터', [
-              _MoreMenuItem(
-                label: _backupInProgress ? '백업 파일 만드는 중…' : '데이터 백업하기',
-                onTap: _backupInProgress ? null : _backup,
-                showsChevron: false,
               ),
-              _MoreMenuItem(label: '로그아웃', onTap: _logout, showsChevron: false),
-              _MoreMenuItem(
-                label: '데이터 지우고 로그아웃하기',
-                onTap: _clear,
-                showsChevron: false,
-                destructive: true,
+              const SizedBox(height: 24),
+              const _MoreAdArea(),
+              const SizedBox(height: 32),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+                child: _section('map', '지도', [
+                  _MoreMenuItem(
+                    label: '지도 상점',
+                    onTap: () => Navigator.pushNamed(context, '/map-store'),
+                  ),
+                ]),
               ),
-            ]),
+              const SizedBox(height: 32),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+                child: _section('information', '약관 및 정보', [
+                  for (final item in InfoContent.items)
+                    _MoreMenuItem(
+                      label: item.label,
+                      onTap: () =>
+                          Navigator.pushNamed(context, '/info/${item.id}'),
+                    ),
+                ]),
+              ),
+              const SizedBox(height: 32),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+                child: _section('account', '계정 및 데이터', [
+                  _MoreMenuItem(
+                    label: _backupInProgress ? '백업 파일 만드는 중…' : '데이터 백업하기',
+                    onTap: _backupInProgress ? null : _backup,
+                    showsChevron: false,
+                  ),
+                  _MoreMenuItem(
+                    label: '로그아웃',
+                    onTap: _logout,
+                    showsChevron: false,
+                  ),
+                  _MoreMenuItem(
+                    label: '데이터 지우고 로그아웃하기',
+                    onTap: _clear,
+                    showsChevron: false,
+                    destructive: true,
+                  ),
+                ]),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-    ),
+      if (_backupInProgress)
+        const Positioned.fill(child: BackupProgressDialog()),
+    ],
   );
 
   Widget _section(String id, String title, List<_MoreMenuItem> items) => Column(
