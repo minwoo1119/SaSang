@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../core/theme/sasang_theme.dart';
+import '../features/backup/sasang_backup_service.dart';
 import '../features/more/info_content.dart';
 import '../features/state/sasang_state.dart';
 import '../widgets/ad_banner.dart';
@@ -12,14 +14,74 @@ const _surfaceColor = Color(0xFFFFFFFF);
 const _borderColor = Color(0xFFE9E9ED);
 
 class MoreScreen extends StatefulWidget {
-  const MoreScreen({required this.state, super.key});
+  const MoreScreen({required this.state, super.key, this.backupService});
   final SasangState state;
+  final SasangBackupService? backupService;
 
   @override
   State<MoreScreen> createState() => _MoreScreenState();
 }
 
 class _MoreScreenState extends State<MoreScreen> {
+  late final SasangBackupService _backupService =
+      widget.backupService ??
+      SasangBackupService(storage: widget.state.storage);
+  bool _backupInProgress = false;
+
+  Future<void> _backup() async {
+    final approved = await _confirm(
+      '데이터 백업하기',
+      '여행 기록과 원본 사진을 하나의 파일로 만듭니다. 백업 파일은 암호화되지 않으므로 안전한 곳에 보관해 주세요.',
+      '백업 파일 만들기',
+    );
+    if (!approved || !mounted) return;
+    setState(() => _backupInProgress = true);
+    try {
+      final result = await _backupService.create(
+        name: widget.state.name,
+        profileImageUri: widget.state.profileImageUri,
+        albums: widget.state.regionPhotoAlbums,
+      );
+      if (!mounted) return;
+      final renderBox = context.findRenderObject() as RenderBox?;
+      final origin = renderBox == null
+          ? Rect.fromLTWH(0, 0, MediaQuery.sizeOf(context).width, 1)
+          : renderBox.localToGlobal(Offset.zero) & renderBox.size;
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(result.file.path, mimeType: 'application/zip')],
+          title: '사상 데이터 백업',
+          sharePositionOrigin: origin,
+        ),
+      );
+    } on SasangBackupException catch (error) {
+      if (mounted) await _showBackupError(error.message);
+    } on Object {
+      if (mounted) {
+        await _showBackupError('백업 파일을 만들지 못했어요. 잠시 후 다시 시도해 주세요.');
+      }
+    } finally {
+      if (mounted) setState(() => _backupInProgress = false);
+    }
+  }
+
+  Future<void> _showBackupError(String message) => showCupertinoDialog<void>(
+    context: context,
+    builder: (context) => CupertinoAlertDialog(
+      title: const Text('백업 실패'),
+      content: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Text(message),
+      ),
+      actions: [
+        CupertinoDialogAction(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('확인'),
+        ),
+      ],
+    ),
+  );
+
   Future<void> _logout() async {
     final approved = await _confirm(
       '로그아웃',
@@ -106,6 +168,11 @@ class _MoreScreenState extends State<MoreScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 22),
             child: _section('account', '계정 및 데이터', [
+              _MoreMenuItem(
+                label: _backupInProgress ? '백업 파일 만드는 중…' : '데이터 백업하기',
+                onTap: _backupInProgress ? null : _backup,
+                showsChevron: false,
+              ),
               _MoreMenuItem(label: '로그아웃', onTap: _logout, showsChevron: false),
               _MoreMenuItem(
                 label: '데이터 지우고 로그아웃하기',
@@ -183,7 +250,7 @@ class _MoreMenuItem {
   });
 
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final bool showsChevron;
   final bool destructive;
 }

@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -8,6 +10,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sasang/core/theme/sasang_theme.dart';
 import 'package:sasang/core/storage/sasang_storage.dart';
 import 'package:sasang/core/layout/sasang_layout.dart';
+import 'package:sasang/features/backup/sasang_backup_service.dart';
 import 'package:sasang/features/more/info_content.dart';
 import 'package:sasang/features/map/map_mode_selector.dart';
 import 'package:sasang/features/map/map_preview.dart';
@@ -40,6 +43,71 @@ void main() {
     expect(parsePhotoDate('2025:03:09 18:02:11'), DateTime(2025, 3, 9, 12));
     expect(photoDateKey(DateTime(2026, 9, 6)), '2026-09-06');
   });
+
+  test(
+    'creates one portable backup with manifest and original photos',
+    () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'sasang-backup-test-',
+      );
+      addTearDown(() => directory.delete(recursive: true));
+      final profile = File('${directory.path}/profile.png');
+      final photo = File('${directory.path}/travel.jpg');
+      await profile.writeAsBytes([1, 2, 3]);
+      await photo.writeAsBytes([4, 5, 6, 7]);
+      final service = SasangBackupService(
+        storage: _BackupStorage({
+          'local://profile': profile,
+          'local://travel': photo,
+        }),
+        outputDirectory: directory,
+        clock: () => DateTime(2026, 10, 17, 14, 5, 6),
+      );
+      final travelPhoto = RegionPhoto(
+        id: 'photo-1',
+        uri: 'local://travel',
+        width: 1200,
+        height: 800,
+        scale: 1.4,
+        offsetX: 12,
+        offsetY: -8,
+        createdAt: '2026-10-17T00:00:00Z',
+      );
+
+      final result = await service.create(
+        name: '여행자',
+        profileImageUri: 'local://profile',
+        albums: {'world:KR': RegionPhotoAlbum.fromLegacy(travelPhoto)},
+      );
+
+      expect(
+        result.file.path,
+        endsWith('Sasang-backup-20261017-140506.sasangbackup'),
+      );
+      expect(result.photoCount, 1);
+      final archive = ZipDecoder().decodeBytes(await result.file.readAsBytes());
+      expect(
+        archive.files.map((file) => file.name),
+        containsAll(['manifest.json', 'media/00000.png', 'media/00001.jpg']),
+      );
+      final manifestFile = archive.files.singleWhere(
+        (file) => file.name == 'manifest.json',
+      );
+      final manifest =
+          jsonDecode(utf8.decode(manifestFile.content)) as Map<String, dynamic>;
+      expect(manifest['format'], SasangBackupService.format);
+      expect(manifest['formatVersion'], SasangBackupService.formatVersion);
+      expect((manifest['profile'] as Map<String, dynamic>)['name'], '여행자');
+      final albums = manifest['regionPhotoAlbums'] as Map<String, dynamic>;
+      final album = albums['world:KR'] as Map<String, dynamic>;
+      final storedPhoto =
+          (album['photos'] as List<dynamic>).single as Map<String, dynamic>;
+      expect(storedPhoto['uri'], 'media/00001.jpg');
+      expect(storedPhoto['scale'], 1.4);
+      expect(storedPhoto['offsetX'], 12);
+      expect(storedPhoto['offsetY'], -8);
+    },
+  );
 
   testWidgets('photo date picker stays legible in system dark mode', (
     tester,
@@ -470,13 +538,23 @@ void main() {
     expect(rect.bottom, lessThan(844));
   });
 
-  test('world map initially fills the viewport height', () {
+  test('world map initially fills the screen with Korea centered', () {
     const viewport = Size(390, 844);
     const asset = RegionMapAsset(
       version: 'test',
       width: 720,
       height: 360,
-      regions: [],
+      regions: [
+        MapRegion(
+          code: 'KR',
+          name: '대한민국',
+          geometryType: 'Polygon',
+          polygonCount: 1,
+          bounds: RegionBounds(x: 590, y: 120, width: 8, height: 10),
+          anchor: MapCoordinate(x: 594, y: 125),
+          pathData: 'M590 120 L598 120 L598 130 Z',
+        ),
+      ],
     );
     final contentRect = mapContentRect(viewport, asset);
     final transform = initialMapTransform(
@@ -485,14 +563,20 @@ void main() {
       mode: MapMode.world,
     );
     final transformedRect = MatrixUtils.transformRect(transform, contentRect);
-
-    expect(
-      initialMapScale(viewport: viewport, asset: asset, mode: MapMode.world),
-      closeTo(844 / 195, .0001),
+    final koreaBeforeTransform = Offset(
+      contentRect.left + 594 / asset.width * contentRect.width,
+      contentRect.top + 125 / asset.height * contentRect.height,
     );
-    expect(transformedRect.top, closeTo(0, .0001));
-    expect(transformedRect.bottom, closeTo(844, .0001));
-    expect(transformedRect.center, viewport.center(Offset.zero));
+    final koreaAfterTransform = MatrixUtils.transformPoint(
+      transform,
+      koreaBeforeTransform,
+    );
+
+    expect(transformedRect.top, lessThanOrEqualTo(0));
+    expect(transformedRect.bottom, greaterThanOrEqualTo(844));
+    expect(transformedRect.left, lessThanOrEqualTo(0));
+    expect(transformedRect.right, greaterThanOrEqualTo(390));
+    expect(koreaAfterTransform, viewport.center(Offset.zero));
     expect(
       initialMapScale(viewport: viewport, asset: asset, mode: MapMode.korea),
       1,
@@ -1350,6 +1434,7 @@ void main() {
     await tester.pump();
     expect(find.text('계정 및 데이터'), findsOneWidget);
     expect(find.text('로그아웃'), findsOneWidget);
+    expect(find.text('데이터 백업하기'), findsOneWidget);
     expect(find.text('데이터 지우고 로그아웃하기'), findsOneWidget);
 
     final accountCard = tester.widget<Container>(
@@ -1362,6 +1447,13 @@ void main() {
     final clearText = tester.widget<Text>(find.text('데이터 지우고 로그아웃하기'));
     expect(logoutText.style?.color, SasangColors.ink);
     expect(clearText.style?.color, CupertinoColors.systemRed);
+
+    await tester.tap(find.byKey(const Key('more-menu-데이터 백업하기')));
+    await tester.pumpAndSettle();
+    expect(find.text('백업 파일 만들기'), findsOneWidget);
+    expect(find.textContaining('암호화되지 않으므로'), findsOneWidget);
+    await tester.tap(find.text('취소'));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('more-menu-로그아웃')));
     await tester.pumpAndSettle();
@@ -1463,4 +1555,13 @@ class _MemoryStorage extends SasangStorage {
 
   @override
   Future<File?> resolveImage(String? uri) async => null;
+}
+
+class _BackupStorage extends SasangStorage {
+  _BackupStorage(this.files);
+
+  final Map<String, File> files;
+
+  @override
+  Future<File?> resolveImage(String? uri) async => files[uri];
 }
