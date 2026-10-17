@@ -48,11 +48,36 @@ List<MapStoreProduct> mapStoreProducts(RegionMapAsset asset) {
   return products;
 }
 
-class MapStoreScreen extends StatelessWidget {
+List<MapStoreProduct> filterMapStoreProducts(
+  List<MapStoreProduct> products,
+  String query,
+) {
+  final normalizedQuery = query.trim().toLowerCase();
+  if (normalizedQuery.isEmpty) return products;
+  return products
+      .where(
+        (product) =>
+            product.name.toLowerCase().contains(normalizedQuery) ||
+            product.code.toLowerCase().contains(normalizedQuery) ||
+            product.description.toLowerCase().contains(normalizedQuery),
+      )
+      .toList(growable: false);
+}
+
+class MapStoreScreen extends StatefulWidget {
   const MapStoreScreen({super.key, this.mapAsset});
 
-  static final _maps = MapRepository();
   final Future<RegionMapAsset>? mapAsset;
+
+  @override
+  State<MapStoreScreen> createState() => _MapStoreScreenState();
+}
+
+class _MapStoreScreenState extends State<MapStoreScreen> {
+  static final _maps = MapRepository();
+  late final Future<RegionMapAsset> _mapAsset =
+      widget.mapAsset ?? _maps.load(MapMode.world);
+  String _query = '';
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -75,13 +100,15 @@ class MapStoreScreen extends StatelessWidget {
       ),
     ),
     body: FutureBuilder<RegionMapAsset>(
-      future: mapAsset ?? _maps.load(MapMode.world),
+      future: _mapAsset,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CupertinoActivityIndicator());
         }
         final products = mapStoreProducts(snapshot.data!);
+        final filteredProducts = filterMapStoreProducts(products, _query);
         return CustomScrollView(
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
@@ -110,7 +137,33 @@ class MapStoreScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 36),
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      height: 48,
+                      child: CupertinoSearchTextField(
+                        key: const ValueKey('map-store-search-field'),
+                        placeholder: '국가 지도 검색',
+                        placeholderStyle: const TextStyle(
+                          color: SasangColors.secondary,
+                          fontSize: 15,
+                        ),
+                        style: const TextStyle(
+                          color: SasangColors.ink,
+                          fontSize: 15,
+                        ),
+                        itemColor: SasangColors.secondary,
+                        decoration: BoxDecoration(
+                          color: SasangColors.card,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: SasangColors.border,
+                            width: .8,
+                          ),
+                        ),
+                        onChanged: (value) => setState(() => _query = value),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -122,7 +175,8 @@ class MapStoreScreen extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '${products.length}개',
+                          '${filteredProducts.length}개',
+                          key: const ValueKey('map-store-result-count'),
                           style: const TextStyle(
                             color: SasangColors.secondary,
                             fontSize: 12,
@@ -135,35 +189,70 @@ class MapStoreScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(
-                24,
-                0,
-                24,
-                MediaQuery.paddingOf(context).bottom + 48,
-              ),
-              sliver: SliverGrid(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final product = products[index];
-                  return _ProductCard(
-                    product: product,
-                    onPressed: () => _showProduct(context, product),
-                  );
-                }, childCount: products.length),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  mainAxisExtent:
-                      244 +
-                      ((MediaQuery.textScalerOf(context).scale(1) - 1).clamp(
-                            0,
-                            2,
-                          ) *
-                          120),
+            if (filteredProducts.isEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    24,
+                    52,
+                    24,
+                    MediaQuery.paddingOf(context).bottom + 48,
+                  ),
+                  child: const Column(
+                    children: [
+                      Text(
+                        '검색 결과가 없어요',
+                        key: ValueKey('map-store-empty-search'),
+                        style: TextStyle(
+                          color: SasangColors.ink,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        '다른 국가명이나 국가 코드를 입력해 보세요.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: SasangColors.secondary,
+                          fontSize: 14,
+                          height: 1.45,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  24,
+                  0,
+                  24,
+                  MediaQuery.paddingOf(context).bottom + 48,
+                ),
+                sliver: SliverGrid(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final product = filteredProducts[index];
+                    return _ProductCard(
+                      product: product,
+                      onPressed: () => _showProduct(context, product),
+                    );
+                  }, childCount: filteredProducts.length),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    mainAxisExtent:
+                        244 +
+                        ((MediaQuery.textScalerOf(context).scale(1) - 1).clamp(
+                              0,
+                              2,
+                            ) *
+                            120),
+                  ),
                 ),
               ),
-            ),
           ],
         );
       },

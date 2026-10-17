@@ -508,6 +508,9 @@ void main() {
     expect(find.text('국가별 지도'), findsOneWidget);
     expect(find.text('${asset.regions.length}개'), findsOneWidget);
     expect(mapStoreProducts(asset).length, asset.regions.length);
+    final japanResults = filterMapStoreProducts(mapStoreProducts(asset), '일본');
+    expect(japanResults, hasLength(1));
+    expect(japanResults.single.code, 'JP');
     expect(find.byIcon(CupertinoIcons.lock_fill), findsNothing);
     expect(find.text('출시 예정'), findsWidgets);
     expect(find.text('JP'), findsNothing);
@@ -746,6 +749,23 @@ void main() {
     expect(firstRect.top, closeTo(secondRect.top, 1));
     expect(firstRect.right, lessThan(secondRect.left));
     expect(tester.takeException(), isNull);
+
+    await tester.enterText(
+      find.byKey(const Key('map-store-search-field')),
+      '가상 국가 A',
+    );
+    await tester.pump();
+    expect(find.byKey(const Key('map-store-product-AA')), findsOneWidget);
+    expect(find.byKey(const Key('map-store-product-BB')), findsNothing);
+    expect(find.text('1개'), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const Key('map-store-search-field')),
+      '없는 국가',
+    );
+    await tester.pump();
+    expect(find.byKey(const Key('map-store-empty-search')), findsOneWidget);
+    expect(find.text('0개'), findsOneWidget);
   });
 
   for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
