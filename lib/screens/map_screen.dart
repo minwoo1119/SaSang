@@ -874,190 +874,29 @@ Future<MapShareFormat?> showAdaptiveExportFormatPicker(BuildContext context) =>
 
 Future<_ExportDestination?> _showSasangExportDestinationPicker(
   BuildContext context,
-) => _showSasangChoiceSheet<_ExportDestination>(
-  context: context,
-  title: '내보내기 완료',
-  description: '완성된 여행 지도를 어디에 남길까요?',
-  choices: const [
-    (
-      value: _ExportDestination.gallery,
-      label: '사진 보관함에 저장',
-      description: '기기의 사진 보관함에 안전하게 저장',
-    ),
-    (
-      value: _ExportDestination.share,
-      label: '다른 앱으로 공유',
-      description: '메시지나 다른 앱으로 바로 보내기',
-    ),
-  ],
+) => showSasangSheet<_ExportDestination>(
+  context,
+  _ShareSheetContent(
+    key: const Key('share-destination-sheet-content'),
+    title: '내보내기 완료',
+    subtitle: '저장하거나 다른 앱으로 바로 공유할 수 있어요.',
+    onCancel: () => Navigator.pop(context),
+    actions: [
+      _ShareOptionRow(
+        icon: CupertinoIcons.arrow_down_to_line,
+        title: '사진 보관함에 저장',
+        subtitle: '이 기기에 한 번 저장',
+        onTap: () => Navigator.pop(context, _ExportDestination.gallery),
+      ),
+      _ShareOptionRow(
+        icon: CupertinoIcons.share,
+        title: '다른 앱으로 공유',
+        subtitle: 'Instagram 등 앱 선택',
+        onTap: () => Navigator.pop(context, _ExportDestination.share),
+      ),
+    ],
+  ),
 );
-
-Future<T?> _showSasangChoiceSheet<T>({
-  required BuildContext context,
-  required String title,
-  required String description,
-  required List<({T value, String label, String description})> choices,
-  List<Key> keys = const [],
-}) {
-  var selectionMade = false;
-  return showModalBottomSheet<T>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Colors.black.withValues(alpha: .20),
-    builder: (sheetContext) {
-      final theme = Theme.of(sheetContext);
-      final colors = theme.colorScheme;
-      void close([T? value]) {
-        if (selectionMade) return;
-        selectionMade = true;
-        Navigator.pop(sheetContext, value);
-      }
-
-      return Container(
-        key: const Key('sasang-export-choice-sheet'),
-        width: double.infinity,
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(sheetContext).height * .9,
-        ),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(30, 12, 30, 36),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: colors.outlineVariant,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 28),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          color: colors.onSurface,
-                          fontSize: 23,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: -.4,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Semantics(
-                      button: true,
-                      label: '내보내기 선택 닫기',
-                      excludeSemantics: true,
-                      child: InkWell(
-                        key: const Key('close-export-choice-sheet'),
-                        borderRadius: BorderRadius.circular(20),
-                        onTap: close,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 10,
-                          ),
-                          child: Text(
-                            '닫기',
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: colors.onSurfaceVariant,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  description,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    fontSize: 15,
-                    height: 1.45,
-                  ),
-                ),
-                const SizedBox(height: 34),
-                for (var index = 0; index < choices.length; index++) ...[
-                  if (index > 0)
-                    Divider(
-                      key: Key('export-choice-divider-$index'),
-                      height: 1,
-                      thickness: 1,
-                      color: colors.outlineVariant,
-                    ),
-                  Material(
-                    color: Colors.transparent,
-                    child: Semantics(
-                      button: true,
-                      label:
-                          '${choices[index].label}. ${choices[index].description}',
-                      excludeSemantics: true,
-                      child: InkWell(
-                        key: index < keys.length ? keys[index] : null,
-                        onTap: () => close(choices[index].value),
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(minHeight: 108),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 24),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    choices[index].label,
-                                    style: theme.textTheme.titleMedium
-                                        ?.copyWith(
-                                          color: colors.onSurface,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: -.2,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    choices[index].description,
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: colors.onSurfaceVariant,
-                                      fontSize: 14,
-                                      height: 1.35,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      );
-    },
-  );
-}
 
 class MapExportFloatingProgress extends StatelessWidget {
   const MapExportFloatingProgress({
