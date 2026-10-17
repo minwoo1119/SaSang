@@ -40,6 +40,8 @@ class _RegionMapViewState extends State<RegionMapView> {
   final Map<String, ui.Image> _images = {};
   final Map<String, String> _imageUris = {};
   late Map<String, Path> _paths;
+  RegionMapAsset? _initializedAsset;
+  bool _initialTransformPending = false;
 
   @override
   void initState() {
@@ -53,6 +55,7 @@ class _RegionMapViewState extends State<RegionMapView> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.asset != widget.asset) {
       _controller.value = Matrix4.identity();
+      _initializedAsset = null;
       _parsePaths();
     }
     unawaited(_loadImages());
@@ -161,11 +164,31 @@ class _RegionMapViewState extends State<RegionMapView> {
       ..translateByDouble(-center.dx, -center.dy, 0, 1);
   }
 
+  void _scheduleInitialTransform(Size size) {
+    if (identical(_initializedAsset, widget.asset) ||
+        _initialTransformPending ||
+        size.isEmpty) {
+      return;
+    }
+    _initialTransformPending = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initialTransformPending = false;
+      if (!mounted) return;
+      _initializedAsset = widget.asset;
+      _controller.value = initialMapTransform(
+        viewport: size,
+        asset: widget.asset,
+        mode: widget.mode,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = Size(constraints.maxWidth, constraints.maxHeight);
+        _scheduleInitialTransform(size);
         return Stack(
           children: [
             GestureDetector(
@@ -417,6 +440,31 @@ Rect mapContentRect(Size viewport, RegionMapAsset asset) {
     width,
     height,
   );
+}
+
+double initialMapScale({
+  required Size viewport,
+  required RegionMapAsset asset,
+  required MapMode mode,
+}) {
+  if (mode != MapMode.world || viewport.isEmpty) return 1;
+  final contentRect = mapContentRect(viewport, asset);
+  if (contentRect.height <= 0) return 1;
+  return math.max(1, viewport.height / contentRect.height);
+}
+
+Matrix4 initialMapTransform({
+  required Size viewport,
+  required RegionMapAsset asset,
+  required MapMode mode,
+}) {
+  final scale = initialMapScale(viewport: viewport, asset: asset, mode: mode);
+  if (scale == 1) return Matrix4.identity();
+  final center = viewport.center(Offset.zero);
+  return Matrix4.identity()
+    ..translateByDouble(center.dx, center.dy, 0, 1)
+    ..scaleByDouble(scale, scale, 1, 1)
+    ..translateByDouble(-center.dx, -center.dy, 0, 1);
 }
 
 double mapStrokeWidth({

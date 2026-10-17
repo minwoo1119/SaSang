@@ -470,6 +470,35 @@ void main() {
     expect(rect.bottom, lessThan(844));
   });
 
+  test('world map initially fills the viewport height', () {
+    const viewport = Size(390, 844);
+    const asset = RegionMapAsset(
+      version: 'test',
+      width: 720,
+      height: 360,
+      regions: [],
+    );
+    final contentRect = mapContentRect(viewport, asset);
+    final transform = initialMapTransform(
+      viewport: viewport,
+      asset: asset,
+      mode: MapMode.world,
+    );
+    final transformedRect = MatrixUtils.transformRect(transform, contentRect);
+
+    expect(
+      initialMapScale(viewport: viewport, asset: asset, mode: MapMode.world),
+      closeTo(844 / 195, .0001),
+    );
+    expect(transformedRect.top, closeTo(0, .0001));
+    expect(transformedRect.bottom, closeTo(844, .0001));
+    expect(transformedRect.center, viewport.center(Offset.zero));
+    expect(
+      initialMapScale(viewport: viewport, asset: asset, mode: MapMode.korea),
+      1,
+    );
+  });
+
   test('keeps the selected-region border constant while zooming', () {
     const assetToScreenScale = 1.25;
     for (final zoom in [1.0, 2.0, 6.0, 12.0]) {
