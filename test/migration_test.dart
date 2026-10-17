@@ -919,7 +919,7 @@ void main() {
     expect(selectorRect.center.dy, closeTo(sortRect.center.dy, 1));
   });
 
-  testWidgets('more screen no longer shows personal profile controls', (
+  testWidgets('more screen groups navigation, information, and account rows', (
     tester,
   ) async {
     final state = SasangState(SasangStorage());
@@ -933,7 +933,100 @@ void main() {
     expect(find.text('개인 프로필'), findsNothing);
     expect(find.text('프로필 사진과 표시 이름을 관리해요'), findsNothing);
     expect(find.text('수정'), findsNothing);
+    expect(find.byKey(const Key('more-page-title')), findsOneWidget);
+    expect(find.text('지도'), findsOneWidget);
+    expect(find.text('약관 및 정보'), findsOneWidget);
     expect(find.text('지도 상점'), findsOneWidget);
+
+    final adArea = tester.getSize(find.byKey(const Key('more-ad-area')));
+    expect(adArea.height, 58);
+
+    for (final id in ['map', 'information']) {
+      final card = tester.widget<Container>(
+        find.byKey(Key('more-section-card-$id')),
+      );
+      final decoration = card.decoration! as BoxDecoration;
+      expect(decoration.color, const Color(0xFFFFFFFF));
+      expect(decoration.borderRadius, BorderRadius.circular(19));
+      expect(decoration.border, isNotNull);
+      expect(decoration.boxShadow, isNull);
+    }
+
+    await tester.scrollUntilVisible(
+      find.text('계정 및 데이터'),
+      240,
+      scrollable: find.descendant(
+        of: find.byKey(const Key('more-scroll-view')),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('계정 및 데이터'), findsOneWidget);
+    expect(find.text('로그아웃'), findsOneWidget);
+    expect(find.text('데이터 지우고 로그아웃하기'), findsOneWidget);
+
+    final accountCard = tester.widget<Container>(
+      find.byKey(const Key('more-section-card-account')),
+    );
+    final accountDecoration = accountCard.decoration! as BoxDecoration;
+    expect(accountDecoration.boxShadow, isNull);
+
+    final logoutText = tester.widget<Text>(find.text('로그아웃'));
+    final clearText = tester.widget<Text>(find.text('데이터 지우고 로그아웃하기'));
+    expect(logoutText.style?.color, SasangColors.ink);
+    expect(clearText.style?.color, CupertinoColors.systemRed);
+
+    await tester.tap(find.byKey(const Key('more-menu-로그아웃')));
+    await tester.pumpAndSettle();
+    var actions = tester
+        .widgetList<CupertinoDialogAction>(find.byType(CupertinoDialogAction))
+        .toList();
+    expect(actions.last.isDestructiveAction, isFalse);
+    await tester.tap(find.text('취소'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('more-menu-데이터 지우고 로그아웃하기')));
+    await tester.pumpAndSettle();
+    actions = tester
+        .widgetList<CupertinoDialogAction>(find.byType(CupertinoDialogAction))
+        .toList();
+    expect(actions.last.isDestructiveAction, isTrue);
+  });
+
+  testWidgets('more screen remains scrollable with large accessibility text', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final state = SasangState(SasangStorage());
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: const TextScaler.linear(2)),
+          child: child!,
+        ),
+        home: Scaffold(body: MoreScreen(state: state)),
+      ),
+    );
+    await tester.pump();
+
+    await tester.scrollUntilVisible(
+      find.text('데이터 지우고 로그아웃하기'),
+      240,
+      scrollable: find.descendant(
+        of: find.byKey(const Key('more-scroll-view')),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('데이터 지우고 로그아웃하기'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }
 
