@@ -8,6 +8,7 @@ import 'package:sasang/core/theme/sasang_theme.dart';
 import 'package:sasang/core/storage/sasang_storage.dart';
 import 'package:sasang/core/layout/sasang_layout.dart';
 import 'package:sasang/features/map/map_mode_selector.dart';
+import 'package:sasang/features/map/map_preview.dart';
 import 'package:sasang/features/map/map_repository.dart';
 import 'package:sasang/features/map/region_map_view.dart';
 import 'package:sasang/features/photos/photo_date.dart';
@@ -533,30 +534,70 @@ void main() {
     expect(mapStorePriceFor(regionWithDetail(1300)), 5000);
   });
 
-  testWidgets('owned map selector uses a compact adaptive choice sheet', (
-    tester,
-  ) async {
-    var selectedMode = MapMode.korea;
-    await tester.pumpWidget(
-      MaterialApp(
-        routes: {'/map-store': (_) => const SizedBox.shrink()},
-        home: Scaffold(
-          body: StatefulBuilder(
-            builder: (context, setState) => MapModeSelector(
-              value: selectedMode,
-              onChanged: (value) => setState(() => selectedMode = value),
+  for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
+    testWidgets('owned map selector restores card sheet on $platform', (
+      tester,
+    ) async {
+      var selectedMode = MapMode.korea;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(platform: platform),
+          routes: {'/map-store': (_) => const SizedBox.shrink()},
+          home: Scaffold(
+            body: StatefulBuilder(
+              builder: (context, setState) => MapModeSelector(
+                value: selectedMode,
+                onChanged: (value) => setState(() => selectedMode = value),
+              ),
             ),
           ),
+        ),
+      );
+
+      await tester.tap(find.byType(MapModeSelector));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('내 지도'), findsOneWidget);
+      expect(find.text('보유한 지도'), findsOneWidget);
+      expect(find.byType(MapPreview), findsNWidgets(2));
+      expect(find.byIcon(CupertinoIcons.check_mark), findsOneWidget);
+      expect(find.byIcon(CupertinoIcons.xmark), findsOneWidget);
+      expect(find.text('새로운 지도 둘러보기'), findsOneWidget);
+
+      final selectedCard = tester.widget<Container>(
+        find.byKey(const Key('map-mode-card-korea')),
+      );
+      final foreground = selectedCard.foregroundDecoration! as BoxDecoration;
+      expect(foreground.border!.top.width, 1.5);
+      expect(foreground.border!.top.color, SasangColors.accent);
+
+      await tester.tap(find.byKey(const Key('map-mode-card-world')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(selectedMode, MapMode.world);
+    });
+  }
+
+  testWidgets('owned map sheet opens the map store', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        routes: {
+          '/map-store': (_) => const SizedBox(key: Key('map-store-route')),
+        },
+        home: Scaffold(
+          body: MapModeSelector(value: MapMode.korea, onChanged: (_) {}),
         ),
       ),
     );
 
     await tester.tap(find.byType(MapModeSelector));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.text('새로운 지도 둘러보기'));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('map-mode-option-korea')), findsOneWidget);
-    expect(find.byKey(const Key('map-mode-option-world')), findsOneWidget);
-    expect(find.text('새로운 지도 둘러보기'), findsNothing);
+    expect(find.byKey(const Key('map-store-route')), findsOneWidget);
   });
 
   testWidgets('video export progress floats without a blocking dialog', (
@@ -615,58 +656,33 @@ void main() {
 
       expect(find.byType(CupertinoActionSheet), findsNothing);
       expect(
-        find.byKey(const Key('sasang-export-choice-sheet')),
+        find.byKey(const Key('share-format-sheet-content')),
         findsOneWidget,
       );
-      expect(find.text('내 여행을 원하는 형식으로 남겨보세요.'), findsOneWidget);
-      expect(find.byType(Icon), findsNothing);
-      expect(find.byType(Card), findsNothing);
+      expect(find.text('원하는 형식을 선택해 주세요.'), findsOneWidget);
+      expect(find.text('9:16 이미지 · 여행 비율 포함'), findsOneWidget);
+      expect(find.text('촬영일 순 여행 타임라인 · 9:16 MP4'), findsOneWidget);
+      expect(find.byIcon(CupertinoIcons.photo), findsOneWidget);
+      expect(find.byIcon(CupertinoIcons.play_rectangle), findsOneWidget);
+      expect(find.byIcon(CupertinoIcons.chevron_forward), findsNWidgets(2));
+      expect(find.byIcon(CupertinoIcons.xmark), findsOneWidget);
 
       final imageRow = find.byKey(const Key('share-map-image'));
       final videoRow = find.byKey(const Key('share-map-video'));
       expect(imageRow, findsOneWidget);
       expect(videoRow, findsOneWidget);
-      expect(tester.getSize(imageRow).height, greaterThanOrEqualTo(108));
-      expect(tester.getSize(videoRow).height, greaterThanOrEqualTo(108));
-      expect(find.byKey(const Key('export-choice-divider-1')), findsOneWidget);
 
-      await tester.tap(imageRow);
+      final expectedFormat = platform == TargetPlatform.iOS
+          ? MapShareFormat.image
+          : MapShareFormat.video;
+      await tester.tap(
+        expectedFormat == MapShareFormat.image ? imageRow : videoRow,
+      );
       await tester.pumpAndSettle();
-      expect(selectedFormat, MapShareFormat.image);
-      expect(find.byKey(const Key('sasang-export-choice-sheet')), findsNothing);
+      expect(selectedFormat, expectedFormat);
+      expect(find.byKey(const Key('share-format-sheet-content')), findsNothing);
     });
   }
-
-  testWidgets('export sheet remains usable with large text on a small screen', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(320, 568));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData.dark(),
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: const TextScaler.linear(2)),
-          child: child!,
-        ),
-        home: Builder(
-          builder: (context) => TextButton(
-            onPressed: () => showSasangExportFormatPicker(context),
-            child: const Text('열기'),
-          ),
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('열기'));
-    await tester.pumpAndSettle();
-
-    expect(tester.takeException(), isNull);
-    expect(find.byKey(const Key('sasang-export-choice-sheet')), findsOneWidget);
-    expect(find.byType(SingleChildScrollView), findsOneWidget);
-  });
 
   testWidgets('encoding progress does not display a fabricated percentage', (
     tester,

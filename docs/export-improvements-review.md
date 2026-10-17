@@ -3,7 +3,7 @@
 ## 구현 결과
 
 - Full-screen 지도와 Floating Overlay 구조를 유지했다.
-- 사진/영상 형식 선택은 iOS·Android 공통 사상 전용 Bottom Sheet를 유지하고, 30dp 좌우 여백·108dp 선택 영역·절제된 타이포그래피로 다듬었다.
+- 사진/영상 형식 선택은 iOS·Android 공통으로 기존 사상 전용 Bottom Sheet를 복원했다. 원형 형식 아이콘, 보조 설명, 화살표와 기존 여백을 포함한다.
 - 중앙 차단 모달을 제거하고 지도 하단에 렌더링 진행률, 인코딩 상태, 중단·재시도 동작을 표시한다.
 - 영상 경로를 직선에서 곡선 점선으로 바꾸고 작은 2D 비행기와 도착 펄스를 추가했다.
 - 세계 지도는 GPS → 생성된 대표 본토 앵커 → 런타임 최대 컴포넌트 순으로 위치를 결정한다.
@@ -12,10 +12,10 @@
 
 ## UI 비교
 
-| 이전 | 개선 후 |
+| 기준/이전 | 현재 |
 | --- | --- |
 | 중앙을 가리고 조작을 막는 진행 모달<br><img src="../Sasang_Codex_Handoff/references/screenshots/export_progress_current.png" width="260"> | 지도 하단 Floating Progress<br><img src="../test/goldens/floating_export_progress.png" width="260"> |
-| 장식 요소가 많은 형식 선택 화면<br><img src="../Sasang_Codex_Handoff/references/screenshots/share_format_current.png" width="260"> | 넓은 여백과 명확한 선택 영역을 갖춘 사상 커스텀 Bottom Sheet<br><img src="../test/goldens/adaptive_export_format_picker.png" width="260"> |
+| 기존 공유 모달 디자인 레퍼런스<br><img src="../Sasang_Codex_Handoff/references/screenshots/share_format_current.png" width="260"> | 아이콘·보조 설명·화살표를 갖춘 사상 커스텀 Bottom Sheet 복원<br><img src="../test/goldens/adaptive_export_format_picker.png" width="260"> |
 
 ## 영상 검토 산출물
 
@@ -38,10 +38,10 @@
 ## 검증 결과
 
 - `flutter analyze`: 통과, 0 issues
-- `flutter test`: 43 tests 통과
+- `flutter test`: 44 tests 통과
 - `pnpm map:test`: 5 tests 통과
 - iOS 영상 통합 테스트: 통과
 - iOS release `--no-codesign`: 통과
 - Android release App Bundle: 통과
 
-회귀 테스트는 프랑스 본토 대표 앵커, 사진 GPS 우선순위, 일본→미국 날짜변경선 분리, 국내 곡선 경로 결정성, 하단 진행 UI, 인코딩 단계의 가짜 퍼센트 미표시, iOS·Android 공통 형식 선택 UI, 200% 글씨 배율의 작은 다크 화면을 포함한다.
+회귀 테스트는 프랑스 본토 대표 앵커, 사진 GPS 우선순위, 일본→미국 날짜변경선 분리, 국내 곡선 경로 결정성, 하단 진행 UI, 인코딩 단계의 가짜 퍼센트 미표시, iOS·Android 공통 원본 형식 선택 UI, 대한민국/세계 지도 전환, 새로운 지도 상점 이동을 포함한다.

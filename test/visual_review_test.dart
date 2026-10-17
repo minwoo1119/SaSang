@@ -9,7 +9,11 @@ void main() {
   setUpAll(() async {
     final loader = FontLoader('SUIT')
       ..addFont(rootBundle.load('assets/fonts/SUIT-Heavy.ttf'));
-    await loader.load();
+    final iconLoader = FontLoader('packages/cupertino_icons/CupertinoIcons')
+      ..addFont(
+        rootBundle.load('packages/cupertino_icons/assets/CupertinoIcons.ttf'),
+      );
+    await Future.wait([loader.load(), iconLoader.load()]);
   });
 
   testWidgets('captures the floating export progress review surface', (

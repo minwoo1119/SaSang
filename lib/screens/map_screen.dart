@@ -692,24 +692,180 @@ class MapTopBar extends StatelessWidget {
   }
 }
 
-Future<MapShareFormat?> showSasangExportFormatPicker(BuildContext context) =>
-    _showSasangChoiceSheet<MapShareFormat>(
-      context: context,
-      title: '여행 지도 내보내기',
-      description: '내 여행을 원하는 형식으로 남겨보세요.',
-      choices: const [
-        (
-          value: MapShareFormat.image,
-          label: '사진으로 내보내기',
-          description: '방문한 지역과 비율을 이미지로 저장',
+class _ShareSheetContent extends StatelessWidget {
+  const _ShareSheetContent({
+    required this.title,
+    required this.subtitle,
+    required this.actions,
+    required this.onCancel,
+    super.key,
+  });
+
+  final String title;
+  final String subtitle;
+  final List<Widget> actions;
+  final VoidCallback onCancel;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.fromLTRB(4, 4, 4, 10),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Center(
+          child: Container(
+            width: 34,
+            height: 5,
+            decoration: BoxDecoration(
+              color: const Color(0xFFD4D4D8),
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
         ),
-        (
-          value: MapShareFormat.video,
-          label: '영상으로 내보내기',
-          description: '방문 기록을 시간순 영상으로 저장',
+        const SizedBox(height: 18),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: SasangColors.ink,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 34,
+              height: 34,
+              child: CupertinoButton(
+                key: const Key('share-sheet-close'),
+                padding: EdgeInsets.zero,
+                borderRadius: BorderRadius.circular(17),
+                color: const Color(0xFFF4F4F5),
+                onPressed: onCancel,
+                child: const Icon(
+                  CupertinoIcons.xmark,
+                  size: 14,
+                  color: SasangColors.secondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          subtitle,
+          style: const TextStyle(
+            color: SasangColors.secondary,
+            fontSize: 14,
+            height: 1.45,
+            letterSpacing: -0.15,
+          ),
+        ),
+        const SizedBox(height: 18),
+        for (var index = 0; index < actions.length; index++) ...[
+          actions[index],
+          if (index != actions.length - 1) const SizedBox(height: 2),
+        ],
+      ],
+    ),
+  );
+}
+
+class _ShareOptionRow extends StatelessWidget {
+  const _ShareOptionRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    super.key,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => CupertinoButton(
+    padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 12),
+    onPressed: onTap,
+    child: Row(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: const BoxDecoration(
+            color: Color(0xFFEAF3FF),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: SasangColors.accent, size: 20),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: SasangColors.ink,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: SasangColors.secondary,
+                  fontSize: 13,
+                  height: 1.35,
+                  letterSpacing: -0.1,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Icon(
+          CupertinoIcons.chevron_forward,
+          size: 16,
+          color: Color(0xFFC4C4C8),
         ),
       ],
-      keys: const [Key('share-map-image'), Key('share-map-video')],
+    ),
+  );
+}
+
+Future<MapShareFormat?> showSasangExportFormatPicker(BuildContext context) =>
+    showSasangSheet<MapShareFormat>(
+      context,
+      _ShareSheetContent(
+        key: const Key('share-format-sheet-content'),
+        title: '여행 지도 내보내기',
+        subtitle: '원하는 형식을 선택해 주세요.',
+        onCancel: () => Navigator.pop(context),
+        actions: [
+          _ShareOptionRow(
+            key: const Key('share-map-image'),
+            icon: CupertinoIcons.photo,
+            title: '사진으로 내보내기',
+            subtitle: '9:16 이미지 · 여행 비율 포함',
+            onTap: () => Navigator.pop(context, MapShareFormat.image),
+          ),
+          _ShareOptionRow(
+            key: const Key('share-map-video'),
+            icon: CupertinoIcons.play_rectangle,
+            title: '영상으로 내보내기',
+            subtitle: '촬영일 순 여행 타임라인 · 9:16 MP4',
+            onTap: () => Navigator.pop(context, MapShareFormat.video),
+          ),
+        ],
+      ),
     );
 
 @Deprecated('Use showSasangExportFormatPicker for the shared custom design.')
