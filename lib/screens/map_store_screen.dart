@@ -56,9 +56,11 @@ class MapStoreScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: const CupertinoNavigationBar(
-      border: Border(
-        bottom: BorderSide(color: SasangColors.divider, width: .5),
+    backgroundColor: SasangColors.pageBackground,
+    appBar: CupertinoNavigationBar(
+      backgroundColor: SasangColors.pageBackground.withValues(alpha: .96),
+      border: const Border(
+        bottom: BorderSide(color: SasangColors.border, width: .5),
       ),
       middle: Text(
         '지도 상점',
@@ -76,7 +78,7 @@ class MapStoreScreen extends StatelessWidget {
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -101,7 +103,7 @@ class MapStoreScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 26),
+                    const SizedBox(height: 36),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -128,10 +130,10 @@ class MapStoreScreen extends StatelessWidget {
             ),
             SliverPadding(
               padding: EdgeInsets.fromLTRB(
-                18,
+                24,
                 0,
-                18,
-                MediaQuery.paddingOf(context).bottom + 40,
+                24,
+                MediaQuery.paddingOf(context).bottom + 48,
               ),
               sliver: SliverGrid(
                 delegate: SliverChildBuilderDelegate((context, index) {
@@ -141,11 +143,17 @@ class MapStoreScreen extends StatelessWidget {
                     onPressed: () => _showProduct(context, product),
                   );
                 }, childCount: products.length),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: .78,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  mainAxisExtent:
+                      244 +
+                      ((MediaQuery.textScalerOf(context).scale(1) - 1).clamp(
+                            0,
+                            2,
+                          ) *
+                          120),
                 ),
               ),
             ),
@@ -205,7 +213,7 @@ class MapStoreScreen extends StatelessWidget {
             ),
             const SizedBox(height: 17),
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: SasangRadii.contentCard,
               child: SizedBox(
                 height: 150,
                 width: double.infinity,
@@ -262,51 +270,27 @@ class _ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => CupertinoButton(
     padding: EdgeInsets.zero,
+    borderRadius: SasangRadii.contentCard,
     onPressed: onPressed,
     child: Container(
+      key: Key('map-store-product-${product.code}'),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: SasangColors.divider, width: .6),
+        borderRadius: SasangRadii.contentCard,
+        border: Border.all(color: SasangColors.border, width: .8),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            height: 108,
+            height: 104,
             width: double.infinity,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: MapPreview(
-                    mode: MapMode.world,
-                    countryCode: product.code,
-                  ),
-                ),
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    width: 26,
-                    height: 26,
-                    decoration: BoxDecoration(
-                      color: const Color(0xD118181B),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      CupertinoIcons.lock_fill,
-                      color: Colors.white,
-                      size: 13,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            child: MapPreview(mode: MapMode.world, countryCode: product.code),
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -320,7 +304,26 @@ class _ProductCard extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 7),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: const Text(
+                      '출시 예정',
+                      style: TextStyle(
+                        color: Color(0xFF64748B),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Text(
                     product.description,
                     maxLines: 2,
@@ -332,26 +335,13 @@ class _ProductCard extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        product.priceLabel,
-                        style: const TextStyle(
-                          color: SasangColors.ink,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const Text(
-                        '출시 예정',
-                        style: TextStyle(
-                          color: SasangColors.secondary,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    product.priceLabel,
+                    style: const TextStyle(
+                      color: SasangColors.ink,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),

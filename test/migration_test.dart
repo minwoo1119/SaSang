@@ -4,9 +4,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sasang/core/theme/sasang_theme.dart';
 import 'package:sasang/core/storage/sasang_storage.dart';
 import 'package:sasang/core/layout/sasang_layout.dart';
+import 'package:sasang/features/more/info_content.dart';
 import 'package:sasang/features/map/map_mode_selector.dart';
 import 'package:sasang/features/map/map_preview.dart';
 import 'package:sasang/features/map/map_repository.dart';
@@ -20,6 +22,7 @@ import 'package:sasang/models/map_models.dart';
 import 'package:sasang/screens/map_screen.dart';
 import 'package:sasang/screens/map_store_screen.dart';
 import 'package:sasang/screens/more_screen.dart';
+import 'package:sasang/screens/info_detail_screen.dart';
 import 'package:sasang/screens/places_screen.dart';
 import 'package:sasang/widgets/ad_banner.dart';
 
@@ -505,10 +508,20 @@ void main() {
     expect(find.text('국가별 지도'), findsOneWidget);
     expect(find.text('${asset.regions.length}개'), findsOneWidget);
     expect(mapStoreProducts(asset).length, asset.regions.length);
-    expect(find.byIcon(CupertinoIcons.lock_fill), findsWidgets);
+    expect(find.byIcon(CupertinoIcons.lock_fill), findsNothing);
+    expect(find.text('출시 예정'), findsWidgets);
     expect(find.text('JP'), findsNothing);
 
-    await tester.tap(find.byIcon(CupertinoIcons.lock_fill).first);
+    final firstProduct = mapStoreProducts(asset).first;
+    final firstCard = tester.widget<Container>(
+      find.byKey(Key('map-store-product-${firstProduct.code}')),
+    );
+    final firstCardDecoration = firstCard.decoration! as BoxDecoration;
+    expect(firstCardDecoration.borderRadius, SasangRadii.contentCard);
+    expect(firstCardDecoration.border, isNotNull);
+    expect(firstCardDecoration.boxShadow, isNull);
+
+    await tester.tap(find.byKey(Key('map-store-product-${firstProduct.code}')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.byKey(const Key('map-store-modal-top-space')), findsOneWidget);
@@ -532,6 +545,203 @@ void main() {
     expect(mapStorePriceFor(regionWithDetail(400)), 3000);
     expect(mapStorePriceFor(regionWithDetail(800)), 4000);
     expect(mapStorePriceFor(regionWithDetail(1300)), 5000);
+  });
+
+  testWidgets('information pages use their own titles and document layout', (
+    tester,
+  ) async {
+    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final privacy = InfoContent.byId('privacy')!;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SasangTheme.light,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: const TextScaler.linear(2)),
+          child: child!,
+        ),
+        home: InfoDetailScreen(content: privacy),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      find.descendant(
+        of: find.byType(CupertinoNavigationBar),
+        matching: find.text('개인정보 처리방침'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('info-effective-date-privacy')),
+      findsOneWidget,
+    );
+    expect(find.text('기기 저장'), findsOneWidget);
+    expect(find.text('외부 서비스'), findsOneWidget);
+    expect(find.text('정보 삭제'), findsOneWidget);
+    expect(find.textContaining('정식 개인정보 처리방침은'), findsNothing);
+
+    await tester.scrollUntilVisible(
+      find.text('정보 삭제'),
+      240,
+      scrollable: find.descendant(
+        of: find.byKey(const Key('info-document-privacy')),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+
+    final terms = InfoContent.byId('terms')!;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SasangTheme.light,
+        home: InfoDetailScreen(content: terms),
+      ),
+    );
+    await tester.pump();
+    expect(
+      find.descendant(
+        of: find.byType(CupertinoNavigationBar),
+        matching: find.text('이용약관'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('사진 사용'), findsOneWidget);
+    expect(find.text('지도 정보'), findsOneWidget);
+    expect(find.textContaining('정식 이용약관은'), findsNothing);
+  });
+
+  testWidgets('app info reads installed version and opens real licenses', (
+    tester,
+  ) async {
+    final appInfo = InfoContent.byId('app')!;
+    final packageInfo = PackageInfo(
+      appName: '사상',
+      packageName: 'com.sasang.app',
+      version: '1.1.1',
+      buildNumber: '29',
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SasangTheme.light,
+        home: InfoDetailScreen(
+          content: appInfo,
+          packageInfo: Future.value(packageInfo),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('app-info-icon')), findsOneWidget);
+    expect(find.text('사상'), findsOneWidget);
+    expect(find.text('나의 여행을 지도에 남기다'), findsOneWidget);
+    expect(find.text('1.1.1 (29)'), findsOneWidget);
+    expect(find.textContaining('정식 배포 단계'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('open-source-licenses-button')));
+    await tester.pumpAndSettle();
+    expect(find.byType(LicensePage), findsOneWidget);
+  });
+
+  testWidgets('information detail keeps navigator and system back behavior', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SasangTheme.light,
+        home: Builder(
+          builder: (context) => CupertinoButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) =>
+                    InfoDetailScreen(content: InfoContent.byId('terms')!),
+              ),
+            ),
+            child: const Text('상세 열기'),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('상세 열기'));
+    await tester.pumpAndSettle();
+    expect(find.byType(CupertinoNavigationBarBackButton), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(CupertinoNavigationBar),
+        matching: find.text('이용약관'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('상세 열기'), findsOneWidget);
+  });
+
+  testWidgets('map store keeps a two-column grid with large text', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    const asset = RegionMapAsset(
+      version: 'test',
+      width: 100,
+      height: 100,
+      regions: [
+        MapRegion(
+          code: 'AA',
+          name: '가상 국가 A',
+          geometryType: 'Polygon',
+          polygonCount: 1,
+          bounds: RegionBounds(x: 0, y: 0, width: 40, height: 40),
+          pathData: 'M 0 0 L 40 0 L 40 40 Z',
+        ),
+        MapRegion(
+          code: 'BB',
+          name: '가상 국가 B',
+          geometryType: 'Polygon',
+          polygonCount: 1,
+          bounds: RegionBounds(x: 50, y: 50, width: 40, height: 40),
+          pathData: 'M 50 50 L 90 50 L 90 90 Z',
+        ),
+      ],
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SasangTheme.light,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: const TextScaler.linear(2)),
+          child: child!,
+        ),
+        home: MapStoreScreen(mapAsset: Future.value(asset)),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    final firstRect = tester.getRect(
+      find.byKey(const Key('map-store-product-AA')),
+    );
+    final secondRect = tester.getRect(
+      find.byKey(const Key('map-store-product-BB')),
+    );
+    expect(firstRect.top, closeTo(secondRect.top, 1));
+    expect(firstRect.right, lessThan(secondRect.left));
+    expect(tester.takeException(), isNull);
   });
 
   for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 abstract final class SasangColors {
   static const background = Color(0xFFFAFAFA);
+  static const pageBackground = Color(0xFFF7F7F8);
   static const card = Color(0xFFFFFFFF);
+  static const border = Color(0xFFE9E9ED);
   static const ink = Color(0xFF18181B);
   static const secondary = Color(0xFF71717A);
   static const accent = Color(0xFF007AFF);
@@ -14,6 +16,7 @@ abstract final class SasangRadii {
   static const radiusSheet = 30.0;
   static const radiusSelectionCard = 24.0;
   static const radiusActionButton = 24.0;
+  static const radiusContentCard = 22.0;
 
   static const pill = BorderRadius.all(Radius.circular(radiusPill));
   static const sheetTop = BorderRadius.vertical(
@@ -24,6 +27,9 @@ abstract final class SasangRadii {
   );
   static const actionButton = BorderRadius.all(
     Radius.circular(radiusActionButton),
+  );
+  static const contentCard = BorderRadius.all(
+    Radius.circular(radiusContentCard),
   );
 }
 
