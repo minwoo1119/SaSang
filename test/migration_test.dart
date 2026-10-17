@@ -19,6 +19,7 @@ import 'package:sasang/features/map/owned_map.dart';
 import 'package:sasang/features/map/region_map_view.dart';
 import 'package:sasang/features/photos/photo_date.dart';
 import 'package:sasang/features/photos/photo_date_dialog.dart';
+import 'package:sasang/features/photos/north_korea_visit_gate.dart';
 import 'package:sasang/features/photos/region_photo_album_sheet.dart';
 import 'package:sasang/features/share/map_share_service.dart';
 import 'package:sasang/features/state/sasang_state.dart';
@@ -42,6 +43,25 @@ void main() {
   test('parses Expo EXIF and persisted photo dates', () {
     expect(parsePhotoDate('2025:03:09 18:02:11'), DateTime(2025, 3, 9, 12));
     expect(photoDateKey(DateTime(2026, 9, 6)), '2026-09-06');
+  });
+
+  test('North Korea photo gate unlocks only after three confirmations', () {
+    final gate = NorthKoreaVisitGate();
+
+    expect(gate.requiresConfirmation(MapMode.korea, 'KP'), isFalse);
+    expect(gate.requiresConfirmation(MapMode.world, 'KR'), isFalse);
+    expect(gate.requiresConfirmation(MapMode.world, 'KP'), isTrue);
+    expect(northKoreaConfirmationMessage(1), '진짜 방문하셨다고요 ?????');
+
+    expect(gate.registerDecision(false), isFalse);
+    expect(gate.confirmedCount, 0);
+    expect(gate.registerDecision(true), isFalse);
+    expect(gate.confirmedCount, 1);
+    expect(gate.registerDecision(true), isFalse);
+    expect(gate.confirmedCount, 2);
+    expect(gate.registerDecision(true), isTrue);
+    expect(gate.confirmedCount, 3);
+    expect(gate.requiresConfirmation(MapMode.world, 'KP'), isFalse);
   });
 
   test(

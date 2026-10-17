@@ -11,6 +11,7 @@ import '../features/map/map_mode_selector.dart';
 import '../features/map/map_repository.dart';
 import '../features/map/region_map_view.dart';
 import '../features/photos/photo_picker_service.dart';
+import '../features/photos/north_korea_visit_gate.dart';
 import '../features/photos/region_photo_album_sheet.dart';
 import '../features/photos/region_photo_flow.dart';
 import '../features/share/map_share_service.dart';
@@ -45,6 +46,7 @@ String regionDisplaySubtitle(MapRegion region, MapMode mode) {
 class _MapScreenState extends State<MapScreen> {
   final _maps = MapRepository();
   final _picker = PhotoPickerService();
+  final _northKoreaVisitGate = NorthKoreaVisitGate();
   final _search = TextEditingController();
   final Map<MapMode, RegionMapAsset> _mapAssets = {};
   late final Map<MapMode, Future<RegionMapAsset>> _mapLoads;
@@ -118,9 +120,10 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _pickPhoto(MapRegion region) async {
     if (_saving) return;
+    final mode = widget.state.mode;
+    if (!await _confirmNorthKoreaVisit(mode, region.code) || !mounted) return;
     setState(() => _saving = true);
     try {
-      final mode = widget.state.mode;
       final photo = await pickRegionPhoto(
         context: context,
         picker: _picker,
@@ -134,6 +137,37 @@ class _MapScreenState extends State<MapScreen> {
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+
+  Future<bool> _confirmNorthKoreaVisit(MapMode mode, String regionCode) async {
+    if (!_northKoreaVisitGate.requiresConfirmation(mode, regionCode)) {
+      return true;
+    }
+    final attempt = _northKoreaVisitGate.confirmedCount + 1;
+    final approved =
+        await showCupertinoDialog<bool>(
+          context: context,
+          builder: (context) => CupertinoAlertDialog(
+            title: Text('북한 방문 확인 · $attempt/3'),
+            content: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(northKoreaConfirmationMessage(attempt)),
+            ),
+            actions: [
+              CupertinoDialogAction(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('취소'),
+              ),
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('확인'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+    return _northKoreaVisitGate.registerDecision(approved);
   }
 
   Future<void> _openRegionAlbum(MapRegion region, MapMode mode) =>
