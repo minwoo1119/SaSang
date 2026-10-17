@@ -76,7 +76,7 @@ void main() {
     expect(parseSvgPathData(japan.pathData).contains(anchor.point), isTrue);
   });
 
-  test('great-circle route splits at the antimeridian', () {
+  test('antimeridian route stays inside the current map frame', () {
     final projection = world.projection!;
     final route = buildTravelRoute(
       departure: Offset(
@@ -91,15 +91,36 @@ void main() {
       mode: MapMode.world,
     );
 
-    expect(route.segments.length, 2);
-    for (final segment in route.segments) {
-      for (var index = 1; index < segment.length; index++) {
-        expect(
-          (segment[index].dx - segment[index - 1].dx).abs(),
-          lessThan(world.width / 2),
-        );
-      }
+    expect(route.segments, hasLength(1));
+    for (final point in route.segments.single) {
+      expect(point.dx, inInclusiveRange(0, world.width));
+      expect(point.dy, inInclusiveRange(0, world.height));
     }
+  });
+
+  test('Canada to Russia travels right within the current map frame', () {
+    final canada = world.regions.singleWhere((region) => region.code == 'CA');
+    final russia = world.regions.singleWhere((region) => region.code == 'RU');
+    final departure = Offset(canada.anchor!.x, canada.anchor!.y);
+    final destination = Offset(russia.anchor!.x, russia.anchor!.y);
+    final route = buildTravelRoute(
+      departure: departure,
+      destination: destination,
+      asset: world,
+      mode: MapMode.world,
+    );
+
+    expect(route.segments, hasLength(1));
+    final points = route.segments.single;
+    expect(points.first, departure);
+    expect(points.last, destination);
+    for (var index = 1; index < points.length; index++) {
+      expect(points[index].dx, greaterThanOrEqualTo(points[index - 1].dx));
+      expect(points[index].dx, inInclusiveRange(0, world.width));
+      expect(points[index].dy, inInclusiveRange(0, world.height));
+    }
+    expect(route.pointAt(.25)!.dx, lessThan(route.pointAt(.75)!.dx));
+    expect(route.pointAt(.5), route.partial(.5).last.last);
   });
 
   test('local route follows a deterministic curve', () {

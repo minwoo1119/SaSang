@@ -192,12 +192,19 @@ TravelRoute buildTravelRoute({
   }
   final projection = asset.projection;
   if (mode == MapMode.world && projection?.geographic == true) {
-    return TravelRoute(
-      _splitAntimeridian(
-        _greatCirclePoints(departure, destination, projection!, samples),
-        projection,
-      ),
+    final segments = _splitAntimeridian(
+      _greatCirclePoints(departure, destination, projection!, samples),
+      projection,
     );
+    if (segments.length > 1) {
+      // The export uses one fixed world-map frame. Wrapping across opposite
+      // edges makes the dashed route and camera appear to travel in different
+      // directions, so keep dateline crossings on one visible screen curve.
+      return TravelRoute([
+        _containedWorldCurve(departure, destination, asset, samples),
+      ]);
+    }
+    return TravelRoute(segments);
   }
 
   final delta = destination - departure;
@@ -213,6 +220,27 @@ TravelRoute buildTravelRoute({
         _quadratic(departure, control, destination, index / samples),
     ],
   ]);
+}
+
+List<Offset> _containedWorldCurve(
+  Offset departure,
+  Offset destination,
+  RegionMapAsset asset,
+  int samples,
+) {
+  final midpoint = Offset.lerp(departure, destination, .5)!;
+  final bend = math.min(
+    (destination - departure).distance * .16,
+    asset.height * .07,
+  );
+  final control = Offset(
+    midpoint.dx.clamp(0, asset.width).toDouble(),
+    (midpoint.dy - bend).clamp(0, asset.height).toDouble(),
+  );
+  return [
+    for (var index = 0; index <= samples; index++)
+      _quadratic(departure, control, destination, index / samples),
+  ];
 }
 
 Offset _quadratic(Offset start, Offset control, Offset end, double t) {
