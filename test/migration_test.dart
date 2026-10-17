@@ -12,6 +12,7 @@ import 'package:sasang/features/more/info_content.dart';
 import 'package:sasang/features/map/map_mode_selector.dart';
 import 'package:sasang/features/map/map_preview.dart';
 import 'package:sasang/features/map/map_repository.dart';
+import 'package:sasang/features/map/owned_map.dart';
 import 'package:sasang/features/map/region_map_view.dart';
 import 'package:sasang/features/photos/photo_date.dart';
 import 'package:sasang/features/photos/photo_date_dialog.dart';
@@ -799,9 +800,11 @@ void main() {
       expect(selectorDecoration.borderRadius, SasangRadii.pill);
 
       expect(find.text('내 지도'), findsOneWidget);
-      expect(find.text('보유한 지도'), findsOneWidget);
+      expect(find.text('보유한 지도 2개'), findsOneWidget);
+      expect(find.text('기본 지도'), findsOneWidget);
       expect(find.byType(MapPreview), findsNWidgets(2));
-      expect(find.byIcon(CupertinoIcons.check_mark), findsOneWidget);
+      expect(find.text('사용 중'), findsOneWidget);
+      expect(find.byIcon(CupertinoIcons.check_mark), findsNothing);
       expect(find.byIcon(CupertinoIcons.xmark), findsOneWidget);
       expect(find.text('새로운 지도 둘러보기'), findsOneWidget);
 
@@ -818,8 +821,11 @@ void main() {
       final foreground = selectedCard.foregroundDecoration! as BoxDecoration;
       expect(cardDecoration.borderRadius, SasangRadii.selectionCard);
       expect(foreground.borderRadius, SasangRadii.selectionCard);
-      expect(foreground.border!.top.width, 1.5);
-      expect(foreground.border!.top.color, SasangColors.accent);
+      expect(foreground.border!.top.width, 1.4);
+      expect(
+        foreground.border!.top.color,
+        SasangColors.accent.withValues(alpha: .78),
+      );
 
       final previewClip = tester.widget<ClipRRect>(
         find.byKey(const Key('map-mode-preview-clip-korea')),
@@ -829,12 +835,7 @@ void main() {
       final browseButton = tester.widget<CupertinoButton>(
         find.byKey(const Key('map-store-browse-button')),
       );
-      expect(browseButton.borderRadius, SasangRadii.actionButton);
-      final browseSurface = tester.widget<Container>(
-        find.byKey(const Key('map-store-browse-surface')),
-      );
-      final browseDecoration = browseSurface.decoration! as BoxDecoration;
-      expect(browseDecoration.borderRadius, SasangRadii.actionButton);
+      expect(browseButton.color, isNull);
 
       await tester.tap(find.byKey(const Key('map-mode-card-world')));
       await tester.pump();
@@ -862,6 +863,99 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('map-store-route')), findsOneWidget);
+  });
+
+  for (final ownedCount in [4, 8]) {
+    testWidgets('owned map sheet lays out $ownedCount maps and keeps footer', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(390, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final purchasedMaps = _testPurchasedMaps(ownedCount - 2);
+      await tester.pumpWidget(
+        MaterialApp(
+          routes: {'/map-store': (_) => const SizedBox.shrink()},
+          home: Scaffold(
+            body: MapModeSelector(
+              value: MapMode.korea,
+              onChanged: (_) {},
+              purchasedMaps: purchasedMaps,
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byType(MapModeSelector));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('보유한 지도 $ownedCount개'), findsOneWidget);
+      expect(find.text('추가 지도'), findsOneWidget);
+      expect(find.byType(MapPreview), findsNWidgets(ownedCount));
+      expect(find.byKey(const Key('map-store-browse-button')), findsOneWidget);
+      expect(
+        tester.getSize(find.byKey(const Key('map-mode-sheet'))).height,
+        lessThanOrEqualTo(700 * .74 + 1),
+      );
+
+      final footerTopBefore = tester
+          .getTopLeft(find.byKey(const Key('map-store-browse-button')))
+          .dy;
+      await tester.drag(
+        find.byKey(const Key('owned-map-scroll-view')),
+        const Offset(0, -250),
+      );
+      await tester.pump();
+      final footerTopAfter = tester
+          .getTopLeft(find.byKey(const Key('map-store-browse-button')))
+          .dy;
+      expect(footerTopAfter, closeTo(footerTopBefore, .1));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('owned map sheet supports a small device and large text', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: const TextScaler.linear(2)),
+          child: child!,
+        ),
+        routes: {'/map-store': (_) => const SizedBox.shrink()},
+        home: Scaffold(
+          body: MapModeSelector(
+            value: MapMode.korea,
+            onChanged: (_) {},
+            purchasedMaps: _testPurchasedMaps(6),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byType(MapModeSelector));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.text('보유한 지도 8개'), findsOneWidget);
+    expect(find.byKey(const Key('owned-map-close-button')), findsOneWidget);
+    expect(find.byKey(const Key('map-store-browse-button')), findsOneWidget);
+    expect(
+      tester.getSize(find.byKey(const Key('map-mode-sheet'))).height,
+      lessThanOrEqualTo(568 * .74 + 1),
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('video export progress floats without a blocking dialog', (
@@ -1292,6 +1386,30 @@ void main() {
     expect(find.text('데이터 지우고 로그아웃하기'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+}
+
+List<OwnedMapItem> _testPurchasedMaps(int count) {
+  const countries = [
+    ('JP', '일본'),
+    ('US', '미국'),
+    ('CA', '캐나다'),
+    ('FR', '프랑스'),
+    ('DE', '독일'),
+    ('AU', '호주'),
+  ];
+  return countries
+      .take(count)
+      .map(
+        (country) => OwnedMapItem(
+          id: 'country-${country.$1}',
+          name: '${country.$2} 지도',
+          description: '지역별 여행 기록',
+          previewMode: MapMode.world,
+          countryCode: country.$1,
+          group: OwnedMapGroup.purchasedMaps,
+        ),
+      )
+      .toList(growable: false);
 }
 
 RegionPhoto _photo(String id, String takenAt) => RegionPhoto(

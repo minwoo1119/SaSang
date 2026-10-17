@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/sasang_theme.dart';
 import '../../models/map_models.dart';
 import 'map_preview.dart';
+import 'owned_map.dart';
 
 class MapModeSelector extends StatelessWidget {
   const MapModeSelector({
@@ -13,11 +14,19 @@ class MapModeSelector extends StatelessWidget {
     required this.onChanged,
     super.key,
     this.elevated = false,
+    this.purchasedMaps = const [],
+    this.selectedMapId,
+    this.onOwnedMapChanged,
   });
 
   final MapMode value;
   final ValueChanged<MapMode> onChanged;
   final bool elevated;
+
+  /// Maps already confirmed as owned by the purchase/data layer.
+  final List<OwnedMapItem> purchasedMaps;
+  final String? selectedMapId;
+  final ValueChanged<OwnedMapItem>? onOwnedMapChanged;
 
   @override
   Widget build(BuildContext context) => CupertinoButton(
@@ -65,146 +74,252 @@ class MapModeSelector extends StatelessWidget {
   );
 
   Future<void> _show(BuildContext context) async {
-    final selected = await showModalBottomSheet<MapMode>(
+    final ownedMaps = buildOwnedMapLibrary(purchasedMaps: purchasedMaps);
+    final activeMapId = selectedMapId ?? value.storageKey;
+    final selected = await showModalBottomSheet<OwnedMapItem>(
       context: context,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: .30),
       isScrollControlled: true,
-      builder: (sheetContext) {
-        final bottom = math
-            .max(MediaQuery.paddingOf(sheetContext).bottom, 16)
-            .toDouble();
-        return Container(
-          key: const Key('map-mode-sheet'),
-          width: double.infinity,
-          padding: EdgeInsets.fromLTRB(18, 18, 18, bottom),
-          decoration: const BoxDecoration(
-            color: SasangColors.background,
-            borderRadius: SasangRadii.sheetTop,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
+      builder: (sheetContext) => _OwnedMapSheet(
+        maps: ownedMaps,
+        activeMapId: activeMapId,
+        onBrowseStore: () {
+          Navigator.pop(sheetContext);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) Navigator.pushNamed(context, '/map-store');
+          });
+        },
+      ),
+    );
+    if (selected == null) return;
+    if (selected.mode case final mode?) onChanged(mode);
+    onOwnedMapChanged?.call(selected);
+  }
+}
+
+class _OwnedMapSheet extends StatelessWidget {
+  const _OwnedMapSheet({
+    required this.maps,
+    required this.activeMapId,
+    required this.onBrowseStore,
+  });
+
+  final List<OwnedMapItem> maps;
+  final String activeMapId;
+  final VoidCallback onBrowseStore;
+
+  @override
+  Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final textScale = mediaQuery.textScaler.scale(1);
+    final bottom = math.max(mediaQuery.padding.bottom, 10).toDouble();
+    final maxHeight = mediaQuery.size.height * .74;
+    final defaultMaps = maps
+        .where((item) => item.group == OwnedMapGroup.defaultMaps)
+        .toList(growable: false);
+    final purchasedMaps = maps
+        .where((item) => item.group == OwnedMapGroup.purchasedMaps)
+        .toList(growable: false);
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      child: Container(
+        key: const Key('map-mode-sheet'),
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          color: SasangColors.background,
+          borderRadius: SasangRadii.sheetTop,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 9),
+            Container(
+              key: const Key('owned-map-drag-handle'),
+              width: 36,
+              height: 5,
+              decoration: BoxDecoration(
+                color: const Color(0xFFD4D4D8),
+                borderRadius: SasangRadii.pill,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 17, 12, 14),
+              child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           '내 지도',
                           style: TextStyle(
                             color: SasangColors.ink,
                             fontSize: 22,
                             fontWeight: FontWeight.w700,
+                            letterSpacing: -.4,
                           ),
                         ),
-                        SizedBox(height: 3),
+                        const SizedBox(height: 5),
                         Text(
-                          '보유한 지도',
-                          style: TextStyle(
+                          '보유한 지도 ${maps.length}개',
+                          key: const Key('owned-map-count'),
+                          style: const TextStyle(
                             color: SasangColors.secondary,
-                            fontSize: 12,
+                            fontSize: 13,
                           ),
                         ),
                       ],
                     ),
                   ),
                   CupertinoButton(
+                    key: const Key('owned-map-close-button'),
                     padding: EdgeInsets.zero,
-                    minimumSize: const Size(36, 36),
-                    borderRadius: BorderRadius.circular(8),
-                    color: const Color(0xFFF4F4F5),
-                    onPressed: () => Navigator.pop(sheetContext),
+                    minimumSize: const Size(44, 44),
+                    onPressed: () => Navigator.pop(context),
                     child: const Icon(
                       CupertinoIcons.xmark,
                       size: 19,
-                      color: Color(0xFF52525B),
+                      color: SasangColors.ink,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 18),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  for (
-                    var index = 0;
-                    index < MapMode.values.length;
-                    index++
-                  ) ...[
-                    if (index > 0) const SizedBox(width: 10),
-                    Expanded(
-                      child: _MapModeCard(
-                        mode: MapMode.values[index],
-                        selected: MapMode.values[index] == value,
-                        onPressed: () =>
-                            Navigator.pop(sheetContext, MapMode.values[index]),
-                      ),
+            ),
+            Flexible(
+              fit: FlexFit.loose,
+              child: SingleChildScrollView(
+                key: const Key('owned-map-scroll-view'),
+                padding: const EdgeInsets.fromLTRB(20, 3, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _OwnedMapGroup(
+                      title: '기본 지도',
+                      maps: defaultMaps,
+                      activeMapId: activeMapId,
                     ),
+                    if (purchasedMaps.isNotEmpty) ...[
+                      const SizedBox(height: 24),
+                      _OwnedMapGroup(
+                        title: '추가 지도',
+                        maps: purchasedMaps,
+                        activeMapId: activeMapId,
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-              const SizedBox(height: 18),
-              SizedBox(
+            ),
+            Container(
+              decoration: const BoxDecoration(
+                color: SasangColors.background,
+                border: Border(
+                  top: BorderSide(color: SasangColors.border, width: .6),
+                ),
+              ),
+              padding: EdgeInsets.fromLTRB(20, 7, 20, bottom),
+              child: SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 48 + math.max(0.0, textScale - 1) * 18,
                 child: CupertinoButton(
                   key: const Key('map-store-browse-button'),
-                  padding: EdgeInsets.zero,
-                  borderRadius: SasangRadii.actionButton,
-                  color: Colors.white,
-                  onPressed: () {
-                    Navigator.pop(sheetContext);
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (context.mounted) {
-                        Navigator.pushNamed(context, '/map-store');
-                      }
-                    });
-                  },
-                  child: Container(
-                    key: const Key('map-store-browse-surface'),
-                    decoration: BoxDecoration(
-                      borderRadius: SasangRadii.actionButton,
-                      border: Border.all(
-                        color: SasangColors.accent.withValues(alpha: .25),
-                      ),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(CupertinoIcons.add, size: 19),
-                        SizedBox(width: 6),
-                        Text(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  onPressed: onBrowseStore,
+                  child: const Row(
+                    children: [
+                      Expanded(
+                        child: Text(
                           '새로운 지도 둘러보기',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
+                            color: SasangColors.accent,
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      SizedBox(width: 12),
+                      Icon(
+                        CupertinoIcons.chevron_right,
+                        color: SasangColors.accent,
+                        size: 17,
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
-        );
-      },
+            ),
+          ],
+        ),
+      ),
     );
-    if (selected != null) onChanged(selected);
   }
 }
 
-class _MapModeCard extends StatelessWidget {
-  const _MapModeCard({
-    required this.mode,
+class _OwnedMapGroup extends StatelessWidget {
+  const _OwnedMapGroup({
+    required this.title,
+    required this.maps,
+    required this.activeMapId,
+  });
+
+  final String title;
+  final List<OwnedMapItem> maps;
+  final String activeMapId;
+
+  @override
+  Widget build(BuildContext context) {
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final cardHeight = 174.0 + math.max(0.0, textScale - 1) * 42;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 2, bottom: 11),
+          child: Text(
+            title,
+            style: const TextStyle(
+              color: SasangColors.secondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: maps.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            mainAxisExtent: cardHeight,
+          ),
+          itemBuilder: (context, index) {
+            final map = maps[index];
+            return _OwnedMapCard(
+              map: map,
+              selected: map.id == activeMapId,
+              onPressed: () => Navigator.pop(context, map),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _OwnedMapCard extends StatelessWidget {
+  const _OwnedMapCard({
+    required this.map,
     required this.selected,
     required this.onPressed,
   });
 
-  final MapMode mode;
+  final OwnedMapItem map;
   final bool selected;
   final VoidCallback onPressed;
 
@@ -215,20 +330,22 @@ class _MapModeCard extends StatelessWidget {
     borderRadius: SasangRadii.selectionCard,
     onPressed: onPressed,
     child: Container(
-      key: Key('map-mode-card-${mode.storageKey}'),
-      decoration: BoxDecoration(
+      key: Key('map-mode-card-${map.id}'),
+      decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: SasangRadii.selectionCard,
       ),
       foregroundDecoration: BoxDecoration(
         borderRadius: SasangRadii.selectionCard,
         border: Border.all(
-          color: selected ? SasangColors.accent : SasangColors.divider,
-          width: selected ? 1.5 : .6,
+          color: selected
+              ? SasangColors.accent.withValues(alpha: .78)
+              : SasangColors.border,
+          width: selected ? 1.4 : .7,
         ),
       ),
       child: ClipRRect(
-        key: Key('map-mode-preview-clip-${mode.storageKey}'),
+        key: Key('map-mode-preview-clip-${map.id}'),
         borderRadius: SasangRadii.selectionCard,
         child: ColoredBox(
           color: Colors.white,
@@ -236,27 +353,41 @@ class _MapModeCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                height: 82,
+                height: 96,
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child: MapPreview(mode: mode, selected: selected),
+                      child: MapPreview(
+                        mode: map.previewMode,
+                        countryCode: map.countryCode,
+                        selected: selected,
+                      ),
                     ),
                     if (selected)
                       Positioned(
-                        right: 7,
-                        top: 7,
+                        right: 8,
+                        top: 8,
                         child: Container(
-                          width: 22,
-                          height: 22,
-                          decoration: const BoxDecoration(
-                            color: SasangColors.accent,
-                            shape: BoxShape.circle,
+                          key: const Key('owned-map-active-badge'),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 5,
                           ),
-                          child: const Icon(
-                            CupertinoIcons.check_mark,
-                            color: Colors.white,
-                            size: 14,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: .94),
+                            borderRadius: SasangRadii.pill,
+                            border: Border.all(
+                              color: SasangColors.accent.withValues(alpha: .18),
+                              width: .6,
+                            ),
+                          ),
+                          child: const Text(
+                            '사용 중',
+                            style: TextStyle(
+                              color: SasangColors.accent,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
@@ -264,27 +395,28 @@ class _MapModeCard extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(11, 10, 11, 0),
+                padding: const EdgeInsets.fromLTRB(12, 11, 12, 0),
                 child: Text(
-                  mode.label,
+                  map.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: SasangColors.ink,
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(11, 3, 11, 12),
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
                 child: Text(
-                  mode.description,
-                  maxLines: 1,
+                  map.description,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: SasangColors.secondary,
                     fontSize: 11,
+                    height: 1.3,
                   ),
                 ),
               ),
