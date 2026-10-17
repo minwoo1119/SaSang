@@ -167,7 +167,7 @@ class _MapScreenState extends State<MapScreen> {
       _showError('공유할 여행 기록이 없어요', '지도에 사진을 먼저 추가해 주세요.');
       return;
     }
-    final format = await showAdaptiveExportFormatPicker(context);
+    final format = await showSasangExportFormatPicker(context);
     if (format == null || !mounted) return;
     await _exportMap(map: map, mode: mode, format: format);
   }
@@ -255,7 +255,7 @@ class _MapScreenState extends State<MapScreen> {
     MapShareResult result,
     MapShareFormat format,
   ) async {
-    final destination = await _showAdaptiveExportDestinationPicker(context);
+    final destination = await _showSasangExportDestinationPicker(context);
     if (destination == null || !mounted) return;
     if (destination == _ExportDestination.gallery) {
       final saved = await _shareService.saveToGallery(result.file, format);
@@ -692,82 +692,214 @@ class MapTopBar extends StatelessWidget {
   }
 }
 
-Future<MapShareFormat?> showAdaptiveExportFormatPicker(BuildContext context) =>
-    _showAdaptiveChoice<MapShareFormat>(
+Future<MapShareFormat?> showSasangExportFormatPicker(BuildContext context) =>
+    _showSasangChoiceSheet<MapShareFormat>(
       context: context,
       title: '여행 지도 내보내기',
+      description: '내 여행을 원하는 형식으로 남겨보세요.',
       choices: const [
-        (value: MapShareFormat.image, label: '사진으로 내보내기'),
-        (value: MapShareFormat.video, label: '영상으로 내보내기'),
+        (
+          value: MapShareFormat.image,
+          label: '사진으로 내보내기',
+          description: '방문한 지역과 비율을 이미지로 저장',
+        ),
+        (
+          value: MapShareFormat.video,
+          label: '영상으로 내보내기',
+          description: '방문 기록을 시간순 영상으로 저장',
+        ),
       ],
       keys: const [Key('share-map-image'), Key('share-map-video')],
     );
 
-Future<_ExportDestination?> _showAdaptiveExportDestinationPicker(
+@Deprecated('Use showSasangExportFormatPicker for the shared custom design.')
+Future<MapShareFormat?> showAdaptiveExportFormatPicker(BuildContext context) =>
+    showSasangExportFormatPicker(context);
+
+Future<_ExportDestination?> _showSasangExportDestinationPicker(
   BuildContext context,
-) => _showAdaptiveChoice<_ExportDestination>(
+) => _showSasangChoiceSheet<_ExportDestination>(
   context: context,
   title: '내보내기 완료',
+  description: '완성된 여행 지도를 어디에 남길까요?',
   choices: const [
-    (value: _ExportDestination.gallery, label: '사진 보관함에 저장'),
-    (value: _ExportDestination.share, label: '다른 앱으로 공유'),
+    (
+      value: _ExportDestination.gallery,
+      label: '사진 보관함에 저장',
+      description: '기기의 사진 보관함에 안전하게 저장',
+    ),
+    (
+      value: _ExportDestination.share,
+      label: '다른 앱으로 공유',
+      description: '메시지나 다른 앱으로 바로 보내기',
+    ),
   ],
 );
 
-Future<T?> _showAdaptiveChoice<T>({
+Future<T?> _showSasangChoiceSheet<T>({
   required BuildContext context,
   required String title,
-  required List<({T value, String label})> choices,
+  required String description,
+  required List<({T value, String label, String description})> choices,
   List<Key> keys = const [],
 }) {
-  if (Theme.of(context).platform == TargetPlatform.iOS) {
-    return showCupertinoModalPopup<T>(
-      context: context,
-      builder: (sheetContext) => CupertinoActionSheet(
-        title: Text(title),
-        actions: [
-          for (var index = 0; index < choices.length; index++)
-            CupertinoActionSheetAction(
-              key: index < keys.length ? keys[index] : null,
-              onPressed: () =>
-                  Navigator.pop(sheetContext, choices[index].value),
-              child: Text(choices[index].label),
-            ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          onPressed: () => Navigator.pop(sheetContext),
-          child: const Text('취소'),
-        ),
-      ),
-    );
-  }
+  var selectionMade = false;
   return showModalBottomSheet<T>(
     context: context,
-    showDragHandle: true,
-    backgroundColor: Theme.of(context).colorScheme.surface,
-    builder: (sheetContext) => SafeArea(
-      top: false,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 4, 24, 12),
-            child: Text(
-              title,
-              style: Theme.of(sheetContext).textTheme.titleMedium,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: .20),
+    builder: (sheetContext) {
+      final theme = Theme.of(sheetContext);
+      final colors = theme.colorScheme;
+      void close([T? value]) {
+        if (selectionMade) return;
+        selectionMade = true;
+        Navigator.pop(sheetContext, value);
+      }
+
+      return Container(
+        key: const Key('sasang-export-choice-sheet'),
+        width: double.infinity,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(sheetContext).height * .9,
+        ),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(30, 12, 30, 36),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: colors.outlineVariant,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 28),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          color: colors.onSurface,
+                          fontSize: 23,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -.4,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Semantics(
+                      button: true,
+                      label: '내보내기 선택 닫기',
+                      excludeSemantics: true,
+                      child: InkWell(
+                        key: const Key('close-export-choice-sheet'),
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: close,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 10,
+                          ),
+                          child: Text(
+                            '닫기',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: colors.onSurfaceVariant,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  description,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontSize: 15,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 34),
+                for (var index = 0; index < choices.length; index++) ...[
+                  if (index > 0)
+                    Divider(
+                      key: Key('export-choice-divider-$index'),
+                      height: 1,
+                      thickness: 1,
+                      color: colors.outlineVariant,
+                    ),
+                  Material(
+                    color: Colors.transparent,
+                    child: Semantics(
+                      button: true,
+                      label:
+                          '${choices[index].label}. ${choices[index].description}',
+                      excludeSemantics: true,
+                      child: InkWell(
+                        key: index < keys.length ? keys[index] : null,
+                        onTap: () => close(choices[index].value),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minHeight: 108),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 24),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    choices[index].label,
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(
+                                          color: colors.onSurface,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          letterSpacing: -.2,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    choices[index].description,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: colors.onSurfaceVariant,
+                                      fontSize: 14,
+                                      height: 1.35,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
-          for (var index = 0; index < choices.length; index++)
-            ListTile(
-              key: index < keys.length ? keys[index] : null,
-              title: Text(choices[index].label),
-              onTap: () => Navigator.pop(sheetContext, choices[index].value),
-            ),
-          const SizedBox(height: 8),
-        ],
-      ),
-    ),
+        ),
+      );
+    },
   );
 }
 

@@ -591,15 +591,69 @@ void main() {
     );
   });
 
-  testWidgets('export format picker uses a Cupertino action sheet on iOS', (
+  for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
+    testWidgets('export format picker uses the Sasang sheet on $platform', (
+      tester,
+    ) async {
+      MapShareFormat? selectedFormat;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(platform: platform),
+          home: Builder(
+            builder: (context) => CupertinoButton(
+              onPressed: () async {
+                selectedFormat = await showSasangExportFormatPicker(context);
+              },
+              child: const Text('열기'),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('열기'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CupertinoActionSheet), findsNothing);
+      expect(
+        find.byKey(const Key('sasang-export-choice-sheet')),
+        findsOneWidget,
+      );
+      expect(find.text('내 여행을 원하는 형식으로 남겨보세요.'), findsOneWidget);
+      expect(find.byType(Icon), findsNothing);
+      expect(find.byType(Card), findsNothing);
+
+      final imageRow = find.byKey(const Key('share-map-image'));
+      final videoRow = find.byKey(const Key('share-map-video'));
+      expect(imageRow, findsOneWidget);
+      expect(videoRow, findsOneWidget);
+      expect(tester.getSize(imageRow).height, greaterThanOrEqualTo(108));
+      expect(tester.getSize(videoRow).height, greaterThanOrEqualTo(108));
+      expect(find.byKey(const Key('export-choice-divider-1')), findsOneWidget);
+
+      await tester.tap(imageRow);
+      await tester.pumpAndSettle();
+      expect(selectedFormat, MapShareFormat.image);
+      expect(find.byKey(const Key('sasang-export-choice-sheet')), findsNothing);
+    });
+  }
+
+  testWidgets('export sheet remains usable with large text on a small screen', (
     tester,
   ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 568));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       MaterialApp(
-        theme: ThemeData(platform: TargetPlatform.iOS),
+        theme: ThemeData.dark(),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: const TextScaler.linear(2)),
+          child: child!,
+        ),
         home: Builder(
-          builder: (context) => CupertinoButton(
-            onPressed: () => showAdaptiveExportFormatPicker(context),
+          builder: (context) => TextButton(
+            onPressed: () => showSasangExportFormatPicker(context),
             child: const Text('열기'),
           ),
         ),
@@ -609,9 +663,9 @@ void main() {
     await tester.tap(find.text('열기'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(CupertinoActionSheet), findsOneWidget);
-    expect(find.byKey(const Key('share-map-image')), findsOneWidget);
-    expect(find.byKey(const Key('share-map-video')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(const Key('sasang-export-choice-sheet')), findsOneWidget);
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
   });
 
   testWidgets('encoding progress does not display a fabricated percentage', (

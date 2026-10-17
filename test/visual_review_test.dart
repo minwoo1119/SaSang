@@ -45,9 +45,7 @@ void main() {
     );
   });
 
-  testWidgets('captures the compact adaptive export format picker', (
-    tester,
-  ) async {
+  testWidgets('captures the Sasang export format sheet', (tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
@@ -61,7 +59,7 @@ void main() {
                 const Positioned.fill(child: _MapBackdrop()),
                 Center(
                   child: CupertinoButton(
-                    onPressed: () => showAdaptiveExportFormatPicker(context),
+                    onPressed: () => showSasangExportFormatPicker(context),
                     child: const Text('내보내기'),
                   ),
                 ),
