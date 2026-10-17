@@ -674,6 +674,10 @@ void main() {
     await tester.tap(find.text('상세 열기'));
     await tester.pumpAndSettle();
     expect(find.byType(CupertinoNavigationBarBackButton), findsOneWidget);
+    final backButton = tester.widget<CupertinoNavigationBarBackButton>(
+      find.byType(CupertinoNavigationBarBackButton),
+    );
+    expect(backButton.color, SasangColors.ink);
     expect(
       find.descendant(
         of: find.byType(CupertinoNavigationBar),

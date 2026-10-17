@@ -58,6 +58,13 @@ class MapStoreScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: SasangColors.pageBackground,
     appBar: CupertinoNavigationBar(
+      automaticallyImplyLeading: false,
+      leading: Navigator.of(context).canPop()
+          ? CupertinoNavigationBarBackButton(
+              color: SasangColors.ink,
+              onPressed: () => Navigator.maybePop(context),
+            )
+          : null,
       backgroundColor: SasangColors.pageBackground.withValues(alpha: .96),
       border: const Border(
         bottom: BorderSide(color: SasangColors.border, width: .5),
