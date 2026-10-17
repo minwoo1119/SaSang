@@ -558,6 +558,12 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
 
+      final selectorPill = tester.widget<Container>(
+        find.byKey(const Key('map-mode-selector-pill')),
+      );
+      final selectorDecoration = selectorPill.decoration! as BoxDecoration;
+      expect(selectorDecoration.borderRadius, SasangRadii.pill);
+
       expect(find.text('내 지도'), findsOneWidget);
       expect(find.text('보유한 지도'), findsOneWidget);
       expect(find.byType(MapPreview), findsNWidgets(2));
@@ -565,12 +571,36 @@ void main() {
       expect(find.byIcon(CupertinoIcons.xmark), findsOneWidget);
       expect(find.text('새로운 지도 둘러보기'), findsOneWidget);
 
+      final sheet = tester.widget<Container>(
+        find.byKey(const Key('map-mode-sheet')),
+      );
+      final sheetDecoration = sheet.decoration! as BoxDecoration;
+      expect(sheetDecoration.borderRadius, SasangRadii.sheetTop);
+
       final selectedCard = tester.widget<Container>(
         find.byKey(const Key('map-mode-card-korea')),
       );
+      final cardDecoration = selectedCard.decoration! as BoxDecoration;
       final foreground = selectedCard.foregroundDecoration! as BoxDecoration;
+      expect(cardDecoration.borderRadius, SasangRadii.selectionCard);
+      expect(foreground.borderRadius, SasangRadii.selectionCard);
       expect(foreground.border!.top.width, 1.5);
       expect(foreground.border!.top.color, SasangColors.accent);
+
+      final previewClip = tester.widget<ClipRRect>(
+        find.byKey(const Key('map-mode-preview-clip-korea')),
+      );
+      expect(previewClip.borderRadius, SasangRadii.selectionCard);
+
+      final browseButton = tester.widget<CupertinoButton>(
+        find.byKey(const Key('map-store-browse-button')),
+      );
+      expect(browseButton.borderRadius, SasangRadii.actionButton);
+      final browseSurface = tester.widget<Container>(
+        find.byKey(const Key('map-store-browse-surface')),
+      );
+      final browseDecoration = browseSurface.decoration! as BoxDecoration;
+      expect(browseDecoration.borderRadius, SasangRadii.actionButton);
 
       await tester.tap(find.byKey(const Key('map-mode-card-world')));
       await tester.pump();

@@ -9,6 +9,24 @@ abstract final class SasangColors {
   static const divider = Color(0x12000000);
 }
 
+abstract final class SasangRadii {
+  static const radiusPill = 999.0;
+  static const radiusSheet = 30.0;
+  static const radiusSelectionCard = 24.0;
+  static const radiusActionButton = 24.0;
+
+  static const pill = BorderRadius.all(Radius.circular(radiusPill));
+  static const sheetTop = BorderRadius.vertical(
+    top: Radius.circular(radiusSheet),
+  );
+  static const selectionCard = BorderRadius.all(
+    Radius.circular(radiusSelectionCard),
+  );
+  static const actionButton = BorderRadius.all(
+    Radius.circular(radiusActionButton),
+  );
+}
+
 abstract final class SasangOverlayStyle {
   static const border = Color(0x1A000000);
   static const shadows = [

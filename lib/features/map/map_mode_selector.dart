@@ -25,12 +25,13 @@ class MapModeSelector extends StatelessWidget {
     minimumSize: Size.zero,
     onPressed: () => _show(context),
     child: Container(
+      key: const Key('map-mode-selector-pill'),
       constraints: const BoxConstraints(maxWidth: 168),
       height: 38,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: elevated ? .94 : .92),
-        borderRadius: BorderRadius.circular(19),
+        borderRadius: SasangRadii.pill,
         border: Border.all(
           color: elevated ? SasangOverlayStyle.border : SasangColors.divider,
           width: .6,
@@ -74,11 +75,12 @@ class MapModeSelector extends StatelessWidget {
             .max(MediaQuery.paddingOf(sheetContext).bottom, 16)
             .toDouble();
         return Container(
+          key: const Key('map-mode-sheet'),
           width: double.infinity,
           padding: EdgeInsets.fromLTRB(18, 18, 18, bottom),
           decoration: const BoxDecoration(
             color: SasangColors.background,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: SasangRadii.sheetTop,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -148,8 +150,9 @@ class MapModeSelector extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: CupertinoButton(
+                  key: const Key('map-store-browse-button'),
                   padding: EdgeInsets.zero,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: SasangRadii.actionButton,
                   color: Colors.white,
                   onPressed: () {
                     Navigator.pop(sheetContext);
@@ -160,8 +163,9 @@ class MapModeSelector extends StatelessWidget {
                     });
                   },
                   child: Container(
+                    key: const Key('map-store-browse-surface'),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: SasangRadii.actionButton,
                       border: Border.all(
                         color: SasangColors.accent.withValues(alpha: .25),
                       ),
@@ -208,22 +212,24 @@ class _MapModeCard extends StatelessWidget {
   Widget build(BuildContext context) => CupertinoButton(
     padding: EdgeInsets.zero,
     minimumSize: Size.zero,
+    borderRadius: SasangRadii.selectionCard,
     onPressed: onPressed,
     child: Container(
       key: Key('map-mode-card-${mode.storageKey}'),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: SasangRadii.selectionCard,
       ),
       foregroundDecoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: SasangRadii.selectionCard,
         border: Border.all(
           color: selected ? SasangColors.accent : SasangColors.divider,
           width: selected ? 1.5 : .6,
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(6.5),
+        key: Key('map-mode-preview-clip-${mode.storageKey}'),
+        borderRadius: SasangRadii.selectionCard,
         child: ColoredBox(
           color: Colors.white,
           child: Column(
