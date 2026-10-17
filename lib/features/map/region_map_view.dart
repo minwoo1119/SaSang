@@ -450,7 +450,15 @@ double initialMapScale({
   if (mode != MapMode.world || viewport.isEmpty) return 1;
   final contentRect = mapContentRect(viewport, asset);
   if (contentRect.height <= 0) return 1;
-  return math.max(1, viewport.height / contentRect.height);
+  final focus = _worldInitialFocus(contentRect, asset);
+  final center = viewport.center(Offset.zero);
+  final coverScales = <double>[
+    center.dx / (focus.dx - contentRect.left),
+    (viewport.width - center.dx) / (contentRect.right - focus.dx),
+    center.dy / (focus.dy - contentRect.top),
+    (viewport.height - center.dy) / (contentRect.bottom - focus.dy),
+  ].where((scale) => scale.isFinite && scale > 0);
+  return coverScales.fold<double>(1, math.max).clamp(1, 12);
 }
 
 Matrix4 initialMapTransform({
@@ -461,10 +469,29 @@ Matrix4 initialMapTransform({
   final scale = initialMapScale(viewport: viewport, asset: asset, mode: mode);
   if (scale == 1) return Matrix4.identity();
   final center = viewport.center(Offset.zero);
+  final focus = _worldInitialFocus(mapContentRect(viewport, asset), asset);
   return Matrix4.identity()
     ..translateByDouble(center.dx, center.dy, 0, 1)
     ..scaleByDouble(scale, scale, 1, 1)
-    ..translateByDouble(-center.dx, -center.dy, 0, 1);
+    ..translateByDouble(-focus.dx, -focus.dy, 0, 1);
+}
+
+Offset _worldInitialFocus(Rect contentRect, RegionMapAsset asset) {
+  final korea = asset.regions
+      .where((region) => region.code == 'KR')
+      .firstOrNull;
+  final point =
+      korea?.anchor ??
+      (korea == null
+          ? MapCoordinate(x: asset.width / 2, y: asset.height / 2)
+          : MapCoordinate(
+              x: korea.bounds.x + korea.bounds.width / 2,
+              y: korea.bounds.y + korea.bounds.height / 2,
+            ));
+  return Offset(
+    contentRect.left + point.x / asset.width * contentRect.width,
+    contentRect.top + point.y / asset.height * contentRect.height,
+  );
 }
 
 double mapStrokeWidth({
