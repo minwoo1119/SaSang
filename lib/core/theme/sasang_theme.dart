@@ -33,6 +33,42 @@ abstract final class SasangRadii {
   );
 }
 
+abstract final class SasangSpacing {
+  static const xSmall = 4.0;
+  static const small = 8.0;
+  static const medium = 12.0;
+  static const large = 16.0;
+  static const xLarge = 24.0;
+  static const xxLarge = 32.0;
+}
+
+abstract final class SasangTypography {
+  static const sheetTitle = TextStyle(
+    color: SasangColors.ink,
+    fontSize: 22,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -.5,
+  );
+  static const sheetDescription = TextStyle(
+    color: SasangColors.secondary,
+    fontSize: 14,
+    height: 1.45,
+    letterSpacing: -.15,
+  );
+  static const optionTitle = TextStyle(
+    color: SasangColors.ink,
+    fontSize: 16,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -.3,
+  );
+  static const optionDescription = TextStyle(
+    color: SasangColors.secondary,
+    fontSize: 13,
+    height: 1.4,
+    letterSpacing: -.1,
+  );
+}
+
 abstract final class SasangOverlayStyle {
   static const border = Color(0x1A000000);
   static const shadows = [

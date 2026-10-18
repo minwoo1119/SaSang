@@ -17,6 +17,7 @@ class MapModeSelector extends StatelessWidget {
     this.purchasedMaps = const [],
     this.selectedMapId,
     this.onOwnedMapChanged,
+    this.previewAssets = const {},
   });
 
   final MapMode value;
@@ -27,6 +28,7 @@ class MapModeSelector extends StatelessWidget {
   final List<OwnedMapItem> purchasedMaps;
   final String? selectedMapId;
   final ValueChanged<OwnedMapItem>? onOwnedMapChanged;
+  final Map<MapMode, RegionMapAsset> previewAssets;
 
   @override
   Widget build(BuildContext context) => CupertinoButton(
@@ -84,6 +86,7 @@ class MapModeSelector extends StatelessWidget {
       builder: (sheetContext) => _OwnedMapSheet(
         maps: ownedMaps,
         activeMapId: activeMapId,
+        previewAssets: previewAssets,
         onBrowseStore: () {
           Navigator.pop(sheetContext);
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -103,11 +106,13 @@ class _OwnedMapSheet extends StatelessWidget {
     required this.maps,
     required this.activeMapId,
     required this.onBrowseStore,
+    required this.previewAssets,
   });
 
   final List<OwnedMapItem> maps;
   final String activeMapId;
   final VoidCallback onBrowseStore;
+  final Map<MapMode, RegionMapAsset> previewAssets;
 
   @override
   Widget build(BuildContext context) {
@@ -152,15 +157,7 @@ class _OwnedMapSheet extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          '내 지도',
-                          style: TextStyle(
-                            color: SasangColors.ink,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -.4,
-                          ),
-                        ),
+                        const Text('내 지도', style: SasangTypography.sheetTitle),
                         const SizedBox(height: 5),
                         Text(
                           '보유한 지도 ${maps.length}개',
@@ -197,15 +194,19 @@ class _OwnedMapSheet extends StatelessWidget {
                   children: [
                     _OwnedMapGroup(
                       title: '기본 지도',
+                      showTitle: purchasedMaps.isNotEmpty,
                       maps: defaultMaps,
                       activeMapId: activeMapId,
+                      previewAssets: previewAssets,
                     ),
                     if (purchasedMaps.isNotEmpty) ...[
                       const SizedBox(height: 24),
                       _OwnedMapGroup(
                         title: '추가 지도',
+                        showTitle: true,
                         maps: purchasedMaps,
                         activeMapId: activeMapId,
+                        previewAssets: previewAssets,
                       ),
                     ],
                   ],
@@ -241,12 +242,6 @@ class _OwnedMapSheet extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(width: 12),
-                      Icon(
-                        CupertinoIcons.chevron_right,
-                        color: SasangColors.accent,
-                        size: 17,
-                      ),
                     ],
                   ),
                 ),
@@ -262,13 +257,17 @@ class _OwnedMapSheet extends StatelessWidget {
 class _OwnedMapGroup extends StatelessWidget {
   const _OwnedMapGroup({
     required this.title,
+    required this.showTitle,
     required this.maps,
     required this.activeMapId,
+    required this.previewAssets,
   });
 
   final String title;
+  final bool showTitle;
   final List<OwnedMapItem> maps;
   final String activeMapId;
+  final Map<MapMode, RegionMapAsset> previewAssets;
 
   @override
   Widget build(BuildContext context) {
@@ -277,17 +276,18 @@ class _OwnedMapGroup extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 2, bottom: 11),
-          child: Text(
-            title,
-            style: const TextStyle(
-              color: SasangColors.secondary,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+        if (showTitle)
+          Padding(
+            padding: const EdgeInsets.only(left: 2, bottom: 11),
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: SasangColors.secondary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
-        ),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -303,6 +303,7 @@ class _OwnedMapGroup extends StatelessWidget {
             return _OwnedMapCard(
               map: map,
               selected: map.id == activeMapId,
+              previewAsset: previewAssets[map.previewMode],
               onPressed: () => Navigator.pop(context, map),
             );
           },
@@ -316,11 +317,13 @@ class _OwnedMapCard extends StatelessWidget {
   const _OwnedMapCard({
     required this.map,
     required this.selected,
+    required this.previewAsset,
     required this.onPressed,
   });
 
   final OwnedMapItem map;
   final bool selected;
+  final RegionMapAsset? previewAsset;
   final VoidCallback onPressed;
 
   @override
@@ -339,9 +342,9 @@ class _OwnedMapCard extends StatelessWidget {
         borderRadius: SasangRadii.selectionCard,
         border: Border.all(
           color: selected
-              ? SasangColors.accent.withValues(alpha: .78)
+              ? SasangColors.accent.withValues(alpha: .72)
               : SasangColors.border,
-          width: selected ? 1.4 : .7,
+          width: selected ? 1 : .7,
         ),
       ),
       child: ClipRRect(
@@ -360,34 +363,20 @@ class _OwnedMapCard extends StatelessWidget {
                       child: MapPreview(
                         mode: map.previewMode,
                         countryCode: map.countryCode,
-                        selected: selected,
+                        asset: previewAsset,
                       ),
                     ),
                     if (selected)
-                      Positioned(
-                        right: 8,
-                        top: 8,
-                        child: Container(
-                          key: const Key('owned-map-active-badge'),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: .94),
-                            borderRadius: SasangRadii.pill,
-                            border: Border.all(
-                              color: SasangColors.accent.withValues(alpha: .18),
-                              width: .6,
-                            ),
-                          ),
-                          child: const Text(
-                            '사용 중',
-                            style: TextStyle(
-                              color: SasangColors.accent,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
+                      const Positioned(
+                        right: 10,
+                        top: 9,
+                        child: Text(
+                          '사용 중',
+                          key: Key('owned-map-active-badge'),
+                          style: TextStyle(
+                            color: SasangColors.accent,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),

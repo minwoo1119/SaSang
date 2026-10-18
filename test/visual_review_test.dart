@@ -3,11 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sasang/features/backup/backup_progress_dialog.dart';
+import 'package:sasang/features/map/map_mode_selector.dart';
+import 'package:sasang/features/map/map_repository.dart';
 import 'package:sasang/features/photos/north_korea_visit_gate.dart';
 import 'package:sasang/features/share/export_progress_dialog.dart';
 import 'package:sasang/features/share/map_share_service.dart';
+import 'package:sasang/models/map_models.dart';
 import 'package:sasang/screens/map_screen.dart';
 import 'package:sasang/widgets/sasang_center_modal.dart';
+
+late Map<MapMode, RegionMapAsset> _previewAssets;
 
 void main() {
   setUpAll(() async {
@@ -17,7 +22,16 @@ void main() {
       ..addFont(
         rootBundle.load('packages/cupertino_icons/assets/CupertinoIcons.ttf'),
       );
-    await Future.wait([loader.load(), iconLoader.load()]);
+    final loaded = await Future.wait([
+      loader.load(),
+      iconLoader.load(),
+      MapRepository().load(MapMode.korea),
+      MapRepository().load(MapMode.world),
+    ]);
+    _previewAssets = {
+      MapMode.korea: loaded[2] as RegionMapAsset,
+      MapMode.world: loaded[3] as RegionMapAsset,
+    };
   });
 
   const progressCaptures = [
@@ -157,14 +171,56 @@ void main() {
       ),
     );
     await tester.tap(find.text('내보내기'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(seconds: 2)),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump();
 
     await expectLater(
       find.byType(Overlay),
       matchesGoldenFile('goldens/adaptive_export_format_picker.png'),
     );
   });
+
+  testWidgets('captures the owned map sheet', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: _reviewTheme(platform: TargetPlatform.iOS),
+        routes: {'/map-store': (_) => const SizedBox.shrink()},
+        home: Scaffold(
+          body: Stack(
+            children: [
+              const Positioned.fill(child: _MapBackdrop()),
+              Center(
+                child: MapModeSelector(
+                  value: MapMode.korea,
+                  onChanged: _ignoreMapMode,
+                  previewAssets: _previewAssets,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byType(MapModeSelector));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump();
+
+    await expectLater(
+      find.byType(Overlay),
+      matchesGoldenFile('goldens/owned_map_sheet.png'),
+    );
+  });
 }
+
+void _ignoreMapMode(MapMode value) {}
 
 ThemeData _reviewTheme({TargetPlatform? platform}) => ThemeData(
   platform: platform,

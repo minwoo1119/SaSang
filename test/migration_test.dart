@@ -992,7 +992,7 @@ void main() {
 
       expect(find.text('내 지도'), findsOneWidget);
       expect(find.text('보유한 지도 2개'), findsOneWidget);
-      expect(find.text('기본 지도'), findsOneWidget);
+      expect(find.text('기본 지도'), findsNothing);
       expect(find.byType(MapPreview), findsNWidgets(2));
       expect(find.text('사용 중'), findsOneWidget);
       expect(find.byIcon(CupertinoIcons.check_mark), findsNothing);
@@ -1012,10 +1012,10 @@ void main() {
       final foreground = selectedCard.foregroundDecoration! as BoxDecoration;
       expect(cardDecoration.borderRadius, SasangRadii.selectionCard);
       expect(foreground.borderRadius, SasangRadii.selectionCard);
-      expect(foreground.border!.top.width, 1.4);
+      expect(foreground.border!.top.width, 1);
       expect(
         foreground.border!.top.color,
-        SasangColors.accent.withValues(alpha: .78),
+        SasangColors.accent.withValues(alpha: .72),
       );
 
       final previewClip = tester.widget<ClipRRect>(
@@ -1241,19 +1241,29 @@ void main() {
       );
 
       await tester.tap(find.text('열기'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
       expect(find.byType(CupertinoActionSheet), findsNothing);
       expect(
         find.byKey(const Key('share-format-sheet-content')),
         findsOneWidget,
       );
-      expect(find.text('원하는 형식을 선택해 주세요.'), findsOneWidget);
-      expect(find.text('9:16 이미지 · 여행 비율 포함'), findsOneWidget);
-      expect(find.text('촬영일 순 여행 타임라인 · 9:16 MP4'), findsOneWidget);
-      expect(find.byIcon(CupertinoIcons.photo), findsOneWidget);
-      expect(find.byIcon(CupertinoIcons.play_rectangle), findsOneWidget);
+      expect(find.text('여행 지도를 어떻게 남길까요?'), findsOneWidget);
+      expect(find.text('간직하고 싶은 형식을 선택해 주세요.'), findsOneWidget);
+      expect(find.text('여행 비율을 담은 9:16 이미지'), findsOneWidget);
+      expect(find.text('촬영일 순으로 이어지는 9:16 MP4'), findsOneWidget);
+      expect(find.byIcon(CupertinoIcons.photo), findsNothing);
+      expect(find.byIcon(CupertinoIcons.play_rectangle), findsNothing);
       expect(find.byIcon(CupertinoIcons.chevron_forward), findsNWidgets(2));
+      expect(
+        find.byKey(const Key('share-image-result-preview')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('share-video-result-preview')),
+        findsOneWidget,
+      );
       expect(find.byIcon(CupertinoIcons.xmark), findsOneWidget);
 
       final imageRow = find.byKey(const Key('share-map-image'));

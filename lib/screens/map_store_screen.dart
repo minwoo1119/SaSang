@@ -316,7 +316,6 @@ class _MapStoreScreenState extends State<MapStoreScreen> {
                 child: MapPreview(
                   mode: MapMode.world,
                   countryCode: product.code,
-                  selected: true,
                 ),
               ),
             ),
