@@ -672,6 +672,55 @@ void main() {
     }
   });
 
+  test('uses abbreviated Korea labels until the map is enlarged', () {
+    const seoul = MapRegion(
+      code: '11000',
+      name: '서울특별시',
+      geometryType: 'Polygon',
+      polygonCount: 1,
+      bounds: RegionBounds(x: 0, y: 0, width: 10, height: 10),
+      pathData: 'M0 0 L10 0 L10 10 Z',
+    );
+    const changwon = MapRegion(
+      code: '48120',
+      name: '창원시',
+      geometryType: 'Polygon',
+      polygonCount: 1,
+      bounds: RegionBounds(x: 0, y: 0, width: 10, height: 10),
+      pathData: 'M0 0 L10 0 L10 10 Z',
+    );
+
+    expect(regionMapLabel(seoul, MapMode.korea, 1), '서울');
+    expect(regionMapLabel(changwon, MapMode.korea, 1.99), '창원');
+    expect(regionMapLabel(seoul, MapMode.korea, 2), '서울특별시');
+    expect(regionMapLabel(changwon, MapMode.korea, 6), '창원시');
+    expect(regionMapLabel(seoul, MapMode.world, 1), '서울특별시');
+  });
+
+  test('reveals smaller world labels as the map is enlarged', () {
+    const smallCountry = RegionBounds(x: 0, y: 0, width: 4, height: 3);
+    const labelSize = Size(30, 10);
+
+    expect(
+      shouldShowWorldRegionLabel(
+        bounds: smallCountry,
+        effectiveScale: 1,
+        interactiveScale: 1,
+        labelSize: labelSize,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldShowWorldRegionLabel(
+        bounds: smallCountry,
+        effectiveScale: 6,
+        interactiveScale: worldAllRegionLabelScale,
+        labelSize: labelSize,
+      ),
+      isTrue,
+    );
+  });
+
   test('overlaps the map control with the bottom bar', () {
     expect(sasangBottomBarTopOffset(34), 100);
     expect(sasangBottomBarTopOffset(24), 90);
