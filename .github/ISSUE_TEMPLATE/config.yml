@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Sasang 개발 문서
+    url: https://github.com/minwoo1119/SaSang/tree/dev/docs
+    about: 이슈를 만들기 전에 프로젝트 구조와 개발 워크플로를 확인해 주세요.
