@@ -1,0 +1,46 @@
+name: 기능 요청
+description: Sasang의 제품 원칙에 맞는 기능을 제안합니다.
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 해결하려는 문제
+      description: 사용자가 겪는 문제와 필요한 이유를 설명해 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 제안 내용
+      description: 기대하는 사용자 흐름과 동작을 설명해 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: product-fit
+    attributes:
+      label: 제품 원칙과의 관계
+      description: 사용자의 사진이 지도에서 여행 이력의 중심이 되는 경험에 어떻게 기여하는지 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: 범위와 비범위
+      description: 이번 이슈에 포함할 내용과 후속 작업을 구분해 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 완료 조건
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: 검증 방법
+    validations:
+      required: true

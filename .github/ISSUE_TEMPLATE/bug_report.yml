@@ -1,0 +1,54 @@
+name: 버그 리포트
+description: 재현 가능한 오류나 회귀를 보고합니다.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 문제 요약
+      description: 실제로 발생한 문제를 간결하게 설명해 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 재현 절차
+      placeholder: |
+        1. 앱을 실행한다.
+        2. ...
+        3. 오류를 확인한다.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대 결과
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 실제 결과
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: 실행 환경
+      description: 앱 버전, OS, 기기 또는 에뮬레이터 정보를 적어 주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 로그 및 자료
+      description: 민감정보를 제거한 로그, 스크린샷 또는 관련 링크를 첨부해 주세요.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 완료 조건
+      description: 수정 후 확인해야 할 회귀 테스트를 포함해 주세요.
+    validations:
+      required: true

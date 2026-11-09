@@ -1,5 +1,33 @@
 # AGENTS.md
 
+## 0. Mandatory Current Baseline and Workflow
+
+This section is the highest-priority repository instruction for every agent.
+
+- The production mobile application is currently implemented with **Flutter and Dart** under
+  `lib/`, `android/`, and `ios/`. Older React Native or Expo references below describe an
+  earlier target architecture and must not override the current Flutter implementation.
+- Read [`docs/README.md`](docs/README.md), [`docs/project-overview.md`](docs/project-overview.md),
+  [`docs/architecture.md`](docs/architecture.md), and
+  [`docs/development-workflow.md`](docs/development-workflow.md) before changing the repository.
+- Every task must have a GitHub issue before implementation starts. If the user supplied an
+  existing issue, use it; otherwise create one with `gh issue create`.
+- Refresh `dev`, then create one issue branch from `dev`. Never implement ordinary work directly
+  on `dev` or `main`.
+- After implementation and verification, create a commit whose message starts with `feat:`, push
+  the issue branch, and open a pull request to `dev` with `gh pr create` and the repository PR
+  template.
+- Include `Closes #<issue-number>` in the PR. Do not merge the PR. The user is the final reviewer
+  and performs the merge into `dev`.
+- Never open a `dev -> main` pull request. Only after the user confirms that the issue PR was
+  merged and explicitly requests a version release (for example, "PR 머지했어. 이제 버전
+  올리자."), follow the direct release procedure in `docs/development-workflow.md`: pull `dev`,
+  create and verify the version commit, fast-forward `main`, and create/push the version tag.
+- If any older section of this file conflicts with the current implementation or workflow docs,
+  this section and the documents linked above take precedence.
+
+---
+
 ## 1. Project Identity
 
 ### Official Name
