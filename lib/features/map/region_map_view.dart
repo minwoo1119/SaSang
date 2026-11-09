@@ -13,11 +13,27 @@ import '../../core/theme/sasang_theme.dart';
 import '../../models/map_models.dart';
 import '../../widgets/sasang_ui.dart';
 
-const double koreaFullRegionLabelScale = 2;
-const double worldAllRegionLabelScale = 6;
+const double koreaRegionLabelRevealScale = 2;
+const double worldRegionLabelRevealScale = 1.2;
+const double koreaFullRegionLabelScale = 4;
+const double koreaRegionLabelFontSize = 6.5;
+const double worldRegionLabelFontSize = 7;
+const double selectedRegionLabelFontSize = 8.5;
 
-String regionMapLabel(MapRegion region, MapMode mode, double interactiveScale) {
-  if (mode != MapMode.korea || interactiveScale >= koreaFullRegionLabelScale) {
+bool shouldShowRegionLabel({
+  required MapMode mode,
+  required double mapZoomScale,
+  required bool selected,
+}) {
+  if (selected) return true;
+  final revealScale = mode == MapMode.korea
+      ? koreaRegionLabelRevealScale
+      : worldRegionLabelRevealScale;
+  return mapZoomScale >= revealScale;
+}
+
+String regionMapLabel(MapRegion region, MapMode mode, double mapZoomScale) {
+  if (mode != MapMode.korea || mapZoomScale >= koreaFullRegionLabelScale) {
     return region.name;
   }
   final abbreviated = region.name.replaceFirst(
@@ -30,10 +46,8 @@ String regionMapLabel(MapRegion region, MapMode mode, double interactiveScale) {
 bool shouldShowWorldRegionLabel({
   required RegionBounds bounds,
   required double effectiveScale,
-  required double interactiveScale,
   required Size labelSize,
 }) {
-  if (interactiveScale >= worldAllRegionLabelScale) return true;
   return bounds.width * effectiveScale >= labelSize.width * .72 &&
       bounds.height * effectiveScale >= labelSize.height * .8;
 }
@@ -353,6 +367,12 @@ class RegionMapPainter extends CustomPainter {
     final contentRect = mapContentRect(size, asset);
     final assetToScreenScale = contentRect.width / asset.width;
     final interactiveScale = transformationController.value.getMaxScaleOnAxis();
+    final initialScale = initialMapScale(
+      viewport: size,
+      asset: asset,
+      mode: mode,
+    );
+    final mapZoomScale = interactiveScale / initialScale;
     final selectedStrokeWidth = mapStrokeWidth(
       assetToScreenScale: assetToScreenScale,
       interactiveScale: interactiveScale,
@@ -411,6 +431,7 @@ class RegionMapPainter extends CustomPainter {
       canvas,
       assetToScreenScale: assetToScreenScale,
       interactiveScale: interactiveScale,
+      mapZoomScale: mapZoomScale,
     );
     canvas.restore();
   }
@@ -419,41 +440,51 @@ class RegionMapPainter extends CustomPainter {
     Canvas canvas, {
     required double assetToScreenScale,
     required double interactiveScale,
+    required double mapZoomScale,
   }) {
     final effectiveScale = assetToScreenScale * interactiveScale;
     if (effectiveScale <= 0) return;
 
-    final candidates = asset.regions.map((region) {
-      final selected = region.code == selectedRegionCode;
-      final text = regionMapLabel(region, mode, interactiveScale);
-      final painters = _paintersFor(text, selected: selected);
-      final anchor =
-          region.anchor ??
-          MapCoordinate(
-            x: region.bounds.x + region.bounds.width / 2,
-            y: region.bounds.y + region.bounds.height / 2,
+    final candidates = asset.regions
+        .where((region) {
+          final selected = region.code == selectedRegionCode;
+          return shouldShowRegionLabel(
+            mode: mode,
+            mapZoomScale: mapZoomScale,
+            selected: selected,
           );
-      final screenBounds = Rect.fromCenter(
-        center: Offset(anchor.x * effectiveScale, anchor.y * effectiveScale),
-        width: painters.size.width,
-        height: painters.size.height,
-      );
-      return _RegionMapLabel(
-        region: region,
-        anchor: anchor,
-        painters: painters,
-        screenBounds: screenBounds,
-        selected: selected,
-      );
-    }).toList();
+        })
+        .map((region) {
+          final selected = region.code == selectedRegionCode;
+          final text = regionMapLabel(region, mode, mapZoomScale);
+          final painters = _paintersFor(text, selected: selected);
+          final anchor =
+              region.anchor ??
+              MapCoordinate(
+                x: region.bounds.x + region.bounds.width / 2,
+                y: region.bounds.y + region.bounds.height / 2,
+              );
+          final screenBounds = Rect.fromCenter(
+            center: Offset(
+              anchor.x * effectiveScale,
+              anchor.y * effectiveScale,
+            ),
+            width: painters.size.width,
+            height: painters.size.height,
+          );
+          return _RegionMapLabel(
+            region: region,
+            anchor: anchor,
+            painters: painters,
+            screenBounds: screenBounds,
+            selected: selected,
+          );
+        })
+        .toList();
 
     final visible = mode == MapMode.korea
         ? candidates
-        : _visibleWorldLabels(
-            candidates,
-            effectiveScale: effectiveScale,
-            interactiveScale: interactiveScale,
-          );
+        : _visibleWorldLabels(candidates, effectiveScale: effectiveScale);
     visible.sort((left, right) {
       if (left.selected == right.selected) return 0;
       return left.selected ? 1 : -1;
@@ -476,7 +507,6 @@ class RegionMapPainter extends CustomPainter {
   List<_RegionMapLabel> _visibleWorldLabels(
     List<_RegionMapLabel> candidates, {
     required double effectiveScale,
-    required double interactiveScale,
   }) {
     candidates.sort((left, right) {
       if (left.selected != right.selected) return left.selected ? -1 : 1;
@@ -502,7 +532,6 @@ class RegionMapPainter extends CustomPainter {
       final fits = shouldShowWorldRegionLabel(
         bounds: regionBounds,
         effectiveScale: effectiveScale,
-        interactiveScale: interactiveScale,
         labelSize: candidate.painters.size,
       );
       final collisionBounds = candidate.screenBounds.inflate(2.5);
@@ -521,13 +550,13 @@ class RegionMapPainter extends CustomPainter {
     final key = '$text:${selected ? 'selected' : 'normal'}';
     return _labelPainters.putIfAbsent(key, () {
       final fontSize = selected
-          ? 10.5
+          ? selectedRegionLabelFontSize
           : mode == MapMode.korea
-          ? 8.5
-          : 9.5;
+          ? koreaRegionLabelFontSize
+          : worldRegionLabelFontSize;
       final outlinePaint = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = selected ? 2.5 : 2
+        ..strokeWidth = selected ? 2 : 1.5
         ..strokeJoin = StrokeJoin.round
         ..color = Colors.white.withValues(alpha: .92);
       final fillPaint = Paint()

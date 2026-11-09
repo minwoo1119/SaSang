@@ -672,7 +672,50 @@ void main() {
     }
   });
 
-  test('uses abbreviated Korea labels until the map is enlarged', () {
+  test('reveals region labels only after the map is enlarged', () {
+    expect(
+      shouldShowRegionLabel(
+        mode: MapMode.korea,
+        mapZoomScale: 1,
+        selected: false,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldShowRegionLabel(
+        mode: MapMode.korea,
+        mapZoomScale: koreaRegionLabelRevealScale,
+        selected: false,
+      ),
+      isTrue,
+    );
+    expect(
+      shouldShowRegionLabel(
+        mode: MapMode.world,
+        mapZoomScale: 1,
+        selected: false,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldShowRegionLabel(
+        mode: MapMode.world,
+        mapZoomScale: worldRegionLabelRevealScale,
+        selected: false,
+      ),
+      isTrue,
+    );
+    expect(
+      shouldShowRegionLabel(
+        mode: MapMode.korea,
+        mapZoomScale: 1,
+        selected: true,
+      ),
+      isTrue,
+    );
+  });
+
+  test('uses abbreviated Korea labels until the map is closely enlarged', () {
     const seoul = MapRegion(
       code: '11000',
       name: '서울특별시',
@@ -690,11 +733,17 @@ void main() {
       pathData: 'M0 0 L10 0 L10 10 Z',
     );
 
-    expect(regionMapLabel(seoul, MapMode.korea, 1), '서울');
-    expect(regionMapLabel(changwon, MapMode.korea, 1.99), '창원');
-    expect(regionMapLabel(seoul, MapMode.korea, 2), '서울특별시');
+    expect(regionMapLabel(seoul, MapMode.korea, 2), '서울');
+    expect(regionMapLabel(changwon, MapMode.korea, 3.99), '창원');
+    expect(regionMapLabel(seoul, MapMode.korea, 4), '서울특별시');
     expect(regionMapLabel(changwon, MapMode.korea, 6), '창원시');
     expect(regionMapLabel(seoul, MapMode.world, 1), '서울특별시');
+  });
+
+  test('uses restrained region label sizes', () {
+    expect(koreaRegionLabelFontSize, lessThan(8.5));
+    expect(worldRegionLabelFontSize, lessThan(9.5));
+    expect(selectedRegionLabelFontSize, lessThan(10.5));
   });
 
   test('reveals smaller world labels as the map is enlarged', () {
@@ -705,7 +754,6 @@ void main() {
       shouldShowWorldRegionLabel(
         bounds: smallCountry,
         effectiveScale: 1,
-        interactiveScale: 1,
         labelSize: labelSize,
       ),
       isFalse,
@@ -713,8 +761,7 @@ void main() {
     expect(
       shouldShowWorldRegionLabel(
         bounds: smallCountry,
-        effectiveScale: 6,
-        interactiveScale: worldAllRegionLabelScale,
+        effectiveScale: 12,
         labelSize: labelSize,
       ),
       isTrue,
