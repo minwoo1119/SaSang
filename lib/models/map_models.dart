@@ -1,12 +1,15 @@
 import 'dart:convert';
 
+import '../core/l10n/sasang_localizations.dart';
+
 enum MapMode {
   korea,
   world;
 
   String get storageKey => name;
-  String get label => this == korea ? '대한민국 지도' : '세계 지도';
-  String get description => this == korea ? '시·군·구별 여행 기록' : '국가별 여행 기록';
+  String get label => this == korea ? tr('대한민국 지도') : tr('세계 지도');
+  String get description =>
+      this == korea ? tr('시·군·구별 여행 기록') : tr('국가별 여행 기록');
 }
 
 class RegionBounds {
@@ -91,6 +94,8 @@ class MapRegion {
     required this.bounds,
     required this.pathData,
     this.englishName,
+    this.japaneseName,
+    this.simplifiedChineseName,
     this.provinceCode,
     this.provinceName,
     this.anchor,
@@ -101,6 +106,8 @@ class MapRegion {
     code: json['code'] as String,
     name: json['name'] as String,
     englishName: json['englishName'] as String?,
+    japaneseName: json['japaneseName'] as String?,
+    simplifiedChineseName: json['simplifiedChineseName'] as String?,
     provinceCode: json['provinceCode'] as String?,
     provinceName: json['provinceName'] as String?,
     anchor: switch (json['anchor']) {
@@ -120,6 +127,8 @@ class MapRegion {
   final String code;
   final String name;
   final String? englishName;
+  final String? japaneseName;
+  final String? simplifiedChineseName;
   final String? provinceCode;
   final String? provinceName;
   final String geometryType;
@@ -128,6 +137,13 @@ class MapRegion {
   final String pathData;
   final MapCoordinate? anchor;
   final RegionBounds? anchorBounds;
+
+  String get localizedName => switch (SasangLocalizations.currentLanguage) {
+    SasangLanguage.english => englishName ?? name,
+    SasangLanguage.japanese => japaneseName ?? name,
+    SasangLanguage.simplifiedChinese => simplifiedChineseName ?? name,
+    SasangLanguage.korean => name,
+  };
 }
 
 class RegionPhoto {

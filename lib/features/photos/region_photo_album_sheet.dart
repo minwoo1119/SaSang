@@ -3,6 +3,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 
+import '../../core/l10n/sasang_localizations.dart';
+
 import '../../core/storage/sasang_storage.dart';
 import '../../core/theme/sasang_theme.dart';
 import '../../models/map_models.dart';
@@ -76,9 +78,9 @@ class _RegionPhotoAlbumSheetState extends State<RegionPhotoAlbumSheet> {
   Future<void> _delete(RegionPhoto photo) async {
     final confirmed = await showSasangConfirmDialog(
       context,
-      title: '사진을 삭제할까요?',
-      message: '이 지역의 앨범에서 사진이 제거돼요.',
-      action: '삭제',
+      title: tr('사진을 삭제할까요?'),
+      message: tr('이 지역의 앨범에서 사진이 제거돼요.'),
+      action: tr('삭제'),
       destructive: true,
     );
     if (!confirmed) return;
@@ -118,7 +120,7 @@ class _RegionPhotoAlbumSheetState extends State<RegionPhotoAlbumSheet> {
               borderRadius: BorderRadius.circular(3),
             ),
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18),
           Row(
             children: [
               Expanded(
@@ -126,7 +128,7 @@ class _RegionPhotoAlbumSheetState extends State<RegionPhotoAlbumSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.region.name,
+                      widget.region.localizedName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -136,9 +138,11 @@ class _RegionPhotoAlbumSheetState extends State<RegionPhotoAlbumSheet> {
                         letterSpacing: -.4,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
-                      photos.isEmpty ? '첫 사진을 추가해 보세요' : '사진 ${photos.length}장',
+                      photos.isEmpty
+                          ? tr('첫 사진을 추가해 보세요')
+                          : tr('사진 ${photos.length}장'),
                       style: const TextStyle(
                         color: SasangColors.secondary,
                         fontSize: 13,
@@ -162,7 +166,7 @@ class _RegionPhotoAlbumSheetState extends State<RegionPhotoAlbumSheet> {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18),
           SizedBox(
             height: 310,
             child: PageView.builder(
@@ -205,11 +209,11 @@ class _RegionPhotoAlbumSheetState extends State<RegionPhotoAlbumSheet> {
               },
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 180),
             child: current == null
-                ? const SizedBox(key: Key('album-add-caption'), height: 44)
+                ? SizedBox(key: Key('album-add-caption'), height: 44)
                 : Row(
                     key: ValueKey(current.id),
                     children: [
@@ -233,8 +237,8 @@ class _RegionPhotoAlbumSheetState extends State<RegionPhotoAlbumSheet> {
                             widget.region.code,
                             current.id,
                           ),
-                          child: const Text(
-                            '대표 사진으로',
+                          child: Text(
+                            tr('대표 사진으로'),
                             style: TextStyle(
                               color: SasangColors.accent,
                               fontSize: 13,
@@ -245,8 +249,8 @@ class _RegionPhotoAlbumSheetState extends State<RegionPhotoAlbumSheet> {
                       CupertinoButton(
                         padding: const EdgeInsets.only(left: 8),
                         onPressed: () => _delete(current),
-                        child: const Text(
-                          '삭제',
+                        child: Text(
+                          tr('삭제'),
                           style: TextStyle(
                             color: CupertinoColors.systemRed,
                             fontSize: 13,
@@ -342,8 +346,8 @@ class _AlbumPhotoCardState extends State<_AlbumPhotoCard> {
                       color: CupertinoColors.white.withValues(alpha: .92),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Text(
-                      '대표 사진',
+                    child: Text(
+                      tr('대표 사진'),
                       style: TextStyle(
                         color: SasangColors.ink,
                         fontSize: 11,
@@ -405,18 +409,18 @@ class _AddPhotoCard extends StatelessWidget {
                       size: 27,
                     ),
             ),
-            const SizedBox(height: 14),
-            const Text(
-              '사진 추가',
+            SizedBox(height: 14),
+            Text(
+              tr('사진 추가'),
               style: TextStyle(
                 color: SasangColors.ink,
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),
             ),
-            const SizedBox(height: 5),
-            const Text(
-              '앨범에서 선택하기',
+            SizedBox(height: 5),
+            Text(
+              tr('앨범에서 선택하기'),
               style: TextStyle(color: SasangColors.secondary, fontSize: 12),
             ),
           ],

@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../core/l10n/sasang_localizations.dart';
+
 import '../core/theme/sasang_theme.dart';
 
 class SasangCenterModal extends StatelessWidget {
@@ -97,7 +99,7 @@ Future<bool> showSasangCenterConfirmDialog(
                     height: 1.22,
                   ),
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 Text(
                   message,
                   style: const TextStyle(
@@ -106,17 +108,17 @@ Future<bool> showSasangCenterConfirmDialog(
                     height: 1.45,
                   ),
                 ),
-                const SizedBox(height: 26),
+                SizedBox(height: 26),
                 Row(
                   children: [
                     Expanded(
                       child: _ModalAction(
                         key: const Key('sasang-center-confirm-cancel'),
-                        label: '취소',
+                        label: tr('취소'),
                         onPressed: () => Navigator.pop(context, false),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: _ModalAction(
                         key: const Key('sasang-center-confirm-action'),

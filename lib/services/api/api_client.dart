@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../../core/l10n/sasang_localizations.dart';
+
 class ApiException implements Exception {
   const ApiException(this.message, this.statusCode);
 
@@ -28,7 +30,7 @@ class ApiClient {
       headers: const {'Content-Type': 'application/json'},
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw ApiException('요청을 처리하지 못했습니다.', response.statusCode);
+      throw ApiException(tr('요청을 처리하지 못했습니다.'), response.statusCode);
     }
     final decoded = jsonDecode(response.body);
     if (decoded is! Map<String, dynamic>) {

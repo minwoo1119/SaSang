@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive_io.dart';
+
+import '../../core/l10n/sasang_localizations.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -68,8 +70,8 @@ class SasangBackupService {
       if (source == null || !await source.exists()) {
         throw SasangBackupException(
           role == 'profile'
-              ? '프로필 사진 파일을 찾을 수 없어 백업을 만들지 못했어요.'
-              : '여행 사진 파일을 찾을 수 없어 백업을 만들지 못했어요.',
+              ? tr('프로필 사진 파일을 찾을 수 없어 백업을 만들지 못했어요.')
+              : tr('여행 사진 파일을 찾을 수 없어 백업을 만들지 못했어요.'),
         );
       }
       final extension = _safeExtension(source.path);

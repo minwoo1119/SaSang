@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/sasang_localizations.dart';
+
 import '../../core/theme/sasang_theme.dart';
 import '../../models/map_models.dart';
 import 'map_preview.dart';
@@ -64,7 +66,7 @@ class MapModeSelector extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 7),
+          SizedBox(width: 7),
           const Icon(
             CupertinoIcons.chevron_down,
             size: 16,
@@ -139,7 +141,7 @@ class _OwnedMapSheet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 9),
+            SizedBox(height: 9),
             Container(
               key: const Key('owned-map-drag-handle'),
               width: 36,
@@ -157,10 +159,10 @@ class _OwnedMapSheet extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('내 지도', style: SasangTypography.sheetTitle),
-                        const SizedBox(height: 5),
+                        Text(tr('내 지도'), style: SasangTypography.sheetTitle),
+                        SizedBox(height: 5),
                         Text(
-                          '보유한 지도 ${maps.length}개',
+                          tr('보유한 지도 ${maps.length}개'),
                           key: const Key('owned-map-count'),
                           style: const TextStyle(
                             color: SasangColors.secondary,
@@ -193,16 +195,16 @@ class _OwnedMapSheet extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _OwnedMapGroup(
-                      title: '기본 지도',
+                      title: tr('기본 지도'),
                       showTitle: purchasedMaps.isNotEmpty,
                       maps: defaultMaps,
                       activeMapId: activeMapId,
                       previewAssets: previewAssets,
                     ),
                     if (purchasedMaps.isNotEmpty) ...[
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24),
                       _OwnedMapGroup(
-                        title: '추가 지도',
+                        title: tr('추가 지도'),
                         showTitle: true,
                         maps: purchasedMaps,
                         activeMapId: activeMapId,
@@ -228,11 +230,11 @@ class _OwnedMapSheet extends StatelessWidget {
                   key: const Key('map-store-browse-button'),
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   onPressed: onBrowseStore,
-                  child: const Row(
+                  child: Row(
                     children: [
                       Expanded(
                         child: Text(
-                          '새로운 지도 둘러보기',
+                          tr('새로운 지도 둘러보기'),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -367,11 +369,11 @@ class _OwnedMapCard extends StatelessWidget {
                       ),
                     ),
                     if (selected)
-                      const Positioned(
+                      Positioned(
                         right: 10,
                         top: 9,
                         child: Text(
-                          '사용 중',
+                          tr('사용 중'),
                           key: Key('owned-map-active-badge'),
                           style: TextStyle(
                             color: SasangColors.accent,

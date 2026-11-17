@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../core/l10n/sasang_localizations.dart';
+
 import '../core/theme/sasang_theme.dart';
 
 class SasangSurface extends StatelessWidget {
@@ -97,7 +99,7 @@ class SasangPrimaryButton extends StatelessWidget {
         children: [
           if (icon != null) ...[
             Icon(icon, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
           ],
           Text(
             label,
@@ -194,7 +196,7 @@ Future<bool> showSasangConfirmDialog(
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('취소'),
+            child: Text(tr('취소')),
           ),
           CupertinoDialogAction(
             isDestructiveAction: destructive,

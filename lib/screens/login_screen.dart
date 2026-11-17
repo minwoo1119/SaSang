@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/l10n/sasang_localizations.dart';
 import '../core/theme/sasang_theme.dart';
 import '../features/state/sasang_state.dart';
 import '../widgets/sasang_ui.dart';
@@ -12,9 +13,9 @@ class LoginScreen extends StatelessWidget {
   Future<void> _start(BuildContext context) async {
     final accepted = await showSasangConfirmDialog(
       context,
-      title: '사진 저장 안내',
-      message: '이 앱에서 사용한 사진은 일체 서버로 전송되지 않으며, 기기 내부에 저장됩니다.',
-      action: '동의하고 시작하기',
+      title: tr('사진 저장 안내'),
+      message: tr('이 앱에서 사용한 사진은 일체 서버로 전송되지 않으며, 기기 내부에 저장됩니다.'),
+      action: tr('동의하고 시작하기'),
     );
     if (accepted != true || !context.mounted) return;
     state.start();
@@ -56,26 +57,26 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
                     Image.asset(
                       'assets/images/main-text-design.png',
                       width: 140,
                       height: 86,
                       fit: BoxFit.contain,
                     ),
-                    const Text(
-                      '사진으로 채우는 여행 지도',
-                      style: TextStyle(
+                    Text(
+                      tr('사진으로 채우는 여행 지도'),
+                      style: const TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF3F3F46),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      '방문한 지역을 고르고, 그 경계 안에 내 사진을 담아보세요.',
+                    SizedBox(height: 10),
+                    Text(
+                      tr('방문한 지역을 고르고, 그 경계 안에 내 사진을 담아보세요.'),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: SasangColors.secondary,
                         height: 1.5,
                       ),
@@ -85,7 +86,7 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
             SasangPrimaryButton(
-              label: '시작하기',
+              label: tr('시작하기'),
               height: 56,
               onPressed: () => _start(context),
             ),

@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/sasang_localizations.dart';
+
 import '../../core/theme/sasang_theme.dart';
 import '../../widgets/sasang_ui.dart';
 import 'photo_date.dart';
@@ -32,21 +34,21 @@ Future<DateTime?> showPhotoDateDialog(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '사진 날짜',
+                Text(
+                  tr('사진 날짜'),
                   style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
                 ),
-                const SizedBox(height: 5),
+                SizedBox(height: 5),
                 Text(
                   dateFromMetadata
-                      ? '사진에 기록된 촬영일을 불러왔어요.'
-                      : '촬영일 정보가 없어 오늘 날짜로 설정했어요.',
+                      ? tr('사진에 기록된 촬영일을 불러왔어요.')
+                      : tr('촬영일 정보가 없어 오늘 날짜로 설정했어요.'),
                   style: const TextStyle(
                     color: SasangColors.secondary,
                     height: 1.4,
                   ),
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(14),
                   child: Image.file(
@@ -56,11 +58,11 @@ Future<DateTime?> showPhotoDateDialog(
                     fit: BoxFit.cover,
                   ),
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14),
                 Row(
                   children: [
-                    const Text(
-                      '선택한 날짜',
+                    Text(
+                      tr('선택한 날짜'),
                       style: TextStyle(
                         color: SasangColors.secondary,
                         fontSize: 13,
@@ -87,20 +89,20 @@ Future<DateTime?> showPhotoDateDialog(
                     onChanged: (date) => setState(() => selected = date),
                   ),
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14),
                 Row(
                   children: [
                     Expanded(
                       child: SasangTextButton(
-                        label: '취소',
+                        label: tr('취소'),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Expanded(
                       flex: 2,
                       child: SasangPrimaryButton(
-                        label: '이 날짜로 저장',
+                        label: tr('이 날짜로 저장'),
                         height: 48,
                         onPressed: () => Navigator.pop(context, selected),
                       ),

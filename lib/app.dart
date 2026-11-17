@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/theme/sasang_theme.dart';
+import 'core/l10n/sasang_localizations.dart';
 import 'features/more/info_content.dart';
 import 'features/state/sasang_state.dart';
 import 'screens/home_shell.dart';
@@ -63,63 +64,69 @@ class _SasangAppState extends State<SasangApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: _navigatorKey,
-      debugShowCheckedModeBanner: false,
-      title: '사상',
-      locale: const Locale('ko', 'KR'),
-      supportedLocales: const [Locale('ko', 'KR')],
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      theme: SasangTheme.light,
-      builder: (context, child) => CupertinoTheme(
-        data: const CupertinoThemeData(
-          primaryColor: SasangColors.accent,
-          scaffoldBackgroundColor: SasangColors.background,
-          barBackgroundColor: Color(0xF2FFFFFF),
+    return AnimatedBuilder(
+      animation: widget.state,
+      builder: (context, _) => MaterialApp(
+        navigatorKey: _navigatorKey,
+        debugShowCheckedModeBanner: false,
+        onGenerateTitle: (_) => tr('사상'),
+        locale: widget.state.language.locale,
+        supportedLocales: SasangLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          SasangLocalizations.delegate,
+          ...GlobalMaterialLocalizations.delegates,
+        ],
+        theme: SasangTheme.light,
+        builder: (context, child) => CupertinoTheme(
+          data: const CupertinoThemeData(
+            primaryColor: SasangColors.accent,
+            scaffoldBackgroundColor: SasangColors.background,
+            barBackgroundColor: Color(0xF2FFFFFF),
+          ),
+          child: child!,
         ),
-        child: child!,
-      ),
-      initialRoute: widget.state.hasStarted ? '/home' : '/',
-      onGenerateRoute: (settings) {
-        final name = settings.name ?? '/';
-        if (name == '/') {
-          return MaterialPageRoute<void>(
-            settings: settings,
-            builder: (_) => LoginScreen(state: widget.state),
-          );
-        }
-        if (const {'/home', '/map', '/places', '/more'}.contains(name)) {
-          final initialIndex = switch (name) {
-            '/places' => 1,
-            '/more' => 2,
-            _ => 0,
-          };
-          return MaterialPageRoute<void>(
-            settings: settings,
-            builder: (_) =>
-                HomeShell(state: widget.state, initialIndex: initialIndex),
-          );
-        }
-        if (name == '/map-store') {
-          return MaterialPageRoute<void>(
-            settings: settings,
-            builder: (_) => const MapStoreScreen(),
-          );
-        }
-        if (name.startsWith('/info/')) {
-          final content = InfoContent.byId(name.substring(6));
-          if (content != null) {
+        initialRoute: widget.state.hasStarted ? '/home' : '/',
+        onGenerateRoute: (settings) {
+          final name = settings.name ?? '/';
+          if (name == '/') {
             return MaterialPageRoute<void>(
               settings: settings,
-              builder: (_) => InfoDetailScreen(content: content),
+              builder: (_) => LoginScreen(state: widget.state),
             );
           }
-        }
-        return MaterialPageRoute<void>(
-          settings: settings,
-          builder: (_) => HomeShell(state: widget.state),
-        );
-      },
+          if (const {'/home', '/map', '/places', '/more'}.contains(name)) {
+            final initialIndex = switch (name) {
+              '/places' => 1,
+              '/more' => 2,
+              _ => 0,
+            };
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) =>
+                  HomeShell(state: widget.state, initialIndex: initialIndex),
+            );
+          }
+          if (name == '/map-store') {
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => const MapStoreScreen(),
+            );
+          }
+          if (name.startsWith('/info/')) {
+            final content = InfoContent.byId(name.substring(6));
+            if (content != null) {
+              return MaterialPageRoute<void>(
+                settings: settings,
+                builder: (_) => InfoDetailScreen(content: content),
+              );
+            }
+          }
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (_) => HomeShell(state: widget.state),
+          );
+        },
+      ),
     );
   }
 }

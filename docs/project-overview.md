@@ -28,6 +28,7 @@ Sasang은 방문한 행정 지역을 사용자의 사진으로 채워 여행 기
 - PNG 지도 및 H.264 여행 타임라인 영상 내보내기
 - 로컬 JSON 메타데이터와 앱 전용 사진 저장소
 - 로컬 백업 및 시스템 공유
+- 한국어, 영어, 일본어, 중국어(간체) UI와 앱 내 언어 변경
 - Google Mobile Ads와 iOS ATT 처리
 - 향후 동기화를 위한 Next.js API 및 공유 Zod 계약 기반
 
@@ -41,6 +42,7 @@ Sasang은 방문한 행정 지역을 사용자의 사진으로 채워 여행 기
 | 모바일      | Flutter 3.35.3, Dart 3.9.2                          |
 | 지도        | Flutter Canvas, SVG Path, `path_drawing`            |
 | 상태        | `ChangeNotifier` 기반 `SasangState`, 화면 로컬 상태 |
+| 다국어      | Flutter `Localizations`, 앱 세션 언어 영속화        |
 | 사진        | `image_picker`, EXIF, Flutter image codec           |
 | 저장        | 앱 문서 디렉터리, JSON 메타데이터, 원본 이미지 파일 |
 | 공유/백업   | `share_plus`, `gal`, `archive`                      |

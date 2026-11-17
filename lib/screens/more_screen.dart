@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../core/l10n/sasang_localizations.dart';
 import '../core/theme/sasang_theme.dart';
 import '../features/backup/backup_progress_dialog.dart';
 import '../features/backup/sasang_backup_service.dart';
@@ -33,9 +34,11 @@ class _MoreScreenState extends State<MoreScreen> {
   Future<void> _backup() async {
     final approved = await showSasangCenterConfirmDialog(
       context,
-      title: '데이터 백업하기',
-      message: '여행 기록과 원본 사진을 하나의 파일로 만듭니다. 백업 파일은 암호화되지 않으므로 안전한 곳에 보관해 주세요.',
-      action: '백업 파일 만들기',
+      title: tr('데이터 백업하기'),
+      message: tr(
+        '여행 기록과 원본 사진을 하나의 파일로 만듭니다. 백업 파일은 암호화되지 않으므로 안전한 곳에 보관해 주세요.',
+      ),
+      action: tr('백업 파일 만들기'),
     );
     if (!approved || !mounted) return;
     setState(() => _backupInProgress = true);
@@ -54,7 +57,7 @@ class _MoreScreenState extends State<MoreScreen> {
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(result.file.path, mimeType: 'application/zip')],
-          title: '사상 데이터 백업',
+          title: tr('사상 데이터 백업'),
           sharePositionOrigin: origin,
         ),
       );
@@ -62,7 +65,7 @@ class _MoreScreenState extends State<MoreScreen> {
       if (mounted) await _showBackupError(error.message);
     } on Object {
       if (mounted) {
-        await _showBackupError('백업 파일을 만들지 못했어요. 잠시 후 다시 시도해 주세요.');
+        await _showBackupError(tr('백업 파일을 만들지 못했어요. 잠시 후 다시 시도해 주세요.'));
       }
     } finally {
       if (mounted) setState(() => _backupInProgress = false);
@@ -72,7 +75,7 @@ class _MoreScreenState extends State<MoreScreen> {
   Future<void> _showBackupError(String message) => showCupertinoDialog<void>(
     context: context,
     builder: (context) => CupertinoAlertDialog(
-      title: const Text('백업 실패'),
+      title: Text(tr('백업 실패')),
       content: Padding(
         padding: const EdgeInsets.only(top: 8),
         child: Text(message),
@@ -80,7 +83,7 @@ class _MoreScreenState extends State<MoreScreen> {
       actions: [
         CupertinoDialogAction(
           onPressed: () => Navigator.pop(context),
-          child: const Text('확인'),
+          child: Text(tr('확인')),
         ),
       ],
     ),
@@ -88,9 +91,9 @@ class _MoreScreenState extends State<MoreScreen> {
 
   Future<void> _logout() async {
     final approved = await _confirm(
-      '로그아웃',
-      '기기에 저장된 여행 기록과 프로필은 유지됩니다.',
-      '로그아웃',
+      tr('로그아웃'),
+      tr('기기에 저장된 여행 기록과 프로필은 유지됩니다.'),
+      tr('로그아웃'),
     );
     if (!approved || !mounted) return;
     widget.state.logout();
@@ -99,9 +102,9 @@ class _MoreScreenState extends State<MoreScreen> {
 
   Future<void> _clear() async {
     final approved = await _confirm(
-      '데이터 지우고 로그아웃',
-      '기기에 저장된 모든 여행 기록과 프로필 정보를 초기화합니다.',
-      '데이터 지우기',
+      tr('데이터 지우고 로그아웃'),
+      tr('기기에 저장된 모든 여행 기록과 프로필 정보를 초기화합니다.'),
+      tr('데이터 지우기'),
       destructive: true,
     );
     if (!approved || !mounted) return;
@@ -124,6 +127,40 @@ class _MoreScreenState extends State<MoreScreen> {
     destructive: destructive,
   );
 
+  Future<void> _chooseLanguage() async {
+    final selected = await showCupertinoModalPopup<SasangLanguage>(
+      context: context,
+      builder: (context) => CupertinoActionSheet(
+        title: Text(tr('언어 선택')),
+        actions: [
+          for (final language in SasangLanguage.values)
+            CupertinoActionSheetAction(
+              onPressed: () => Navigator.pop(context, language),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(language.displayName),
+                  if (widget.state.language == language) ...[
+                    SizedBox(width: 8),
+                    const Icon(
+                      CupertinoIcons.check_mark,
+                      size: 18,
+                      color: SasangColors.accent,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.pop(context),
+          child: Text(tr('취소')),
+        ),
+      ),
+    );
+    if (selected != null) widget.state.setLanguage(selected);
+  }
+
   @override
   Widget build(BuildContext context) => Stack(
     children: [
@@ -134,12 +171,12 @@ class _MoreScreenState extends State<MoreScreen> {
             key: const ValueKey('more-scroll-view'),
             padding: const EdgeInsets.only(top: 22, bottom: 128),
             children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 22),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22),
                 child: Text(
-                  '더보기',
-                  key: ValueKey('more-page-title'),
-                  style: TextStyle(
+                  tr('더보기'),
+                  key: const ValueKey('more-page-title'),
+                  style: const TextStyle(
                     color: SasangColors.ink,
                     fontSize: 30,
                     fontWeight: FontWeight.w800,
@@ -147,22 +184,32 @@ class _MoreScreenState extends State<MoreScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
               const _MoreAdArea(),
-              const SizedBox(height: 32),
+              SizedBox(height: 32),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 22),
-                child: _section('map', '지도', [
+                child: _section('settings', tr('설정'), [
                   _MoreMenuItem(
-                    label: '지도 상점',
+                    label: '${tr('언어')} · ${widget.state.language.displayName}',
+                    onTap: _chooseLanguage,
+                  ),
+                ]),
+              ),
+              SizedBox(height: 32),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+                child: _section('map', tr('지도'), [
+                  _MoreMenuItem(
+                    label: tr('지도 상점'),
                     onTap: () => Navigator.pushNamed(context, '/map-store'),
                   ),
                 ]),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: 32),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 22),
-                child: _section('information', '약관 및 정보', [
+                child: _section('information', tr('약관 및 정보'), [
                   for (final item in InfoContent.items)
                     _MoreMenuItem(
                       label: item.label,
@@ -171,22 +218,24 @@ class _MoreScreenState extends State<MoreScreen> {
                     ),
                 ]),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: 32),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 22),
-                child: _section('account', '계정 및 데이터', [
+                child: _section('account', tr('계정 및 데이터'), [
                   _MoreMenuItem(
-                    label: _backupInProgress ? '백업 파일 만드는 중…' : '데이터 백업하기',
+                    label: _backupInProgress
+                        ? tr('백업 파일 만드는 중…')
+                        : tr('데이터 백업하기'),
                     onTap: _backupInProgress ? null : _backup,
                     showsChevron: false,
                   ),
                   _MoreMenuItem(
-                    label: '로그아웃',
+                    label: tr('로그아웃'),
                     onTap: _logout,
                     showsChevron: false,
                   ),
                   _MoreMenuItem(
-                    label: '데이터 지우고 로그아웃하기',
+                    label: tr('데이터 지우고 로그아웃하기'),
                     onTap: _clear,
                     showsChevron: false,
                     destructive: true,
@@ -214,7 +263,7 @@ class _MoreScreenState extends State<MoreScreen> {
           letterSpacing: -0.2,
         ),
       ),
-      const SizedBox(height: 12),
+      SizedBox(height: 12),
       Container(
         key: ValueKey('more-section-card-$id'),
         clipBehavior: Clip.antiAlias,
@@ -248,7 +297,7 @@ class _MoreAdArea extends StatelessWidget {
   const _MoreAdArea();
 
   @override
-  Widget build(BuildContext context) => const SizedBox(
+  Widget build(BuildContext context) => SizedBox(
     key: ValueKey('more-ad-area'),
     height: 58,
     width: double.infinity,
@@ -305,7 +354,7 @@ class _MoreMenuRow extends StatelessWidget {
                 ),
               ),
               if (item.showsChevron) ...[
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 const Icon(
                   CupertinoIcons.chevron_forward,
                   size: 17,

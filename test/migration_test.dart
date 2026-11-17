@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:sasang/core/l10n/sasang_localizations.dart';
 import 'package:sasang/core/theme/sasang_theme.dart';
 import 'package:sasang/core/storage/sasang_storage.dart';
 import 'package:sasang/core/layout/sasang_layout.dart';
@@ -35,6 +36,57 @@ import 'package:sasang/widgets/ad_banner.dart';
 import 'package:sasang/widgets/sasang_center_modal.dart';
 
 void main() {
+  tearDown(() => SasangLocalizations.use(SasangLanguage.korean));
+
+  test('supports Korean, English, Japanese, and Simplified Chinese', () {
+    expect(SasangLocalizations.supportedLocales, hasLength(4));
+
+    SasangLocalizations.use(SasangLanguage.english);
+    expect(tr('지도'), 'Map');
+    expect(tr('사진 12장'), '12 photos');
+
+    SasangLocalizations.use(SasangLanguage.japanese);
+    expect(tr('설정'), '設定');
+    expect(tr('2026년 11월 17일'), '2026年11月17日');
+
+    SasangLocalizations.use(SasangLanguage.simplifiedChinese);
+    expect(tr('언어'), '语言');
+    expect(tr('보유한 지도 3개'), '已拥有3张地图');
+  });
+
+  test('uses the selected language for world region names', () {
+    final region = MapRegion(
+      code: 'JP',
+      name: '일본',
+      englishName: 'Japan',
+      japaneseName: '日本',
+      simplifiedChineseName: '日本',
+      geometryType: 'Polygon',
+      polygonCount: 1,
+      bounds: const RegionBounds(x: 0, y: 0, width: 1, height: 1),
+      pathData: 'M0 0Z',
+    );
+
+    SasangLocalizations.use(SasangLanguage.english);
+    expect(region.localizedName, 'Japan');
+    SasangLocalizations.use(SasangLanguage.japanese);
+    expect(region.localizedName, '日本');
+    SasangLocalizations.use(SasangLanguage.simplifiedChinese);
+    expect(region.localizedName, '日本');
+  });
+
+  test('persists a language change with the current session', () async {
+    final storage = _MemoryStorage();
+    final state = SasangState(storage)..start();
+
+    state.setLanguage(SasangLanguage.japanese);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(state.language, SasangLanguage.japanese);
+    expect(storage.hasStarted, isTrue);
+    expect(storage.languageCode, 'ja');
+  });
+
   test('decodes the legacy Zustand persist envelope', () {
     final state = decodeZustandState(
       '{"state":{"hasStarted":true,"name":"여행자"},"version":0}',
@@ -1733,6 +1785,17 @@ RegionPhoto _photo(String id, String takenAt) => RegionPhoto(
 
 class _MemoryStorage extends SasangStorage {
   Map<String, RegionPhotoAlbum> albums = {};
+  bool? hasStarted;
+  String? languageCode;
+
+  @override
+  Future<void> writeSession({
+    required bool hasStarted,
+    required String languageCode,
+  }) async {
+    this.hasStarted = hasStarted;
+    this.languageCode = languageCode;
+  }
 
   @override
   Future<void> writePhotoAlbums(Map<String, RegionPhotoAlbum> albums) async {

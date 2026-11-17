@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 
+import '../core/l10n/sasang_localizations.dart';
+
 import '../core/storage/sasang_storage.dart';
 import '../core/theme/sasang_theme.dart';
 import '../features/map/map_mode_selector.dart';
@@ -61,7 +63,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
         future: widget.mapAsset ?? _maps.load(mode),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CupertinoActivityIndicator());
+            return Center(child: CupertinoActivityIndicator());
           }
           final regions = {
             for (final region in snapshot.data!.regions) region.code: region,
@@ -92,7 +94,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
                       onChanged: widget.state.setMode,
                       elevated: true,
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     _SortButton(
                       newest: _newest,
                       onPressed: () => setState(() => _newest = !_newest),
@@ -145,7 +147,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
                                         radius: 0,
                                       ),
                                     ),
-                                    const SizedBox(
+                                    SizedBox(
                                       height: .5,
                                       child: ColoredBox(
                                         color: Color(0x1218181B),
@@ -168,7 +170,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
                                             children: [
                                               Expanded(
                                                 child: Text(
-                                                  item.region.name,
+                                                  item.region.localizedName,
                                                   maxLines: 1,
                                                   overflow:
                                                       TextOverflow.ellipsis,
@@ -179,7 +181,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
                                                   ),
                                                 ),
                                               ),
-                                              const SizedBox(width: 8),
+                                              SizedBox(width: 8),
                                               Container(
                                                 padding:
                                                     const EdgeInsets.symmetric(
@@ -194,7 +196,9 @@ class _PlacesScreenState extends State<PlacesScreen> {
                                                       BorderRadius.circular(10),
                                                 ),
                                                 child: Text(
-                                                  '${item.album.photos.length}장',
+                                                  tr(
+                                                    '${item.album.photos.length}장',
+                                                  ),
                                                   style: const TextStyle(
                                                     color: SasangColors.accent,
                                                     fontSize: 11,
@@ -204,19 +208,19 @@ class _PlacesScreenState extends State<PlacesScreen> {
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 4),
+                                          SizedBox(height: 4),
                                           Text(
                                             item.region.provinceName ??
                                                 (mode == MapMode.korea
-                                                    ? '대한민국'
-                                                    : '해외'),
+                                                    ? tr('대한민국')
+                                                    : tr('해외')),
                                             style: const TextStyle(
                                               color: Color(0xFF52525B),
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
                                             ),
                                           ),
-                                          const SizedBox(height: 4),
+                                          SizedBox(height: 4),
                                           Text(
                                             koreanDate(
                                               regionPhotoDate(
@@ -263,8 +267,8 @@ class _PlacesScreenState extends State<PlacesScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '아직 기록이 없어요',
+            Text(
+              tr('아직 기록이 없어요'),
               style: TextStyle(
                 color: SasangColors.ink,
                 fontSize: 22,
@@ -272,9 +276,9 @@ class _PlacesScreenState extends State<PlacesScreen> {
                 fontWeight: FontWeight.w800,
               ),
             ),
-            const SizedBox(height: 5),
-            const Text(
-              '지도에서 첫 사진을 추가해보세요.',
+            SizedBox(height: 5),
+            Text(
+              tr('지도에서 첫 사진을 추가해보세요.'),
               style: TextStyle(
                 color: SasangColors.secondary,
                 fontSize: 14,
@@ -282,7 +286,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 22),
+            SizedBox(height: 22),
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -292,11 +296,11 @@ class _PlacesScreenState extends State<PlacesScreen> {
                 borderRadius: BorderRadius.circular(16),
                 color: SasangColors.accent,
                 onPressed: widget.onOpenMap,
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '지도에서 시작하기',
+                      tr('지도에서 시작하기'),
                       style: TextStyle(
                         color: CupertinoColors.white,
                         fontSize: 14,
@@ -315,7 +319,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
           ],
         ),
       ),
-      const SizedBox(height: 36),
+      SizedBox(height: 36),
       const AdBanner(placement: AdPlacement.places),
     ],
   );
@@ -351,9 +355,9 @@ class _SortButton extends StatelessWidget {
             size: 13,
             color: Color(0xFF52525B),
           ),
-          const SizedBox(width: 6),
+          SizedBox(width: 6),
           Text(
-            newest ? '최신순' : '오래된순',
+            newest ? tr('최신순') : tr('오래된순'),
             style: const TextStyle(
               color: Color(0xFF27272A),
               fontSize: 13,

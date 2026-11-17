@@ -14,6 +14,7 @@
 ## 주제별 문서
 
 - [사진 앨범](photo-albums.md)
+- [다국어 지원](localization.md)
 - [지도 공유](map-sharing.md)
 - [내보내기 개선 검토](export-improvements-review.md)
 - [Firebase Analytics](firebase-analytics.md)

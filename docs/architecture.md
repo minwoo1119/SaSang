@@ -77,7 +77,8 @@ flowchart TD
 ### 진입점과 화면
 
 - `lib/main.dart`: Flutter 진입점
-- `lib/app.dart`: 앱 루트, 테마와 초기 구성
+- `lib/app.dart`: 앱 루트, 테마, 로케일과 초기 구성
+- `lib/core/l10n/`: 한국어, 영어, 일본어, 중국어(간체) 번역
 - `lib/screens/`: 지도, 장소, 지도 상점, 더보기, 로그인 화면
 - `lib/widgets/`: Sasang 공통 UI와 광고 배너
 
@@ -86,11 +87,15 @@ flowchart TD
 
 ### 상태와 영속화
 
-- `lib/features/state/sasang_state.dart`: 현재 지도, 방문, 앨범, 프로필 등 앱 상태
+- `lib/features/state/sasang_state.dart`: 현재 지도, 방문, 앨범, 프로필, 선택 언어 등 앱 상태
 - `lib/core/storage/sasang_storage.dart`: JSON 메타데이터와 로컬 파일 영속화
 
 서버 상태가 핵심 흐름에 개입하지 않으므로 현재 모바일 앱은 로컬 우선입니다. 저장 형식
 변경 시 기존 사용자 데이터와 백업 파일의 하위 호환성을 검토해야 합니다.
+
+선택 언어는 세션 메타데이터에 저장합니다. 언어를 바꾸면 전역 로케일과 UI가 즉시
+갱신되며 다음 실행에도 유지됩니다. 세계 국가명은 지도 생성 단계에서 네 언어 이름을
+함께 생성하고, 대한민국 시·군·구 고유명은 현재 공식 한국어 명칭을 유지합니다.
 
 ### 지도 렌더링
 
@@ -141,7 +146,7 @@ SHP / GeoJSON
 
 | 변경 영역          | 최소 검증                                       |
 | ------------------ | ----------------------------------------------- |
-| Dart UI/상태       | `flutter analyze`, 관련 `flutter test`          |
+| Dart UI/상태/다국어 | `flutter analyze`, 관련 `flutter test`          |
 | 지도 데이터/생성기 | `pnpm map:test`, 생성 결과 무결성 검사          |
 | 네이티브 영상      | 해당 플랫폼 빌드와 통합 테스트                  |
 | 백엔드/공유 계약   | 백엔드 및 공유 패키지 테스트·타입 검사          |
