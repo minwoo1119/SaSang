@@ -1,3 +1,4 @@
+import '../../core/l10n/sasang_localizations.dart';
 import '../../models/map_models.dart';
 
 const northKoreaRegionCode = 'KP';
@@ -23,7 +24,7 @@ class NorthKoreaVisitGate {
 }
 
 String northKoreaConfirmationMessage(int attempt) => switch (attempt) {
-  1 => '진짜 방문하셨다고요 ?????',
-  2 => '정말 북한에 다녀오셨다고요 ?????',
-  _ => '마지막 확인이에요. 진짜 방문하신 게 맞나요 ?????',
+  1 => tr('진짜 방문하셨다고요 ?????'),
+  2 => tr('정말 북한에 다녀오셨다고요 ?????'),
+  _ => tr('마지막 확인이에요. 진짜 방문하신 게 맞나요 ?????'),
 };

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/sasang_localizations.dart';
+
 import '../../core/theme/sasang_theme.dart';
 import '../../widgets/sasang_center_modal.dart';
 
@@ -7,16 +9,16 @@ class BackupProgressDialog extends StatelessWidget {
   const BackupProgressDialog({super.key});
 
   @override
-  Widget build(BuildContext context) => const SasangCenterModal(
+  Widget build(BuildContext context) => SasangCenterModal(
     key: Key('backup-progress-dialog'),
     cardKey: Key('backup-progress-card'),
-    semanticsLabel: '데이터 백업 진행',
+    semanticsLabel: tr('데이터 백업 진행'),
     child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '백업 파일을 만들고 있어요',
+          tr('백업 파일을 만들고 있어요'),
           style: TextStyle(
             color: SasangColors.ink,
             fontSize: 23,
@@ -27,7 +29,7 @@ class BackupProgressDialog extends StatelessWidget {
         ),
         SizedBox(height: 10),
         Text(
-          '여행 기록과 사진을 하나로 정리하는 중이에요.',
+          tr('여행 기록과 사진을 하나로 정리하는 중이에요.'),
           style: TextStyle(
             color: SasangColors.secondary,
             fontSize: 15,

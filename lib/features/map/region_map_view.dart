@@ -7,6 +7,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path_drawing/path_drawing.dart';
 
+import '../../core/l10n/sasang_localizations.dart';
+
 import '../../core/storage/sasang_storage.dart';
 import '../../core/layout/sasang_layout.dart';
 import '../../core/theme/sasang_theme.dart';
@@ -235,19 +237,19 @@ class _RegionMapViewState extends State<RegionMapView> {
                   children: [
                     _ZoomButton(
                       icon: CupertinoIcons.add,
-                      label: '지도 확대',
+                      label: tr('지도 확대'),
                       onTap: () => _zoom(1.55, size),
                     ),
-                    const SizedBox(width: 28, child: Divider(height: 1)),
+                    SizedBox(width: 28, child: Divider(height: 1)),
                     _ZoomButton(
                       icon: CupertinoIcons.minus,
-                      label: '지도 축소',
+                      label: tr('지도 축소'),
                       onTap: () => _zoom(0.65, size),
                     ),
-                    const SizedBox(width: 28, child: Divider(height: 1)),
+                    SizedBox(width: 28, child: Divider(height: 1)),
                     _ZoomButton(
                       text: '1:1',
-                      label: '지도 위치 초기화',
+                      label: tr('지도 위치 초기화'),
                       onTap: () => _controller.value = Matrix4.identity(),
                     ),
                   ],

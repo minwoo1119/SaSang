@@ -5,6 +5,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
+
+import '../../core/l10n/sasang_localizations.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_drawing/path_drawing.dart';
 import 'package:path_provider/path_provider.dart';
@@ -42,7 +44,7 @@ class MapExportCancelledException implements Exception {
   const MapExportCancelledException();
 
   @override
-  String toString() => '영상 내보내기가 취소되었습니다.';
+  String toString() => tr('영상 내보내기가 취소되었습니다.');
 }
 
 class MapShareResult {
@@ -195,7 +197,7 @@ class MapShareService {
       albums: snapshotAlbums,
     );
     if (timeline.isEmpty) {
-      throw StateError('영상으로 만들 여행 기록이 없어요.');
+      throw StateError(tr('영상으로 만들 여행 기록이 없어요.'));
     }
 
     final temporary = await getTemporaryDirectory();
@@ -372,7 +374,7 @@ class MapShareService {
             'bitrate': 5000000,
           });
       if (encoded != true || !await output.exists()) {
-        throw StateError('타임라인 영상을 만들지 못했어요.');
+        throw StateError(tr('타임라인 영상을 만들지 못했어요.'));
       }
       cancellationToken?.throwIfCancelled();
       final saved = saveToGallery
@@ -458,7 +460,7 @@ class MapShareService {
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(result.file.path)],
-        title: '사상 여행 지도',
+        title: tr('사상 여행 지도'),
         sharePositionOrigin: origin,
       ),
     );
@@ -609,7 +611,7 @@ class _MapShareRenderer {
     final headerTop = height * .065;
     _drawText(
       canvas,
-      '사상',
+      tr('사상'),
       Offset(margin, headerTop),
       fontSize: width * .032,
       color: SasangColors.accent,
@@ -618,7 +620,7 @@ class _MapShareRenderer {
     );
     _drawText(
       canvas,
-      mode == MapMode.korea ? '나의 대한민국 여행' : '나의 세계 여행',
+      mode == MapMode.korea ? tr('나의 대한민국 여행') : tr('나의 세계 여행'),
       Offset(margin, headerTop + width * .06),
       fontSize: width * .052,
       color: SasangColors.ink,
@@ -680,7 +682,7 @@ class _MapShareRenderer {
         .where((key) => key.startsWith('${mode.storageKey}:'))
         .length;
     final percent = mapTravelPercentage(count, asset.regions.length);
-    final unit = mode == MapMode.korea ? '개 지역' : '개 국가';
+    final unit = mode == MapMode.korea ? tr('개 지역') : tr('개 국가');
     final footerTop = height * .835;
     if (current != null) {
       _drawText(
@@ -693,7 +695,7 @@ class _MapShareRenderer {
       );
       _drawText(
         canvas,
-        current.region.name,
+        current.region.localizedName,
         Offset(margin, footerTop + width * .046),
         fontSize: width * .048,
         color: SasangColors.ink,
@@ -702,7 +704,7 @@ class _MapShareRenderer {
     } else {
       _drawText(
         canvas,
-        '나의 여행 지도',
+        tr('나의 여행 지도'),
         Offset(margin, footerTop + width * .025),
         fontSize: width * .044,
         color: SasangColors.ink,
@@ -738,7 +740,7 @@ class _MapShareRenderer {
     final image = await recorder.endRecording().toImage(width, height);
     final data = await image.toByteData(format: ui.ImageByteFormat.png);
     image.dispose();
-    if (data == null) throw StateError('공유 이미지를 만들지 못했어요.');
+    if (data == null) throw StateError(tr('공유 이미지를 만들지 못했어요.'));
     return data.buffer.asUint8List();
   }
 

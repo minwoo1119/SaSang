@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../core/l10n/sasang_localizations.dart';
+
 import '../core/theme/sasang_theme.dart';
 import '../features/more/info_content.dart';
 
@@ -75,11 +77,11 @@ class _DocumentBody extends StatelessWidget {
             letterSpacing: -.65,
           ),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         Text(
           content.effectiveDate == null
-              ? '시행일 미정'
-              : '시행일 ${content.effectiveDate}',
+              ? tr('시행일 미정')
+              : tr('시행일 ${content.effectiveDate}'),
           key: ValueKey('info-effective-date-${content.id}'),
           style: const TextStyle(
             color: SasangColors.secondary,
@@ -87,10 +89,10 @@ class _DocumentBody extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 40),
+        SizedBox(height: 40),
         for (var index = 0; index < content.sections.length; index++) ...[
           _DocumentSection(section: content.sections[index]),
-          if (index != content.sections.length - 1) const SizedBox(height: 36),
+          if (index != content.sections.length - 1) SizedBox(height: 36),
         ],
       ],
     ),
@@ -115,7 +117,7 @@ class _DocumentSection extends StatelessWidget {
           letterSpacing: -.25,
         ),
       ),
-      const SizedBox(height: 12),
+      SizedBox(height: 12),
       for (var index = 0; index < section.paragraphs.length; index++) ...[
         Text(
           section.paragraphs[index],
@@ -125,7 +127,7 @@ class _DocumentSection extends StatelessWidget {
             height: 1.68,
           ),
         ),
-        if (index != section.paragraphs.length - 1) const SizedBox(height: 14),
+        if (index != section.paragraphs.length - 1) SizedBox(height: 14),
       ],
     ],
   );
@@ -160,12 +162,12 @@ class _AppInfoBody extends StatelessWidget {
                   width: 88,
                   height: 88,
                   fit: BoxFit.cover,
-                  semanticLabel: '사상 앱 아이콘',
+                  semanticLabel: tr('사상 앱 아이콘'),
                 ),
               ),
-              const SizedBox(height: 18),
-              const Text(
-                '사상',
+              SizedBox(height: 18),
+              Text(
+                tr('사상'),
                 style: TextStyle(
                   color: SasangColors.ink,
                   fontSize: 26,
@@ -173,9 +175,9 @@ class _AppInfoBody extends StatelessWidget {
                   letterSpacing: -.5,
                 ),
               ),
-              const SizedBox(height: 6),
-              const Text(
-                '나의 여행을 지도에 남기다',
+              SizedBox(height: 6),
+              Text(
+                tr('나의 여행을 지도에 남기다'),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: SasangColors.secondary,
@@ -186,7 +188,7 @@ class _AppInfoBody extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 40),
+        SizedBox(height: 40),
         for (final section in content.sections) ...[
           Text(
             section.title,
@@ -196,7 +198,7 @@ class _AppInfoBody extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           for (final paragraph in section.paragraphs)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -210,16 +212,16 @@ class _AppInfoBody extends StatelessWidget {
               ),
             ),
         ],
-        const SizedBox(height: 28),
-        const Text(
-          '상세 정보',
+        SizedBox(height: 28),
+        Text(
+          tr('상세 정보'),
           style: TextStyle(
             color: SasangColors.ink,
             fontSize: 18,
             fontWeight: FontWeight.w800,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Container(
           key: const ValueKey('app-info-detail-group'),
           clipBehavior: Clip.antiAlias,
@@ -255,13 +257,13 @@ class _VersionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _InfoRow(
-    label: '버전',
+    label: tr('버전'),
     trailing: FutureBuilder<PackageInfo>(
       future: packageInfo,
       builder: (context, snapshot) {
         final info = snapshot.data;
         final label = info == null
-            ? '확인 중'
+            ? tr('확인 중')
             : '${info.version} (${info.buildNumber})';
         return Text(
           label,
@@ -291,7 +293,7 @@ class _LicenseRow extends StatelessWidget {
       if (!context.mounted) return;
       showLicensePage(
         context: context,
-        applicationName: '사상',
+        applicationName: tr('사상'),
         applicationVersion: '${info.version} (${info.buildNumber})',
         applicationIcon: Padding(
           padding: const EdgeInsets.all(8),
@@ -299,8 +301,8 @@ class _LicenseRow extends StatelessWidget {
         ),
       );
     },
-    child: const _InfoRow(
-      label: '오픈소스 라이선스',
+    child: _InfoRow(
+      label: tr('오픈소스 라이선스'),
       trailing: Icon(
         CupertinoIcons.chevron_forward,
         size: 17,
@@ -333,7 +335,7 @@ class _InfoRow extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Flexible(child: trailing),
         ],
       ),

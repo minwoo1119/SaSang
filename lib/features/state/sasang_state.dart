@@ -2,15 +2,19 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../../core/l10n/sasang_localizations.dart';
 import '../../core/storage/sasang_storage.dart';
 import '../../models/map_models.dart';
 
 class SasangState extends ChangeNotifier {
-  SasangState(this.storage);
+  SasangState(this.storage) : language = SasangLanguage.korean {
+    SasangLocalizations.use(language);
+  }
 
   final SasangStorage storage;
   Future<void> _photoWrite = Future.value();
   bool hasStarted = false;
+  SasangLanguage language;
   String name = '여행자';
   String? profileImageUri;
   MapMode mode = MapMode.korea;
@@ -21,6 +25,8 @@ class SasangState extends ChangeNotifier {
   Future<void> load() async {
     final stored = await storage.read();
     hasStarted = stored.hasStarted;
+    language = SasangLanguage.fromCode(stored.languageCode);
+    SasangLocalizations.use(language);
     name = stored.name;
     profileImageUri = stored.profileImageUri;
     regionPhotos
@@ -35,14 +41,26 @@ class SasangState extends ChangeNotifier {
   void start() {
     hasStarted = true;
     notifyListeners();
-    unawaited(storage.writeSession(true));
+    _persistSession();
   }
 
   void logout() {
     hasStarted = false;
     notifyListeners();
-    unawaited(storage.writeSession(false));
+    _persistSession();
   }
+
+  void setLanguage(SasangLanguage value) {
+    if (language == value) return;
+    language = value;
+    SasangLocalizations.use(value);
+    notifyListeners();
+    _persistSession();
+  }
+
+  void _persistSession() => unawaited(
+    storage.writeSession(hasStarted: hasStarted, languageCode: language.code),
+  );
 
   void setMode(MapMode value) {
     mode = value;
@@ -177,6 +195,6 @@ class SasangState extends ChangeNotifier {
     await storage.clearState();
     await storage.writeProfile(name, null);
     await storage.writePhotoAlbums(regionPhotoAlbums);
-    await storage.writeSession(false);
+    await storage.writeSession(hasStarted: false, languageCode: language.code);
   }
 }

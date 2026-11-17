@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../core/l10n/sasang_localizations.dart';
+
 import '../core/theme/sasang_theme.dart';
 import '../features/map/map_repository.dart';
 import '../features/map/map_preview.dart';
@@ -36,10 +38,10 @@ List<MapStoreProduct> mapStoreProducts(RegionMapAsset asset) {
       .map(
         (region) => MapStoreProduct(
           code: region.code,
-          name: '${region.name} 지도',
+          name: tr('${region.localizedName} 지도'),
           description: region.polygonCount > 1
-              ? '본토와 섬을 포함해 지역별로 기록해요'
-              : '지역별로 여행 사진을 기록해요',
+              ? tr('본토와 섬을 포함해 지역별로 기록해요')
+              : tr('지역별로 여행 사진을 기록해요'),
           priceWon: mapStorePriceFor(region),
         ),
       )
@@ -95,7 +97,7 @@ class _MapStoreScreenState extends State<MapStoreScreen> {
         bottom: BorderSide(color: SasangColors.border, width: .5),
       ),
       middle: Text(
-        '지도 상점',
+        tr('지도 상점'),
         style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
       ),
     ),
@@ -103,7 +105,7 @@ class _MapStoreScreenState extends State<MapStoreScreen> {
       future: _mapAsset,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const Center(child: CupertinoActivityIndicator());
+          return Center(child: CupertinoActivityIndicator());
         }
         final products = mapStoreProducts(snapshot.data!);
         final filteredProducts = filterMapStoreProducts(products, _query);
@@ -116,8 +118,8 @@ class _MapStoreScreenState extends State<MapStoreScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '여행을 더 자세하게 기록하세요',
+                    Text(
+                      tr('여행을 더 자세하게 기록하세요'),
                       style: TextStyle(
                         color: SasangColors.ink,
                         fontSize: 24,
@@ -125,11 +127,11 @@ class _MapStoreScreenState extends State<MapStoreScreen> {
                         letterSpacing: -.5,
                       ),
                     ),
-                    const SizedBox(height: 7),
-                    const SizedBox(
+                    SizedBox(height: 7),
+                    SizedBox(
                       width: 330,
                       child: Text(
-                        '국가 지도를 열면 도시와 지역 단위로 사진을 남길 수 있어요.',
+                        tr('국가 지도를 열면 도시와 지역 단위로 사진을 남길 수 있어요.'),
                         style: TextStyle(
                           color: SasangColors.secondary,
                           fontSize: 14,
@@ -137,12 +139,12 @@ class _MapStoreScreenState extends State<MapStoreScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28),
                     SizedBox(
                       height: 48,
                       child: CupertinoSearchTextField(
                         key: const ValueKey('map-store-search-field'),
-                        placeholder: '국가 지도 검색',
+                        placeholder: tr('국가 지도 검색'),
                         placeholderStyle: const TextStyle(
                           color: SasangColors.secondary,
                           fontSize: 15,
@@ -163,19 +165,19 @@ class _MapStoreScreenState extends State<MapStoreScreen> {
                         onChanged: (value) => setState(() => _query = value),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          '국가별 지도',
+                        Text(
+                          tr('국가별 지도'),
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         Text(
-                          '${filteredProducts.length}개',
+                          tr('${filteredProducts.length}개'),
                           key: const ValueKey('map-store-result-count'),
                           style: const TextStyle(
                             color: SasangColors.secondary,
@@ -198,10 +200,10 @@ class _MapStoreScreenState extends State<MapStoreScreen> {
                     24,
                     MediaQuery.paddingOf(context).bottom + 48,
                   ),
-                  child: const Column(
+                  child: Column(
                     children: [
                       Text(
-                        '검색 결과가 없어요',
+                        tr('검색 결과가 없어요'),
                         key: ValueKey('map-store-empty-search'),
                         style: TextStyle(
                           color: SasangColors.ink,
@@ -211,7 +213,7 @@ class _MapStoreScreenState extends State<MapStoreScreen> {
                       ),
                       SizedBox(height: 8),
                       Text(
-                        '다른 국가명이나 국가 코드를 입력해 보세요.',
+                        tr('다른 국가명이나 국가 코드를 입력해 보세요.'),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: SasangColors.secondary,
@@ -259,101 +261,97 @@ class _MapStoreScreenState extends State<MapStoreScreen> {
     ),
   );
 
-  Future<void> _showProduct(BuildContext context, MapStoreProduct product) =>
-      showSasangSheet<void>(
-        context,
-        Column(
-          mainAxisSize: MainAxisSize.min,
+  Future<void> _showProduct(
+    BuildContext context,
+    MapStoreProduct product,
+  ) => showSasangSheet<void>(
+    context,
+    Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(key: Key('map-store-modal-top-space'), height: 12),
+        Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(key: Key('map-store-modal-top-space'), height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '국가별 상세 지도',
-                        style: TextStyle(
-                          color: SasangColors.accent,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        product.name,
-                        style: const TextStyle(
-                          fontSize: 23,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tr('국가별 상세 지도'),
+                    style: TextStyle(
+                      color: SasangColors.accent,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(36, 36),
-                  borderRadius: BorderRadius.circular(8),
-                  color: const Color(0xFFF4F4F5),
-                  onPressed: () => Navigator.pop(context),
-                  child: const Icon(
-                    CupertinoIcons.xmark,
-                    size: 18,
-                    color: Color(0xFF52525B),
+                  SizedBox(height: 4),
+                  Text(
+                    product.name,
+                    style: const TextStyle(
+                      fontSize: 23,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 17),
-            ClipRRect(
-              borderRadius: SasangRadii.contentCard,
-              child: SizedBox(
-                height: 150,
-                width: double.infinity,
-                child: MapPreview(
-                  mode: MapMode.world,
-                  countryCode: product.code,
-                ),
+                ],
               ),
             ),
-            const SizedBox(height: 17),
-            Text(
-              product.description,
-              style: const TextStyle(
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(36, 36),
+              borderRadius: BorderRadius.circular(8),
+              color: const Color(0xFFF4F4F5),
+              onPressed: () => Navigator.pop(context),
+              child: const Icon(
+                CupertinoIcons.xmark,
+                size: 18,
                 color: Color(0xFF52525B),
-                fontSize: 14,
-                height: 1.42,
               ),
             ),
-            const SizedBox(height: 17),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '지도 가격',
-                  style: TextStyle(
-                    color: SasangColors.secondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  product.priceLabel,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 17),
-            const SasangPrimaryButton(onPressed: null, label: '출시 예정'),
           ],
         ),
-      );
+        SizedBox(height: 17),
+        ClipRRect(
+          borderRadius: SasangRadii.contentCard,
+          child: SizedBox(
+            height: 150,
+            width: double.infinity,
+            child: MapPreview(mode: MapMode.world, countryCode: product.code),
+          ),
+        ),
+        SizedBox(height: 17),
+        Text(
+          product.description,
+          style: const TextStyle(
+            color: Color(0xFF52525B),
+            fontSize: 14,
+            height: 1.42,
+          ),
+        ),
+        SizedBox(height: 17),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              tr('지도 가격'),
+              style: TextStyle(
+                color: SasangColors.secondary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Text(
+              product.priceLabel,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        SizedBox(height: 17),
+        SasangPrimaryButton(onPressed: null, label: tr('출시 예정')),
+      ],
+    ),
+  );
 }
 
 class _ProductCard extends StatelessWidget {
@@ -399,7 +397,7 @@ class _ProductCard extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 7),
+                  SizedBox(height: 7),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
@@ -409,8 +407,8 @@ class _ProductCard extends StatelessWidget {
                       color: const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(999),
                     ),
-                    child: const Text(
-                      '출시 예정',
+                    child: Text(
+                      tr('출시 예정'),
                       style: TextStyle(
                         color: Color(0xFF64748B),
                         fontSize: 10,
@@ -418,7 +416,7 @@ class _ProductCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Text(
                     product.description,
                     maxLines: 2,

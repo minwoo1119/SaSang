@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/l10n/sasang_localizations.dart';
+
 import '../../core/theme/sasang_theme.dart';
 import '../../widgets/sasang_center_modal.dart';
 import 'map_share_service.dart';
@@ -34,7 +36,7 @@ class ExportProgressDialog extends StatelessWidget {
     return SasangCenterModal(
       key: const Key('share-export-progress-dialog'),
       cardKey: const Key('share-export-progress-card'),
-      semanticsLabel: '내보내기 진행',
+      semanticsLabel: tr('내보내기 진행'),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,7 +52,7 @@ class ExportProgressDialog extends StatelessWidget {
               height: 1.22,
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           Text(
             state.description,
             key: const Key('share-export-progress-description'),
@@ -61,7 +63,7 @@ class ExportProgressDialog extends StatelessWidget {
             ),
           ),
           if (!terminal) ...[
-            const SizedBox(height: 28),
+            SizedBox(height: 28),
             if (fraction != null) ...[
               Align(
                 alignment: Alignment.centerRight,
@@ -75,7 +77,7 @@ class ExportProgressDialog extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
             ],
             ClipRRect(
               borderRadius: BorderRadius.circular(3),
@@ -88,7 +90,7 @@ class ExportProgressDialog extends StatelessWidget {
               ),
             ),
             if (onCancel != null) ...[
-              const SizedBox(height: 22),
+              SizedBox(height: 22),
               SizedBox(
                 width: double.infinity,
                 height: 46,
@@ -98,8 +100,8 @@ class ExportProgressDialog extends StatelessWidget {
                   color: const Color(0xFFF4F4F5),
                   borderRadius: BorderRadius.circular(16),
                   onPressed: onCancel,
-                  child: const Text(
-                    '내보내기 취소',
+                  child: Text(
+                    tr('내보내기 취소'),
                     style: TextStyle(
                       color: SasangColors.ink,
                       fontSize: 14,
@@ -110,7 +112,7 @@ class ExportProgressDialog extends StatelessWidget {
               ),
             ],
           ] else ...[
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -118,18 +120,18 @@ class ExportProgressDialog extends StatelessWidget {
                   CupertinoButton(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     onPressed: onClose,
-                    child: const Text('닫기'),
+                    child: Text(tr('닫기')),
                   ),
                 if (onRetry != null) ...[
-                  const SizedBox(width: 4),
+                  SizedBox(width: 4),
                   CupertinoButton(
                     key: const Key('share-export-retry'),
                     padding: const EdgeInsets.symmetric(horizontal: 18),
                     color: SasangColors.accent,
                     borderRadius: BorderRadius.circular(15),
                     onPressed: onRetry,
-                    child: const Text(
-                      '다시 시도',
+                    child: Text(
+                      tr('다시 시도'),
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -153,28 +155,30 @@ class ExportProgressDialog extends StatelessWidget {
   final video = format == MapShareFormat.video;
   return switch (phase) {
     MapExportPhase.preparing => (
-      title: video ? '여행 영상을 만들고 있어요' : '여행 지도를 만들고 있어요',
-      description: '사진을 정리하는 중이에요.',
+      title: video ? tr('여행 영상을 만들고 있어요') : tr('여행 지도를 만들고 있어요'),
+      description: tr('사진을 정리하는 중이에요.'),
     ),
     MapExportPhase.rendering => (
-      title: video ? '여행 영상을 만들고 있어요' : '여행 지도를 만들고 있어요',
-      description: video ? '여행의 순간을 영상으로 담고 있어요.' : '여행의 순간을 한 장에 담고 있어요.',
+      title: video ? tr('여행 영상을 만들고 있어요') : tr('여행 지도를 만들고 있어요'),
+      description: video
+          ? tr('여행의 순간을 영상으로 담고 있어요.')
+          : tr('여행의 순간을 한 장에 담고 있어요.'),
     ),
     MapExportPhase.encoding => (
-      title: '거의 다 됐어요',
-      description: video ? '완성된 영상을 저장하고 있어요.' : '완성된 사진을 저장하고 있어요.',
+      title: tr('거의 다 됐어요'),
+      description: video ? tr('완성된 영상을 저장하고 있어요.') : tr('완성된 사진을 저장하고 있어요.'),
     ),
     MapExportPhase.ready => (
-      title: video ? '영상이 준비됐어요' : '사진이 준비됐어요',
-      description: '공유 화면을 여는 중이에요.',
+      title: video ? tr('영상이 준비됐어요') : tr('사진이 준비됐어요'),
+      description: tr('공유 화면을 여는 중이에요.'),
     ),
     MapExportPhase.cancelled => (
-      title: '내보내기를 중단했어요',
-      description: '지도와 여행 기록은 그대로 유지돼요.',
+      title: tr('내보내기를 중단했어요'),
+      description: tr('지도와 여행 기록은 그대로 유지돼요.'),
     ),
     MapExportPhase.failed => (
-      title: video ? '영상을 만들지 못했어요' : '사진을 만들지 못했어요',
-      description: '기기 저장 공간을 확인한 뒤 다시 시도해 주세요.',
+      title: video ? tr('영상을 만들지 못했어요') : tr('사진을 만들지 못했어요'),
+      description: tr('기기 저장 공간을 확인한 뒤 다시 시도해 주세요.'),
     ),
   };
 }

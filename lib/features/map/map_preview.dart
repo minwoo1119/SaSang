@@ -33,7 +33,7 @@ class MapPreview extends StatelessWidget {
     future: _maps.load(mode),
     builder: (context, snapshot) => snapshot.hasData
         ? _preview(snapshot.data!)
-        : const Center(child: CupertinoActivityIndicator(radius: 9)),
+        : Center(child: CupertinoActivityIndicator(radius: 9)),
   );
 
   Widget _preview(RegionMapAsset asset) {

@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../core/l10n/sasang_localizations.dart';
+
 import '../core/ads/sasang_ads.dart';
 
 enum AdPlacement { home, places, more }
@@ -97,8 +99,8 @@ class _AdBannerState extends State<AdBanner> {
           color: const Color(0xFFF8F8FA),
           borderRadius: BorderRadius.circular(14),
         ),
-        child: const Text(
-          '광고',
+        child: Text(
+          tr('광고'),
           style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 11),
         ),
       );

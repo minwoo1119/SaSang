@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../core/l10n/sasang_localizations.dart';
 import '../core/theme/sasang_theme.dart';
 import '../core/layout/sasang_layout.dart';
 import '../features/state/sasang_state.dart';
@@ -70,21 +71,21 @@ class _HomeShellState extends State<HomeShell> {
                 index: 0,
                 selected: _index == 0,
                 icon: CupertinoIcons.map,
-                label: '지도',
+                label: tr('지도'),
                 onTap: _select,
               ),
               _TabItem(
                 index: 1,
                 selected: _index == 1,
                 icon: CupertinoIcons.photo_on_rectangle,
-                label: '장소',
+                label: tr('장소'),
                 onTap: _select,
               ),
               _TabItem(
                 index: 2,
                 selected: _index == 2,
                 icon: CupertinoIcons.ellipsis,
-                label: '더보기',
+                label: tr('더보기'),
                 onTap: _select,
               ),
             ],

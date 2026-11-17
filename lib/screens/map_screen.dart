@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../core/l10n/sasang_localizations.dart';
+
 import '../core/theme/sasang_theme.dart';
 import '../core/storage/sasang_storage.dart';
 import '../core/layout/sasang_layout.dart';
@@ -43,7 +45,7 @@ String regionDisplaySubtitle(MapRegion region, MapMode mode) {
       englishName != region.name) {
     return englishName;
   }
-  return mode == MapMode.korea ? '대한민국' : '세계 지도';
+  return mode == MapMode.korea ? tr('대한민국') : tr('세계 지도');
 }
 
 class _MapScreenState extends State<MapScreen> {
@@ -103,14 +105,14 @@ class _MapScreenState extends State<MapScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         const AdBanner(placement: AdPlacement.home),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Align(
           alignment: Alignment.centerRight,
           child: CupertinoButton(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              '닫기',
+            child: Text(
+              tr('닫기'),
               style: TextStyle(
                 color: SasangColors.ink,
                 fontSize: 14,
@@ -138,7 +140,7 @@ class _MapScreenState extends State<MapScreen> {
       );
       if (photo != null) widget.state.addRegionPhoto(mode, region.code, photo);
     } on Object catch (error) {
-      if (mounted) _showError('사진을 추가할 수 없어요', error);
+      if (mounted) _showError(tr('사진을 추가할 수 없어요'), error);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -151,9 +153,9 @@ class _MapScreenState extends State<MapScreen> {
     final attempt = _northKoreaVisitGate.confirmedCount + 1;
     final approved = await showSasangCenterConfirmDialog(
       context,
-      title: '북한 방문 확인 · $attempt/3',
+      title: tr('북한 방문 확인 · $attempt/3'),
       message: northKoreaConfirmationMessage(attempt),
-      action: '확인',
+      action: tr('확인'),
     );
     return _northKoreaVisitGate.registerDecision(approved);
   }
@@ -175,7 +177,7 @@ class _MapScreenState extends State<MapScreen> {
       actions: [
         CupertinoDialogAction(
           onPressed: () => Navigator.pop(context),
-          child: const Text('확인'),
+          child: Text(tr('확인')),
         ),
       ],
     ),
@@ -186,7 +188,7 @@ class _MapScreenState extends State<MapScreen> {
       (key) => key.startsWith('${mode.storageKey}:'),
     );
     if (!hasPhotos) {
-      _showError('공유할 여행 기록이 없어요', '지도에 사진을 먼저 추가해 주세요.');
+      _showError(tr('공유할 여행 기록이 없어요'), tr('지도에 사진을 먼저 추가해 주세요.'));
       return;
     }
     final format = await showSasangExportFormatPicker(
@@ -291,7 +293,9 @@ class _MapScreenState extends State<MapScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(saved ? '사진 보관함에 저장했어요.' : '사진 보관함에 저장하지 못했어요.'),
+          content: Text(
+            saved ? tr('사진 보관함에 저장했어요.') : tr('사진 보관함에 저장하지 못했어요.'),
+          ),
         ),
       );
       return;
@@ -316,7 +320,7 @@ class _MapScreenState extends State<MapScreen> {
         : map.regions
               .where(
                 (region) =>
-                    '${region.name} ${region.englishName ?? ''} ${region.provinceName ?? ''}'
+                    '${region.name} ${region.englishName ?? ''} ${region.japaneseName ?? ''} ${region.simplifiedChineseName ?? ''} ${region.provinceName ?? ''}'
                         .toLowerCase()
                         .contains(query),
               )
@@ -381,7 +385,7 @@ class _MapScreenState extends State<MapScreen> {
                     widget.state.setMode(next);
                   },
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 MapSearchBar(
                   controller: _search,
                   mode: mode,
@@ -399,7 +403,7 @@ class _MapScreenState extends State<MapScreen> {
                       mode: mode,
                       onSelected: (region) {
                         widget.state.selectRegion(region.code);
-                        _search.text = region.name;
+                        _search.text = region.localizedName;
                         FocusScope.of(context).unfocus();
                       },
                     ),
@@ -443,13 +447,13 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Widget _selectionHint() => const Align(
+  Widget _selectionHint() => Align(
     child: SasangSurface(
       blur: true,
       radius: 22,
       padding: EdgeInsets.symmetric(horizontal: 17, vertical: 12),
       child: Text(
-        '지역을 선택해 기록을 시작하세요',
+        tr('지역을 선택해 기록을 시작하세요'),
         style: TextStyle(color: Color(0xFF52525B), fontWeight: FontWeight.w600),
       ),
     ),
@@ -470,13 +474,13 @@ class _MapScreenState extends State<MapScreen> {
         child: Row(
           children: [
             _PhotoThumb(uri: photo?.uri, storage: widget.state.storage),
-            const SizedBox(width: 11),
+            SizedBox(width: 11),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    region.name,
+                    region.localizedName,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: SasangColors.ink,
@@ -484,9 +488,11 @@ class _MapScreenState extends State<MapScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   Text(
-                    photoCount == 0 ? '눌러서 사진 추가' : '$photoCount장의 여행 사진',
+                    photoCount == 0
+                        ? tr('눌러서 사진 추가')
+                        : tr('$photoCount장의 여행 사진'),
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: SasangColors.secondary,
@@ -504,7 +510,7 @@ class _MapScreenState extends State<MapScreen> {
                   borderRadius: BorderRadius.circular(13),
                 ),
                 child: Text(
-                  '$photoCount장',
+                  tr('$photoCount장'),
                   style: const TextStyle(
                     color: SasangColors.accent,
                     fontSize: 11,
@@ -526,7 +532,7 @@ class _MapScreenState extends State<MapScreen> {
                   size: 21,
                 ),
               ),
-            const SizedBox(width: 5),
+            SizedBox(width: 5),
             const Icon(
               CupertinoIcons.chevron_forward,
               color: Color(0xFFB4B4BA),
@@ -576,9 +582,9 @@ class _PersistentMapLayer extends StatelessWidget {
         );
       }
       if (snapshot.hasError) {
-        return const Center(child: Text('지도를 불러오지 못했어요.'));
+        return Center(child: Text(tr('지도를 불러오지 못했어요.')));
       }
-      return const Center(child: CupertinoActivityIndicator());
+      return Center(child: CupertinoActivityIndicator());
     },
   );
 }
@@ -647,12 +653,12 @@ class MapTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percentage = travelProgressPercent(count, totalCount);
-    final unit = mode == MapMode.korea ? '지역' : '국가';
+    final unit = mode == MapMode.korea ? tr('지역') : tr('국가');
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Semantics(
-          label: '현재 지도 $totalCount개 $unit 중 $count개 여행, $percentage퍼센트',
+          label: tr('현재 지도 $totalCount개 $unit 중 $count개 여행, $percentage퍼센트'),
           button: false,
           child: Container(
             key: const Key('map-record-summary'),
@@ -668,7 +674,7 @@ class MapTopBar extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '$count개 $unit',
+                  tr('$count개 $unit'),
                   key: const Key('map-record-count'),
                   style: const TextStyle(
                     color: SasangColors.secondary,
@@ -676,8 +682,8 @@ class MapTopBar extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(width: 6),
-                const Text(
+                SizedBox(width: 6),
+                Text(
                   '·',
                   style: TextStyle(
                     color: Color(0xFFB4B4BA),
@@ -685,7 +691,7 @@ class MapTopBar extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: 6),
                 Text(
                   '$percentage%',
                   key: const Key('map-travel-percentage'),
@@ -722,7 +728,7 @@ class MapTopBar extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             MapModeSelector(
               value: mode,
               onChanged: onModeChanged,
@@ -766,7 +772,7 @@ class _ShareSheetContent extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 18),
+        SizedBox(height: 18),
         Row(
           children: [
             Expanded(child: Text(title, style: SasangTypography.sheetTitle)),
@@ -788,12 +794,12 @@ class _ShareSheetContent extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         Text(subtitle, style: SasangTypography.sheetDescription),
-        const SizedBox(height: 18),
+        SizedBox(height: 18),
         for (var index = 0; index < actions.length; index++) ...[
           actions[index],
-          if (index != actions.length - 1) const SizedBox(height: 2),
+          if (index != actions.length - 1) SizedBox(height: 2),
         ],
       ],
     ),
@@ -828,7 +834,7 @@ class _ShareOptionRow extends StatelessWidget {
           ),
           child: Icon(icon, color: SasangColors.accent, size: 20),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -842,7 +848,7 @@ class _ShareOptionRow extends StatelessWidget {
                   letterSpacing: -0.3,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 subtitle,
                 style: const TextStyle(
@@ -872,16 +878,16 @@ Future<MapShareFormat?> showSasangExportFormatPicker(
   context,
   _ShareSheetContent(
     key: const Key('share-format-sheet-content'),
-    title: '여행 지도를 어떻게 남길까요?',
-    subtitle: '간직하고 싶은 형식을 선택해 주세요.',
+    title: tr('여행 지도를 어떻게 남길까요?'),
+    subtitle: tr('간직하고 싶은 형식을 선택해 주세요.'),
     onCancel: () => Navigator.pop(context),
     actions: [
       _ExportFormatRow(
         key: const Key('share-map-image'),
         format: MapShareFormat.image,
         previewMode: previewMode,
-        title: '사진으로 남기기',
-        subtitle: '여행 비율을 담은 9:16 이미지',
+        title: tr('사진으로 남기기'),
+        subtitle: tr('여행 비율을 담은 9:16 이미지'),
         showDivider: true,
         onTap: () => Navigator.pop(context, MapShareFormat.image),
       ),
@@ -889,8 +895,8 @@ Future<MapShareFormat?> showSasangExportFormatPicker(
         key: const Key('share-map-video'),
         format: MapShareFormat.video,
         previewMode: previewMode,
-        title: '영상으로 남기기',
-        subtitle: '촬영일 순으로 이어지는 9:16 MP4',
+        title: tr('영상으로 남기기'),
+        subtitle: tr('촬영일 순으로 이어지는 9:16 MP4'),
         onTap: () => Navigator.pop(context, MapShareFormat.video),
       ),
     ],
@@ -935,18 +941,18 @@ class _ExportFormatRow extends StatelessWidget {
       child: Row(
         children: [
           _ExportResultPreview(format: format, mode: previewMode),
-          const SizedBox(width: SasangSpacing.large),
+          SizedBox(width: SasangSpacing.large),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: SasangTypography.optionTitle),
-                const SizedBox(height: SasangSpacing.xSmall),
+                SizedBox(height: SasangSpacing.xSmall),
                 Text(subtitle, style: SasangTypography.optionDescription),
               ],
             ),
           ),
-          const SizedBox(width: SasangSpacing.small),
+          SizedBox(width: SasangSpacing.small),
           const Icon(
             CupertinoIcons.chevron_forward,
             size: 15,
@@ -998,7 +1004,7 @@ class _ExportResultPreview extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (index != 2) const SizedBox(width: 2),
+                  if (index != 2) SizedBox(width: 2),
                 ],
               ],
             ),
@@ -1014,20 +1020,20 @@ Future<_ExportDestination?> _showSasangExportDestinationPicker(
   context,
   _ShareSheetContent(
     key: const Key('share-destination-sheet-content'),
-    title: '내보내기 완료',
-    subtitle: '저장하거나 다른 앱으로 바로 공유할 수 있어요.',
+    title: tr('내보내기 완료'),
+    subtitle: tr('저장하거나 다른 앱으로 바로 공유할 수 있어요.'),
     onCancel: () => Navigator.pop(context),
     actions: [
       _ShareOptionRow(
         icon: CupertinoIcons.arrow_down_to_line,
-        title: '사진 보관함에 저장',
-        subtitle: '이 기기에 한 번 저장',
+        title: tr('사진 보관함에 저장'),
+        subtitle: tr('이 기기에 한 번 저장'),
         onTap: () => Navigator.pop(context, _ExportDestination.gallery),
       ),
       _ShareOptionRow(
         icon: CupertinoIcons.share,
-        title: '다른 앱으로 공유',
-        subtitle: 'Instagram 등 앱 선택',
+        title: tr('다른 앱으로 공유'),
+        subtitle: tr('Instagram 등 앱 선택'),
         onTap: () => Navigator.pop(context, _ExportDestination.share),
       ),
     ],
@@ -1067,7 +1073,7 @@ class MapSearchBar extends StatelessWidget {
           key: const Key('map-search-field'),
           controller: controller,
           onChanged: onChanged,
-          placeholder: mode == MapMode.korea ? '지역 이름 검색' : '국가 이름 검색',
+          placeholder: mode == MapMode.korea ? tr('지역 이름 검색') : tr('국가 이름 검색'),
           backgroundColor: Colors.transparent,
           itemColor: const Color(0xFF8E8E93),
           itemSize: 17,
@@ -1106,12 +1112,12 @@ class MapSearchResults extends StatelessWidget {
     radius: 20,
     padding: const EdgeInsets.symmetric(vertical: 6),
     child: results.isEmpty
-        ? const SizedBox(
+        ? SizedBox(
             key: Key('map-search-empty'),
             height: 56,
             child: Center(
               child: Text(
-                '일치하는 지역이 없어요',
+                tr('일치하는 지역이 없어요'),
                 style: TextStyle(
                   color: SasangColors.secondary,
                   fontSize: 13,
@@ -1170,7 +1176,7 @@ class _MapSearchResultRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    region.name,
+                    region.localizedName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -1180,7 +1186,7 @@ class _MapSearchResultRow extends StatelessWidget {
                       letterSpacing: -.2,
                     ),
                   ),
-                  const SizedBox(height: 3),
+                  SizedBox(height: 3),
                   Text(
                     regionDisplaySubtitle(region, mode),
                     maxLines: 1,
@@ -1194,7 +1200,7 @@ class _MapSearchResultRow extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             const Icon(
               CupertinoIcons.chevron_forward,
               color: Color(0xFFAEAEB2),

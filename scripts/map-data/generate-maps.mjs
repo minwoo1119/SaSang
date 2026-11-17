@@ -36,6 +36,10 @@ const MERGED_SPECIAL_AND_METROPOLITAN_CITY_CODES = new Set([
   "31",
 ]);
 const KOREAN_REGION_NAMES = new Intl.DisplayNames(["ko"], { type: "region" });
+const JAPANESE_REGION_NAMES = new Intl.DisplayNames(["ja"], { type: "region" });
+const SIMPLIFIED_CHINESE_REGION_NAMES = new Intl.DisplayNames(["zh-CN"], {
+  type: "region",
+});
 
 export const MAP_CONFIGS = {
   korea: {
@@ -64,14 +68,14 @@ export const MAP_CONFIGS = {
     codePattern: /^[A-Z]{2}$/,
     regionProperties: null,
     metadata: {
-      version: "natural-earth-admin0-5.1.2-110m-v3",
+      version: "natural-earth-admin0-5.1.2-110m-v4",
       generatedAt: "2026-05-13T00:00:00.000Z",
       source:
         "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip",
       license: "CC0-1.0 / public domain",
       referenceDate: "Natural Earth 5.1.2",
       identifierPolicy:
-        "ISO 3166-1 alpha-2 (ISO_A2_EH); features without an ISO code are excluded; display names are localized to Korean with Intl.DisplayNames and original names are preserved as englishName",
+        "ISO 3166-1 alpha-2 (ISO_A2_EH); features without an ISO code are excluded; display names are localized to Korean, Japanese, and Simplified Chinese with Intl.DisplayNames and original names are preserved as englishName",
       excludedFeatures: ["Turkish Republic of Northern Cyprus", "Somaliland"],
     },
     localizeNamesToKorean: true,
@@ -281,6 +285,8 @@ function localizeRegionProperties(properties, config) {
   return {
     ...properties,
     englishName: properties.name,
+    japaneseName: JAPANESE_REGION_NAMES.of(properties.code),
+    simplifiedChineseName: SIMPLIFIED_CHINESE_REGION_NAMES.of(properties.code),
     name: koreanName,
   };
 }
@@ -368,6 +374,12 @@ export function generateMap(source, config) {
         name: properties.name,
         ...(properties.englishName
           ? { englishName: properties.englishName }
+          : {}),
+        ...(properties.japaneseName
+          ? { japaneseName: properties.japaneseName }
+          : {}),
+        ...(properties.simplifiedChineseName
+          ? { simplifiedChineseName: properties.simplifiedChineseName }
           : {}),
         ...(properties.provinceCode
           ? {

@@ -70,6 +70,7 @@ DecodedPhotoState decodeStoredPhotoState(Map<String, dynamic> map) {
 class StoredSasangState {
   const StoredSasangState({
     required this.hasStarted,
+    required this.languageCode,
     required this.name,
     required this.profileImageUri,
     required this.regionPhotos,
@@ -77,6 +78,7 @@ class StoredSasangState {
   });
 
   final bool hasStarted;
+  final String? languageCode;
   final String name;
   final String? profileImageUri;
   final Map<String, RegionPhoto> regionPhotos;
@@ -114,6 +116,7 @@ class SasangStorage {
     await _writeMigrationMarker();
     return StoredSasangState(
       hasStarted: session['hasStarted'] as bool? ?? false,
+      languageCode: session['languageCode'] as String?,
       name: profile['name'] as String? ?? '여행자',
       profileImageUri: profile['profileImageUri'] as String?,
       regionPhotos: decodedPhotos.photos,
@@ -135,8 +138,13 @@ class SasangStorage {
     return <String, dynamic>{};
   }
 
-  Future<void> writeSession(bool hasStarted) =>
-      _writeStore(_sessionKey, {'hasStarted': hasStarted});
+  Future<void> writeSession({
+    required bool hasStarted,
+    required String languageCode,
+  }) => _writeStore(_sessionKey, {
+    'hasStarted': hasStarted,
+    'languageCode': languageCode,
+  });
 
   Future<void> writeProfile(String name, String? profileImageUri) =>
       _writeStore(_profileKey, {

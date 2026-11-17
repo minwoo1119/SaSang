@@ -115,6 +115,15 @@ test("generates world countries with ISO alpha-2 codes", () => {
     result.regions.find(({ code }) => code === "JP")?.englishName,
     "Japan",
   );
+  assert.equal(
+    result.regions.find(({ code }) => code === "US")?.japaneseName,
+    "アメリカ合衆国",
+  );
+  assert.equal(
+    result.regions.find(({ code }) => code === "JP")
+      ?.simplifiedChineseName,
+    "日本",
+  );
   assert.ok(
     result.regions.some(({ geometryType }) => geometryType === "MultiPolygon"),
   );
