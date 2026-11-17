@@ -19,6 +19,11 @@ This section is the highest-priority repository instruction for every agent.
   template.
 - Include `Closes #<issue-number>` in the PR. Do not merge the PR. The user is the final reviewer
   and performs the merge into `dev`.
+- For every UI or other visual change, the agent must capture the final result directly from an
+  emulator, simulator, or target device, commit the image under
+  `docs/pr-screenshots/<issue-number>/`, and embed it in the PR body. Capture every state needed
+  to review the change. For non-visual work, write `Not applicable` and the reason in the PR's
+  screenshot section. Follow the detailed rules in `docs/development-workflow.md`.
 - Never open a `dev -> main` pull request. Only after the user confirms that the issue PR was
   merged and explicitly requests a version release (for example, "PR 머지했어. 이제 버전
   올리자."), follow the direct release procedure in `docs/development-workflow.md`: pull `dev`,
