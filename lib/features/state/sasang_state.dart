@@ -14,6 +14,7 @@ class SasangState extends ChangeNotifier {
   final SasangStorage storage;
   Future<void> _photoWrite = Future.value();
   bool hasStarted = false;
+  bool hasCompletedOnboarding = false;
   SasangLanguage language;
   String name = '여행자';
   String? profileImageUri;
@@ -25,6 +26,7 @@ class SasangState extends ChangeNotifier {
   Future<void> load() async {
     final stored = await storage.read();
     hasStarted = stored.hasStarted;
+    hasCompletedOnboarding = stored.hasCompletedOnboarding;
     language = SasangLanguage.fromCode(stored.languageCode);
     SasangLocalizations.use(language);
     name = stored.name;
@@ -39,6 +41,13 @@ class SasangState extends ChangeNotifier {
   }
 
   void start() {
+    hasStarted = true;
+    notifyListeners();
+    _persistSession();
+  }
+
+  void completeOnboarding() {
+    hasCompletedOnboarding = true;
     hasStarted = true;
     notifyListeners();
     _persistSession();
@@ -59,7 +68,11 @@ class SasangState extends ChangeNotifier {
   }
 
   void _persistSession() => unawaited(
-    storage.writeSession(hasStarted: hasStarted, languageCode: language.code),
+    storage.writeSession(
+      hasStarted: hasStarted,
+      hasCompletedOnboarding: hasCompletedOnboarding,
+      languageCode: language.code,
+    ),
   );
 
   void setMode(MapMode value) {
@@ -195,6 +208,10 @@ class SasangState extends ChangeNotifier {
     await storage.clearState();
     await storage.writeProfile(name, null);
     await storage.writePhotoAlbums(regionPhotoAlbums);
-    await storage.writeSession(hasStarted: false, languageCode: language.code);
+    await storage.writeSession(
+      hasStarted: false,
+      hasCompletedOnboarding: hasCompletedOnboarding,
+      languageCode: language.code,
+    );
   }
 }

@@ -13,6 +13,13 @@ import 'screens/home_shell.dart';
 import 'screens/info_detail_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/map_store_screen.dart';
+import 'screens/onboarding_screen.dart';
+
+String initialSasangRoute(SasangState state) => !state.hasCompletedOnboarding
+    ? '/onboarding'
+    : state.hasStarted
+    ? '/home'
+    : '/';
 
 class SasangApp extends StatefulWidget {
   const SasangApp({required this.state, super.key});
@@ -49,6 +56,7 @@ class _SasangAppState extends State<SasangApp> {
 
   void _openLink(Uri uri) {
     if (uri.scheme != 'sasang' && uri.scheme != 'com.sasang.app') return;
+    if (!widget.state.hasCompletedOnboarding) return;
     final route = uri.host.isNotEmpty ? '/${uri.host}${uri.path}' : uri.path;
     if (route == '/map-store') {
       _navigatorKey.currentState?.pushNamed('/map-store');
@@ -85,9 +93,21 @@ class _SasangAppState extends State<SasangApp> {
           ),
           child: child!,
         ),
-        initialRoute: widget.state.hasStarted ? '/home' : '/',
+        initialRoute: initialSasangRoute(widget.state),
         onGenerateRoute: (settings) {
           final name = settings.name ?? '/';
+          if (!widget.state.hasCompletedOnboarding && name != '/onboarding') {
+            return MaterialPageRoute<void>(
+              settings: const RouteSettings(name: '/onboarding'),
+              builder: (_) => OnboardingScreen(state: widget.state),
+            );
+          }
+          if (name == '/onboarding') {
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => OnboardingScreen(state: widget.state),
+            );
+          }
           if (name == '/') {
             return MaterialPageRoute<void>(
               settings: settings,

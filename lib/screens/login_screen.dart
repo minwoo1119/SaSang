@@ -10,14 +10,7 @@ class LoginScreen extends StatelessWidget {
 
   final SasangState state;
 
-  Future<void> _start(BuildContext context) async {
-    final accepted = await showSasangConfirmDialog(
-      context,
-      title: tr('사진 저장 안내'),
-      message: tr('이 앱에서 사용한 사진은 일체 서버로 전송되지 않으며, 기기 내부에 저장됩니다.'),
-      action: tr('동의하고 시작하기'),
-    );
-    if (accepted != true || !context.mounted) return;
+  void _start(BuildContext context) {
     state.start();
     Navigator.pushReplacementNamed(context, '/home');
   }
