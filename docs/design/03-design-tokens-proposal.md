@@ -12,19 +12,22 @@
 
 | 토큰 이름 | 현재 코드 값 | 제안 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
 |---|---|---|---|---|---|
-| `color.canvas` | `#FAFAFA` | `#FAFAFA` | 기본 scaffold, sheet | 브랜드 중립 배경 유지 | 없음 |
+| `color.canvas` | `#FAFAFA` | `#FAFAFA` | 기본 scaffold, 페이지 배경 | 브랜드 중립 배경 유지 | 없음 |
 | `color.canvasSubtle` | `#F7F7F8` | `#F7F7F8` | 더보기, 정보, 상점 | 계층이 이미 안정적 | 없음 |
 | `color.surface` | `#FFFFFF` | `#FFFFFF` | 카드, floating, dialog | 사진과 지도 대비 유지 | 없음 |
 | `color.surfaceSubtle` | `#F4F4F5`, `#F6F8FB`, `#F4F7F9` | `#F4F4F5` | close 배경, disabled/empty 보조면 | 유사 직접값 통합 | 빈 상태/preview의 푸른 기운 감소 |
 | `color.textPrimary` | `#18181B` | `#18181B` | 제목, 핵심 본문 | 현재 대비 유지 | 없음 |
 | `color.textSecondary` | `#71717A`, 일부 `#52525B` | `#52525B` | 본문 설명, 지역 보조 정보 | 작은 글자 대비 강화 | 기존 보조 텍스트가 약간 진해짐 |
 | `color.textTertiary` | `#8E8E93`, `#B4B4BA`, `#C4C4C8` | `#8E8E93` | caption, 비핵심 icon | 회색 단계 축소 | 아주 옅은 chevron이 선명해짐 |
+| `color.tertiaryTextAccessible` | 별도 값 없음; `#8E8E93` 사용 시 white 대비 약 3.26:1 | `#636366`(white 대비 약 5.99:1) | 14sp 미만 tertiary 일반 텍스트 | WCAG AA 4.5:1 확보 | 새/이전 텍스트만 진해지며 기존 화면 변화 없음 |
 | `color.accent` | `#007AFF` | `#007AFF` | CTA, 선택, 링크 | Sasang의 블루 정체성 | 없음 |
+| `color.accentText` | 별도 값 없음; `#007AFF`의 white 대비 약 4.02:1 | `#0066CC`(white 대비 약 5.57:1) | 작은 링크/강조 일반 텍스트 | WCAG AA 4.5:1 확보 | 새/이전 작은 텍스트만 더 어두워짐 |
 | `color.accentSoft` | `#EAF4FF`, `#EAF3FF`, `#1A007AFF` | `#EAF4FF` | 선택 배경, 아이콘 보조면 | 선택 보조색 통합 | 미세 색 차이 제거 |
 | `color.borderSubtle` | `#E9E9ED`, divider `#12000000` | `#E9E9ED` | 정적 카드, divider | 밝은 배경의 안정적 구분 | divider가 필요한 곳은 opacity variant 사용 |
 | `color.borderFloating` | `#1A000000` | `#1A000000` | 지도 floating surface | 지도 위 경계 유지 | 없음 |
 | `color.borderSelected` | accent alpha 72%, 100% 혼재 | `#007AFF` 72% | selection card | 사진/미리보기와 경쟁 완화 | 선택선이 약간 부드러움 |
 | `color.destructive` | `CupertinoColors.systemRed` | 플랫폼 system red semantic | 삭제/초기화 | 플랫폼 대비·접근성 유지 | 외형은 플랫폼별 미세 차이 |
+| `color.destructiveText` | 별도 값 없음; system red `#FF3B30`의 white 대비 약 3.55:1 | `#D70015`(white 대비 약 5.38:1) | 작은 파괴적 action 텍스트 | WCAG AA 4.5:1 확보 | 새/이전 작은 텍스트만 더 어두워짐 |
 | `color.scrimSheet` | black 28~30% | black 28% | Bottom Sheet | 값 통합 | 거의 없음 |
 | `color.scrimDialog` | black 34%(0x57) 및 SDK 기본 | black 34% 목표 | custom dialog/progress | 중앙 모달 초점 유지 | 시스템 dialog 내부 scrim은 SDK 우선 |
 | `color.disabledSurface` | `#E4E4E7` | `#E4E4E7` | disabled button | 현재 상태 인지 유지 | 없음 |
@@ -37,14 +40,15 @@
 
 | 토큰 이름 | 현재 코드 값 | 제안 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
 |---|---|---|---|---|---|
-| `type.display` | 온보딩 27, 더보기 30, 문서 28 | 28/34, w800, letter -0.4(KO 0 권장) | 온보딩/브랜드 강조만 | 대형 제목 범위 축소 | 더보기는 `pageTitle`로 내려감 |
-| `type.pageTitle` | 24/26/28/30 혼재 | 28/34, w800 | 더보기, 문서 본문 제목 | 화면 제목 통합 | 더보기 30→28, 문서 유지 |
+| `type.display` | 온보딩 27, 더보기 30, 문서 28 | 28/34, w800, letter -0.4(KO 0 권장) | 온보딩/브랜드 강조만 | w800을 브랜드 강조에 제한 | 더보기는 `pageTitle`로 내려감 |
+| `type.pageTitle` | 24/26/28/30, w700~800 혼재 | 28/34, w700 | 더보기, 문서 본문 제목 | 모든 제목의 w800 강제 방지 | 더보기 30→28 후보, 기존 화면은 이번 단계 미적용 |
 | `type.navTitle` | 17/w700 | 17/22, w700 | Cupertino nav bar | 표준 계층 유지 | 없음 |
 | `type.sheetTitle` | 21/22/23 | 22/28, w800 | 5종 Bottom Sheet | 1dp 차이 제거 | 날짜 +1, 상품 -1 |
 | `type.sectionTitle` | 15/18 | 18/24, w700 | 문서/상점 큰 섹션 | 주요 섹션 통일 | 더보기의 작은 group label은 별도 토큰 |
 | `type.groupLabel` | 더보기 15/w700, map group 12 | 14/20, w700 | 설정 그룹, 분류 레이블 | 콘텐츠 제목과 구분 | 더보기 15→14 |
 | `type.optionTitle` | 15/16 | 16/22, w700 | 선택 행, 카드 제목 | w800 과강조 완화 | 공유/장소 제목이 조금 가벼워짐 |
-| `type.body` | 14/15/16, line 1.42~1.68 | 15/23, w400 | 일반 설명/문서 본문 | 모바일 가독성과 밀도 균형 | 문서 16→15, 행간 감소 |
+| `type.body` | 일반 설명 14/15, 일부 본문 16 | 15/23, w400 | 일반 설명과 앱 본문 | 모바일 가독성과 밀도 균형 | 법적 문서는 영향 없음 |
+| `type.legalBody` | 법적 문서 16/line 1.68 | 16/line 1.68, w400 | 개인정보 처리방침, 이용약관 | 일반 본문과 분리해 법적 가독성 보존 | 기존 법적 문서 값 유지 |
 | `type.bodyStrong` | 15/16 w600~700 | 15/22, w700 | 설정 행, 중요한 값 | 역할 명시 | 더보기 행 16→15 가능 |
 | `type.supporting` | 13/14 | 13/19, w400~600 | sheet 설명, 날짜, 지역 보조 | 값 통합 | 미세 행간 정리 |
 | `type.caption` | 10/11/12 | 12/16, w600 | count, badge, 날짜 | 10/11의 과소 크기 완화 | 상점 badge와 지도 count가 커짐 |
@@ -78,7 +82,8 @@
 |---|---|---|---|---|---|
 | `radius.media` | 장소 8, close 8 | 8 | 사진 중심 장소 카드/작은 preview | 이미지 모서리 예외 보존 | 장소 카드 즉시 변경 없음 |
 | `radius.compact` | 10/11/12/14 | 12 | badge, 작은 preview | 작은 요소 통합 | 미세 변화 |
-| `radius.control` | 15/16/17/18 | 16 | 일반 버튼, search field | 컨트롤 값 통합 | primary 15→16 |
+| `radius.control` | 15/16/17/18 | 16 | 일반 버튼과 입력 컨테이너 | 컨트롤 값 통합 | primary 15→16 |
+| `radius.search` | 지도 검색 및 selector의 pill 형태 | `radius.pill` | 지도 검색창, 지도 선택/정렬 pill | 검색창을 일반 control 16으로 평탄화하지 않음 | 기존 pill 외형 유지 |
 | `radius.settingsGroup` | 19 | 20 | 더보기/정보 그룹 | 그룹형 카드 정체성 유지 | 거의 없음 |
 | `radius.contentCard` | 20/22 | 22 | 상품/정보/empty container | 기존 토큰 유지 | 빈 카드 20→22 가능 |
 | `radius.selectionCard` | 24 | 24 | 지도 선택, 사진 카드 | 선택 가능한 큰 단위 | 없음 |
@@ -144,4 +149,9 @@ Flutter 구현 시 토큰은 한 개 또는 두 개의 `BoxShadow` 묶음으로 
 - 지도 painter의 stroke width와 photo opacity는 디자인 토큰이 아니라 지도 렌더링 도메인 값으로 유지한다.
 - safe area, 하단 바 높이 66, map overlay overlap 36, zoom offset 136은 레이아웃 계약이다. 시각 토큰으로 흡수하지 않는다.
 - 장소 카드 radius 8은 `radius.media` 예외로 유지하고 실기 비교 후 별도 결정한다.
-- 온보딩 토큰 적용은 PR #10 병합 및 별도 승인 뒤 수행한다.
+- Phase 2-B에서는 장소 카드 radius 8을 변경하거나 비교 후보를 적용하지 않는다.
+- Bottom Sheet 배경은 `color.surface #FFFFFF`를 사용한다. `color.canvas`는 sheet 바깥
+  페이지와 지도 라이브러리 주변 배경의 의미로 한정한다.
+- 사진/영상 내보내기 및 내 지도 Bottom Sheet의 콘텐츠 구성은 Token Foundation 범위에서
+  변경하지 않는다.
+- PR #10 온보딩은 현재 병합됐지만 Phase 2-B 적용 범위에서는 제외하며 별도 승인을 받는다.
