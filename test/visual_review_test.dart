@@ -8,9 +8,13 @@ import 'package:sasang/features/map/map_repository.dart';
 import 'package:sasang/features/photos/north_korea_visit_gate.dart';
 import 'package:sasang/features/share/export_progress_dialog.dart';
 import 'package:sasang/features/share/map_share_service.dart';
+import 'package:sasang/features/state/sasang_state.dart';
+import 'package:sasang/core/storage/sasang_storage.dart';
 import 'package:sasang/models/map_models.dart';
 import 'package:sasang/screens/map_screen.dart';
+import 'package:sasang/screens/more_screen.dart';
 import 'package:sasang/widgets/sasang_center_modal.dart';
+import 'package:sasang/widgets/sasang_ui.dart';
 
 late Map<MapMode, RegionMapAsset> _previewAssets;
 
@@ -218,9 +222,94 @@ void main() {
       matchesGoldenFile('goldens/owned_map_sheet.png'),
     );
   });
+
+  testWidgets('captures the current map floating controls', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 220));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: _reviewTheme(platform: TargetPlatform.iOS),
+        home: Scaffold(
+          body: ColoredBox(
+            color: const Color(0xFFF4F7F9),
+            child: SafeArea(
+              minimum: const EdgeInsets.all(16),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: MapTopBar(
+                  count: 3,
+                  totalCount: 161,
+                  mode: MapMode.korea,
+                  onShare: _ignoreVoid,
+                  onModeChanged: _ignoreMapMode,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await expectLater(
+      find.byType(Scaffold),
+      matchesGoldenFile('goldens/map_floating_controls.png'),
+    );
+  });
+
+  testWidgets('captures the current settings group cards', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final state = SasangState(SasangStorage());
+    addTearDown(state.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: _reviewTheme(platform: TargetPlatform.iOS),
+        home: Scaffold(body: MoreScreen(state: state)),
+      ),
+    );
+    await tester.pump();
+
+    await expectLater(
+      find.byType(Scaffold),
+      matchesGoldenFile('goldens/settings_group_cards.png'),
+    );
+  });
+
+  testWidgets('captures current primary button states', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 240));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: _reviewTheme(platform: TargetPlatform.iOS),
+        home: const Scaffold(
+          body: Padding(
+            padding: EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SasangPrimaryButton(label: '다음', onPressed: _ignoreVoid),
+                SizedBox(height: 16),
+                SasangPrimaryButton(label: '출시 예정', onPressed: null),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await expectLater(
+      find.byType(Scaffold),
+      matchesGoldenFile('goldens/primary_button_states.png'),
+    );
+  });
 }
 
 void _ignoreMapMode(MapMode value) {}
+
+void _ignoreVoid() {}
 
 ThemeData _reviewTheme({TargetPlatform? platform}) => ThemeData(
   platform: platform,

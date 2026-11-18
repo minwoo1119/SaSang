@@ -7,9 +7,11 @@
 - 기준: Phase 1 감사 문서와 Phase 2-A 원칙/토큰/Variant
 - 브랜치 전략: 단계별 이슈와 PR 분리
 - 금지: 한 PR에서 전 화면 일괄 변환, 지도 구조 변경, 기능 삭제
-- 온보딩: PR #10 병합 후 별도 이슈로 다룸
+- 온보딩: PR #10은 병합됐으나 Phase 2-B에서 제외하고 별도 이슈로 다룸
 - `LicensePage`: 원칙적으로 마이그레이션 제외
 - 장소 카드 8dp: 비교 캡처와 사용자 승인 전 유지
+- Phase 2-B에서는 장소 카드 8dp를 변경하지 않으며 비교 후보도 실제 UI에 적용하지 않음
+- Bottom Sheet surface는 흰색을 유지하고 내 지도/내보내기 콘텐츠 구성은 고정
 
 ## 2. 우선순위
 
@@ -36,12 +38,16 @@
 - 4개 언어, text scale 1.0/1.3/2.0 테스트 행렬 작성
 - iOS/Android의 최소/대표 화면 크기 결정
 - 현재 semantics label과 focus/back 동작 기록
+- 실제 지도/사진 대신 고정 vector backdrop과 번들 지도 asset을 사용해 시간·파일·네트워크
+  의존성을 제거한다.
 
 완료 조건:
 
 - Full-screen Map과 overlay 좌표 관계를 검증하는 위젯/골든 테스트가 있다.
 - 사진 clipping과 선택 stroke 결과가 기준 이미지로 고정된다.
 - 하단 바 66, overlap 36, zoom offset 136의 레이아웃 계약이 문서/테스트에 반영된다.
+- 지도 Floating Control, 설정 그룹, 주요 버튼은 전용 golden으로 고정되고, 내 지도 선택
+  카드/Bottom Sheet/중앙 Dialog는 기존 visual review golden으로 고정된다.
 
 ### Stage 1 — Token Foundation
 
@@ -69,6 +75,9 @@
 
 - 기존 상수 값을 즉시 바꾸지 않고 alias→컴포넌트별 적용 순서로 진행한다.
 - lint 자동화는 오탐 범위를 확인한 뒤 별도 도입한다.
+- 접근성 text alias는 `accentText #0066CC`, `tertiaryTextAccessible #636366`을 제공하되
+  기존 화면에 자동 적용하지 않는다.
+- `legalBody` 16sp, `radius.search = pill`, white sheet surface를 별도 의미로 보존한다.
 
 ### Stage 2 — Bottom Sheet Shell
 

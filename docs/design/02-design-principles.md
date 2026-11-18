@@ -6,7 +6,7 @@
 - 근거: `00-current-ui-audit.md`, `01-component-inventory.md`
 - 범위: 원칙과 적용 규칙만 정의하며 Flutter UI 코드는 변경하지 않는다.
 - 선행 조건: Phase 1 문서 PR #12가 `dev`에 병합된 뒤 이 문서의 상대 링크가 유효해진다.
-- 온보딩: 미병합 PR #10은 분석 대상에는 포함하지만 실제 마이그레이션 대상에서는 제외한다.
+- 온보딩: PR #10은 `dev`에 병합됐지만 Phase 2-B 실제 마이그레이션 대상에서는 제외한다.
 
 ## 2. 디자인 목표
 
@@ -54,6 +54,11 @@ Sasang의 디자인 시스템은 현재 화면을 새 앱처럼 바꾸는 리디
 - 선택된 지도처럼 실제 콘텐츠 미리보기가 중요한 경우 `accent border + semantic selected label`을 사용한다.
 - 파괴 작업은 destructive 색상과 명시적 동사로 표시하며 장식적 경고 아이콘을 자동 추가하지 않는다.
 
+작은 일반 텍스트에는 장식용 `#007AFF`와 `#8E8E93`를 그대로 쓰지 않는다. 흰색 표면에서
+각각 약 4.02:1, 3.26:1로 WCAG AA 4.5:1에 미달하므로 링크/강조 텍스트는
+`accentText #0066CC`, tertiary 텍스트는 `tertiaryTextAccessible #636366`을 사용한다.
+아이콘, 큰 텍스트, 비텍스트 선택선에는 기존 브랜드 accent를 유지할 수 있다.
+
 ### 3.3 카드는 역할을 설명할 때만 사용한다
 
 모든 카드를 없애거나 같은 반경으로 통일하지 않는다.
@@ -80,6 +85,9 @@ Sasang의 디자인 시스템은 현재 화면을 새 앱처럼 바꾸는 리디
 - 화면 이름, 시트 제목, 섹션 제목, 옵션 제목, 본문, 보조 설명, 캡션, 버튼의 8개 역할을 기본으로 한다.
 - 같은 역할에서 21/22/23처럼 1dp 차이를 두지 않는다.
 - 브랜드/온보딩 Display는 일반 화면 제목과 분리한다.
+- 법적 문서 본문은 일반 `body`와 분리한 `legalBody` 16sp/line-height 1.68을 유지한다.
+- 제목은 역할별로 w700~800을 사용한다. Display와 강한 Sheet 제목만 w800을 허용하고
+  일반 Page/Section/Option 제목은 w700을 기본으로 한다.
 - 한국어·일본어·중국어는 과도한 음수 letter spacing을 피하고, 영어도 동일한 의미 계층을 유지한다.
 - 텍스트 배율을 막지 않는다. 최대 줄 수를 제한하면 대체 접근 경로 또는 높이 확장을 제공한다.
 
@@ -101,6 +109,10 @@ Sasang의 디자인 시스템은 현재 화면을 새 앱처럼 바꾸는 리디
 5. 지도 상점 상세: compact detail형, 미리보기+설명+가격+CTA
 
 공통화 대상은 배경, radius, barrier, drag handle, header padding, 제목 계층, close button, safe area다. 콘텐츠 높이와 footer, carousel, picker까지 하나의 레이아웃으로 강제하지 않는다.
+
+Bottom Sheet의 공통 배경은 `color.surface #FFFFFF`다. 페이지 배경용 canvas 색을 시트에
+대신 적용하지 않는다. 사진/영상 내보내기와 내 지도 시트의 현재 콘텐츠 구성, 9:16
+미리보기, 2열 지도 카드와 sticky footer는 그대로 유지한다.
 
 ```text
 공통 Shell
@@ -154,7 +166,11 @@ Progress는 기존에 결정한 Toss 스타일 중앙 모달을 유지한다. �
 - 지역 사진 관리의 carousel과 대표 사진/날짜/삭제 기능
 - Flutter 표준 `LicensePage`
 - 장소 카드 8dp radius(실기 비교 전)
-- 미병합 PR #10 온보딩 코드
+- PR #10 온보딩 코드(현재 병합 상태와 무관하게 Phase 2-B 제외)
+
+지도 검색창은 일반 control radius 대상이 아니다. 기존 pill silhouette를 유지하며
+`radius.search = radius.pill`로 명시한다. 장소 카드 8dp radius도 이번 Token Foundation
+단계에서는 비교안 생성 없이 그대로 유지한다.
 
 ## 5. 명시적 개선 대상
 

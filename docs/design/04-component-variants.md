@@ -35,6 +35,8 @@
 - 버튼 삭제나 하단 고정 전환은 금지한다.
 - 여러 Control을 하나의 거대한 toolbar로 합치지 않는다.
 - 가까운 컨트롤의 elevation과 border는 같은 토큰을 사용해 “여러 장의 카드” 인상을 줄인다.
+- `search`의 표면 반경은 표의 일반 control 표현과 달리 `radius.search = radius.pill`을
+  사용한다. 높이와 입력 패딩만 control 계열을 공유한다.
 
 ```text
 Before: [요약]     [공유] [지도▼]   각기 다른 표면 규칙
@@ -121,7 +123,7 @@ Before                    After
 
 ### 공통 Shell
 
-- background `color.canvas`
+- background `color.surface #FFFFFF`
 - radius 28
 - scrim 28%
 - safe area 반영
@@ -139,6 +141,10 @@ Before                    After
 | `regionPhotos` | photo carousel 또는 compact empty | 날짜/대표/삭제 inline | 상태별, carousel swipe | 사진 중심/대표/날짜 |
 | `datePicker` | photo+selected date+system picker | 취소/저장 | content-fit, 작은 화면 scroll | 시스템 picker와 메타 설명 |
 | `productDetail` | preview+description+price | primary 상태 action | content-fit | 상점 문맥 위 상세 |
+
+`library`의 2열 카드/sticky footer와 `exportChoice`의 사진·영상 2행/9:16 preview는
+이미 승인된 콘텐츠 구조다. Token Foundation과 공통 Shell 적용에서 재배치하거나
+단순화하지 않는다.
 
 ### 상태
 

@@ -13,6 +13,9 @@
 
 ## 주제별 문서
 
+- [디자인 시스템 원칙](design/02-design-principles.md)
+- [디자인 토큰 제안](design/03-design-tokens-proposal.md)
+- [디자인 토큰 Foundation](design/06-token-foundation.md)
 - [사진 앨범](photo-albums.md)
 - [다국어 지원](localization.md)
 - [첫 실행 온보딩](onboarding.md)
