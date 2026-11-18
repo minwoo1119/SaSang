@@ -324,6 +324,7 @@ const Map<String, (String, String, String)> _translations = {
   '새로운 지도 둘러보기': ('Explore new maps', '新しいマップを見る', '探索新地图'),
   '선택한 날짜': ('Selected date', '選択した日付', '所选日期'),
   '세계 지도': ('World Map', '世界マップ', '世界地图'),
+  '세계': ('World', '世界', '世界'),
   '시·군·구별 여행 기록': ('Travel records by region', '市・郡・区別の旅行記録', '按市、郡、区记录旅行'),
   '시작하기': ('Get started', '始める', '开始'),
   '시행일 미정': ('Effective date TBD', '施行日未定', '生效日期待定'),
@@ -560,4 +561,43 @@ const Map<String, (String, String, String)> _translations = {
     '行政区域データの変更により、境界や地域情報が更新される場合があります。',
     '地图边界和地区信息可能会随行政区划数据更新。',
   ),
+  '언어를 선택해 주세요': ('Choose your language', '言語を選択してください', '请选择语言'),
+  '선택한 언어는 설정에서 언제든지 바꿀 수 있어요.': (
+    'You can change your language anytime in Settings.',
+    '選択した言語は設定からいつでも変更できます。',
+    '您可以随时在设置中更改语言。',
+  ),
+  '여행할 지도를 선택하세요': ('Choose your travel map', '旅行するマップを選びましょう', '选择你的旅行地图'),
+  '대한민국과 세계 지도에서 여행을 기록할 지역을 골라보세요.': (
+    'Choose a place to record on the Korea or World map.',
+    '韓国マップや世界マップから、旅を記録する地域を選びましょう。',
+    '在韩国或世界地图中选择要记录旅行的地区。',
+  ),
+  '지역을 사진으로 채워보세요': (
+    'Fill places with your photos',
+    '地域を写真で彩りましょう',
+    '用照片填满去过的地区',
+  ),
+  '방문한 지역을 누르고 사진을 추가하면, 지도 경계 안에 내 추억이 채워져요.': (
+    'Tap a place you visited and add a photo to fill its map boundary with your memory.',
+    '訪れた地域をタップして写真を追加すると、地図の境界内が思い出で彩られます。',
+    '点击去过的地区并添加照片，让回忆填满地图边界。',
+  ),
+  '여행을 기록하고 공유하세요': (
+    'Record and share your journey',
+    '旅を記録してシェアしましょう',
+    '记录并分享你的旅程',
+  ),
+  '장소별 사진과 날짜를 모아보고, 완성된 여행 지도를 이미지나 영상으로 나눠보세요.': (
+    'Review photos and dates by place, then share your completed travel map as an image or video.',
+    '地域ごとの写真と日付を振り返り、完成した旅行マップを画像や動画でシェアできます。',
+    '按地点查看照片和日期，并将完成的旅行地图以图片或视频分享。',
+  ),
+  '사진은 기기에 안전하게 보관돼요': (
+    'Your photos stay safely on your device',
+    '写真は端末内に安全に保存されます',
+    '照片安全保存在你的设备上',
+  ),
+  '다음': ('Next', '次へ', '下一步'),
+  '이전': ('Back', '戻る', '返回'),
 };

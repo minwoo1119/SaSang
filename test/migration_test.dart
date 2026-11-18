@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:sasang/app.dart';
 import 'package:sasang/core/l10n/sasang_localizations.dart';
 import 'package:sasang/core/theme/sasang_theme.dart';
 import 'package:sasang/core/storage/sasang_storage.dart';
@@ -30,6 +31,7 @@ import 'package:sasang/models/map_models.dart';
 import 'package:sasang/screens/map_screen.dart';
 import 'package:sasang/screens/map_store_screen.dart';
 import 'package:sasang/screens/more_screen.dart';
+import 'package:sasang/screens/onboarding_screen.dart';
 import 'package:sasang/screens/info_detail_screen.dart';
 import 'package:sasang/screens/places_screen.dart';
 import 'package:sasang/widgets/ad_banner.dart';
@@ -85,6 +87,82 @@ void main() {
     expect(state.language, SasangLanguage.japanese);
     expect(storage.hasStarted, isTrue);
     expect(storage.languageCode, 'ja');
+  });
+
+  test('migrates existing sessions without repeating onboarding', () {
+    expect(decodeOnboardingCompletion({}), isFalse);
+    expect(decodeOnboardingCompletion({'hasStarted': true}), isTrue);
+    expect(decodeOnboardingCompletion({'hasStarted': false}), isTrue);
+    expect(
+      decodeOnboardingCompletion({
+        'hasStarted': false,
+        'hasCompletedOnboarding': false,
+      }),
+      isFalse,
+    );
+  });
+
+  test('keeps onboarding completion separate from logout', () async {
+    final storage = _MemoryStorage();
+    final state = SasangState(storage);
+
+    expect(initialSasangRoute(state), '/onboarding');
+    state.completeOnboarding();
+    await Future<void>.delayed(Duration.zero);
+    expect(initialSasangRoute(state), '/home');
+    expect(storage.hasCompletedOnboarding, isTrue);
+
+    state.logout();
+    await Future<void>.delayed(Duration.zero);
+    expect(initialSasangRoute(state), '/');
+    expect(storage.hasStarted, isFalse);
+    expect(storage.hasCompletedOnboarding, isTrue);
+  });
+
+  testWidgets('onboarding changes language and completes every page', (
+    tester,
+  ) async {
+    final storage = _MemoryStorage();
+    final state = SasangState(storage);
+
+    await tester.pumpWidget(
+      AnimatedBuilder(
+        animation: state,
+        builder: (context, _) => MaterialApp(
+          locale: state.language.locale,
+          supportedLocales: SasangLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            SasangLocalizations.delegate,
+            ...GlobalMaterialLocalizations.delegates,
+          ],
+          home: OnboardingScreen(state: state),
+          routes: {'/home': (_) => const Text('home-ready')},
+        ),
+      ),
+    );
+
+    expect(find.text('언어를 선택해 주세요'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('onboarding-language-en')));
+    await tester.pumpAndSettle();
+    expect(find.text('Choose your language'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('onboarding-primary-action')));
+    await tester.pumpAndSettle();
+    expect(find.text('Choose your travel map'), findsOneWidget);
+
+    for (var page = 2; page < 5; page++) {
+      await tester.tap(find.byKey(const Key('onboarding-primary-action')));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('Your photos stay safely on your device'), findsOneWidget);
+    expect(find.text('Agree and start'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('onboarding-primary-action')));
+    await tester.pumpAndSettle();
+    expect(find.text('home-ready'), findsOneWidget);
+    expect(state.hasCompletedOnboarding, isTrue);
+    expect(storage.hasCompletedOnboarding, isTrue);
+    expect(storage.languageCode, 'en');
   });
 
   test('decodes the legacy Zustand persist envelope', () {
@@ -1786,14 +1864,17 @@ RegionPhoto _photo(String id, String takenAt) => RegionPhoto(
 class _MemoryStorage extends SasangStorage {
   Map<String, RegionPhotoAlbum> albums = {};
   bool? hasStarted;
+  bool? hasCompletedOnboarding;
   String? languageCode;
 
   @override
   Future<void> writeSession({
     required bool hasStarted,
+    required bool hasCompletedOnboarding,
     required String languageCode,
   }) async {
     this.hasStarted = hasStarted;
+    this.hasCompletedOnboarding = hasCompletedOnboarding;
     this.languageCode = languageCode;
   }
 
