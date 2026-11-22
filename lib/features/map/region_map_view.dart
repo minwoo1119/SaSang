@@ -231,7 +231,7 @@ class _RegionMapViewState extends State<RegionMapView> {
               ),
               child: SasangSurface(
                 blur: true,
-                radius: 24,
+                radius: SasangSemanticRadii.radiusSelectionCard,
                 padding: EdgeInsets.zero,
                 child: Column(
                   children: [
@@ -240,13 +240,27 @@ class _RegionMapViewState extends State<RegionMapView> {
                       label: tr('지도 확대'),
                       onTap: () => _zoom(1.55, size),
                     ),
-                    SizedBox(width: 28, child: Divider(height: 1)),
+                    SizedBox(
+                      width: 28,
+                      child: Divider(
+                        height: SasangBorders.hairlineWidth,
+                        thickness: SasangBorders.hairlineWidth,
+                        color: SasangSemanticColors.divider,
+                      ),
+                    ),
                     _ZoomButton(
                       icon: CupertinoIcons.minus,
                       label: tr('지도 축소'),
                       onTap: () => _zoom(0.65, size),
                     ),
-                    SizedBox(width: 28, child: Divider(height: 1)),
+                    SizedBox(
+                      width: 28,
+                      child: Divider(
+                        height: SasangBorders.hairlineWidth,
+                        thickness: SasangBorders.hairlineWidth,
+                        color: SasangSemanticColors.divider,
+                      ),
+                    ),
                     _ZoomButton(
                       text: '1:1',
                       label: tr('지도 위치 초기화'),
@@ -291,10 +305,8 @@ class _ZoomButton extends StatelessWidget {
               ? Icon(icon, color: SasangColors.accent, size: 22)
               : Text(
                   text!,
-                  style: const TextStyle(
-                    color: SasangColors.accent,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                  style: SasangSemanticTypography.micro.copyWith(
+                    color: SasangSemanticColors.accentText,
                   ),
                 ),
         ),

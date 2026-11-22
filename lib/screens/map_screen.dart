@@ -364,7 +364,12 @@ class _MapScreenState extends State<MapScreen> {
           ),
         ),
         SafeArea(
-          minimum: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          minimum: const EdgeInsets.fromLTRB(
+            SasangSemanticSpacing.mapOverlayInset,
+            SasangSemanticSpacing.mapOverlayInset,
+            SasangSemanticSpacing.mapOverlayInset,
+            0,
+          ),
           child: Align(
             alignment: Alignment.topCenter,
             child: Column(
@@ -385,7 +390,7 @@ class _MapScreenState extends State<MapScreen> {
                     widget.state.setMode(next);
                   },
                 ),
-                SizedBox(height: 12),
+                SizedBox(height: SasangSemanticSpacing.medium),
                 MapSearchBar(
                   controller: _search,
                   mode: mode,
@@ -397,7 +402,9 @@ class _MapScreenState extends State<MapScreen> {
                 ),
                 if (query.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.only(
+                      top: SasangSemanticSpacing.small,
+                    ),
                     child: MapSearchResults(
                       results: results,
                       mode: mode,
@@ -450,11 +457,13 @@ class _MapScreenState extends State<MapScreen> {
   Widget _selectionHint() => Align(
     child: SasangSurface(
       blur: true,
-      radius: 22,
+      radius: SasangSemanticRadii.radiusContentCard,
       padding: EdgeInsets.symmetric(horizontal: 17, vertical: 12),
       child: Text(
         tr('지역을 선택해 기록을 시작하세요'),
-        style: TextStyle(color: Color(0xFF52525B), fontWeight: FontWeight.w600),
+        style: SasangSemanticTypography.supporting.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
       ),
     ),
   );
@@ -482,11 +491,7 @@ class _MapScreenState extends State<MapScreen> {
                   Text(
                     region.localizedName,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: SasangColors.ink,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: SasangSemanticTypography.optionTitle,
                   ),
                   SizedBox(height: 2),
                   Text(
@@ -494,9 +499,8 @@ class _MapScreenState extends State<MapScreen> {
                         ? tr('눌러서 사진 추가')
                         : tr('$photoCount장의 여행 사진'),
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: SasangColors.secondary,
-                      fontSize: 11,
+                    style: SasangSemanticTypography.micro.copyWith(
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ],
@@ -506,15 +510,13 @@ class _MapScreenState extends State<MapScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                 decoration: BoxDecoration(
-                  color: const Color(0x14007AFF),
+                  color: SasangSemanticColors.accentSoft,
                   borderRadius: BorderRadius.circular(13),
                 ),
                 child: Text(
                   tr('$photoCount장'),
-                  style: const TextStyle(
-                    color: SasangColors.accent,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                  style: SasangSemanticTypography.micro.copyWith(
+                    color: SasangSemanticColors.accentText,
                   ),
                 ),
               )
@@ -535,7 +537,7 @@ class _MapScreenState extends State<MapScreen> {
             SizedBox(width: 5),
             const Icon(
               CupertinoIcons.chevron_forward,
-              color: Color(0xFFB4B4BA),
+              color: SasangSemanticColors.tertiaryTextAccessible,
               size: 15,
             ),
           ],
@@ -660,48 +662,41 @@ class MapTopBar extends StatelessWidget {
         Semantics(
           label: tr('현재 지도 $totalCount개 $unit 중 $count개 여행, $percentage퍼센트'),
           button: false,
-          child: Container(
+          child: SasangSurface(
             key: const Key('map-record-summary'),
-            height: 38,
+            blur: true,
+            radius: SasangSemanticRadii.radiusPill,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: .94),
-              borderRadius: BorderRadius.circular(19),
-              border: Border.all(color: SasangOverlayStyle.border, width: .6),
-              boxShadow: SasangOverlayStyle.shadows,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  tr('$count개 $unit'),
-                  key: const Key('map-record-count'),
-                  style: const TextStyle(
-                    color: SasangColors.secondary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+            child: SizedBox(
+              height: 38,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    tr('$count개 $unit'),
+                    key: const Key('map-record-count'),
+                    style: SasangSemanticTypography.micro,
                   ),
-                ),
-                SizedBox(width: 6),
-                Text(
-                  '·',
-                  style: TextStyle(
-                    color: Color(0xFFB4B4BA),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                  SizedBox(width: 6),
+                  Text(
+                    '·',
+                    style: TextStyle(
+                      color: SasangSemanticColors.tertiaryTextAccessible,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                SizedBox(width: 6),
-                Text(
-                  '$percentage%',
-                  key: const Key('map-travel-percentage'),
-                  style: const TextStyle(
-                    color: SasangColors.accent,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
+                  SizedBox(width: 6),
+                  Text(
+                    '$percentage%',
+                    key: const Key('map-travel-percentage'),
+                    style: SasangSemanticTypography.supporting.copyWith(
+                      color: SasangSemanticColors.accentText,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -713,7 +708,7 @@ class MapTopBar extends StatelessWidget {
               height: 38,
               child: SasangSurface(
                 blur: true,
-                radius: 19,
+                radius: SasangSemanticRadii.radiusPill,
                 padding: EdgeInsets.zero,
                 child: CupertinoButton(
                   key: const Key('map-share-button'),
@@ -728,7 +723,7 @@ class MapTopBar extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(width: 8),
+            SizedBox(width: SasangSemanticSpacing.small),
             MapModeSelector(
               value: mode,
               onChanged: onModeChanged,
@@ -1067,7 +1062,7 @@ class MapSearchBar extends StatelessWidget {
       height: 46,
       child: SasangSurface(
         blur: true,
-        radius: 23,
+        radius: SasangSemanticRadii.radiusPill,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: CupertinoSearchTextField(
           key: const Key('map-search-field'),
@@ -1075,16 +1070,17 @@ class MapSearchBar extends StatelessWidget {
           onChanged: onChanged,
           placeholder: mode == MapMode.korea ? tr('지역 이름 검색') : tr('국가 이름 검색'),
           backgroundColor: Colors.transparent,
-          itemColor: const Color(0xFF8E8E93),
+          itemColor: SasangSemanticColors.tertiaryTextAccessible,
           itemSize: 17,
-          style: const TextStyle(
-            color: SasangColors.ink,
+          style: SasangSemanticTypography.body.copyWith(
             fontSize: 14,
+            height: 1,
             fontWeight: FontWeight.w500,
           ),
-          placeholderStyle: const TextStyle(
-            color: Color(0xFF8E8E93),
+          placeholderStyle: SasangSemanticTypography.body.copyWith(
+            color: SasangSemanticColors.tertiaryTextAccessible,
             fontSize: 14,
+            height: 1,
             fontWeight: FontWeight.w500,
           ),
           onSuffixTap: onClear,
@@ -1109,8 +1105,8 @@ class MapSearchResults extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SasangSurface(
     blur: true,
-    radius: 20,
-    padding: const EdgeInsets.symmetric(vertical: 6),
+    radius: SasangSemanticRadii.radiusSettingsGroup,
+    padding: const EdgeInsets.symmetric(vertical: SasangSemanticSpacing.close),
     child: results.isEmpty
         ? SizedBox(
             key: Key('map-search-empty'),
@@ -1118,9 +1114,7 @@ class MapSearchResults extends StatelessWidget {
             child: Center(
               child: Text(
                 tr('일치하는 지역이 없어요'),
-                style: TextStyle(
-                  color: SasangColors.secondary,
-                  fontSize: 13,
+                style: SasangSemanticTypography.supporting.copyWith(
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -1179,10 +1173,7 @@ class _MapSearchResultRow extends StatelessWidget {
                     region.localizedName,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: SasangColors.ink,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
+                    style: SasangSemanticTypography.bodyStrong.copyWith(
                       letterSpacing: -.2,
                     ),
                   ),
@@ -1191,9 +1182,7 @@ class _MapSearchResultRow extends StatelessWidget {
                     regionDisplaySubtitle(region, mode),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: SasangColors.secondary,
-                      fontSize: 12,
+                    style: SasangSemanticTypography.caption.copyWith(
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -1203,7 +1192,7 @@ class _MapSearchResultRow extends StatelessWidget {
             SizedBox(width: 12),
             const Icon(
               CupertinoIcons.chevron_forward,
-              color: Color(0xFFAEAEB2),
+              color: SasangSemanticColors.tertiaryTextAccessible,
               size: 13,
             ),
           ],
