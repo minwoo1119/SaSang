@@ -17,6 +17,7 @@
 - [디자인 토큰 제안](design/03-design-tokens-proposal.md)
 - [디자인 토큰 Foundation](design/06-token-foundation.md)
 - [Phase 4-A 지도 및 장소 적용 기록](design/07-phase-4a-map-places-application.md)
+- [Phase 5 UI 최종 품질 검증](design/08-phase-5-ui-quality-report.md)
 - [사진 앨범](photo-albums.md)
 - [다국어 지원](localization.md)
 - [첫 실행 온보딩](onboarding.md)

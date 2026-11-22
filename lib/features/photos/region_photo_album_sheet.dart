@@ -108,160 +108,165 @@ class _RegionPhotoAlbumSheetState extends State<RegionPhotoAlbumSheet> {
       final itemCount = photos.length + 1;
       final safePage = _page.clamp(0, itemCount - 1);
       final current = safePage < photos.length ? photos[safePage] : null;
-      return Column(
+      return SingleChildScrollView(
         key: const Key('region-photo-album-sheet'),
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 34,
-            height: 5,
-            decoration: BoxDecoration(
-              color: const Color(0xFFD4D4D8),
-              borderRadius: BorderRadius.circular(3),
-            ),
-          ),
-          SizedBox(height: 18),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.region.localizedName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: SasangColors.ink,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -.4,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      photos.isEmpty
-                          ? tr('첫 사진을 추가해 보세요')
-                          : tr('사진 ${photos.length}장'),
-                      style: const TextStyle(
-                        color: SasangColors.secondary,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 34,
+              height: 5,
+              decoration: BoxDecoration(
+                color: const Color(0xFFD4D4D8),
+                borderRadius: BorderRadius.circular(3),
               ),
-              CupertinoButton(
-                key: const Key('region-album-close'),
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(36, 36),
-                borderRadius: BorderRadius.circular(18),
-                color: const Color(0xFFF4F4F5),
-                onPressed: () => Navigator.pop(context),
-                child: const Icon(
-                  CupertinoIcons.xmark,
-                  color: SasangColors.secondary,
-                  size: 15,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 18),
-          SizedBox(
-            height: 310,
-            child: PageView.builder(
-              key: const Key('region-photo-carousel'),
-              controller: _controller,
-              itemCount: itemCount,
-              onPageChanged: (value) => setState(() => _page = value),
-              itemBuilder: (context, index) {
-                final page = _controller.hasClients
-                    ? _controller.page ?? safePage.toDouble()
-                    : safePage.toDouble();
-                final distance = (index - page).clamp(-1.0, 1.0);
-                final scale = 1 - distance.abs() * .065;
-                final isPhoto = index < photos.length;
-                final restingAngle = isPhoto
-                    ? (index.isEven ? -.026 : .022)
-                    : 0.0;
-                final angle = restingAngle + distance * .035;
-                return Transform.translate(
-                  offset: Offset(0, distance.abs() * 9),
-                  child: Transform.rotate(
-                    key: Key('region-album-card-tilt-$index'),
-                    angle: angle,
-                    child: Transform.scale(
-                      scale: scale,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: index == photos.length
-                            ? _AddPhotoCard(loading: _adding, onPressed: _add)
-                            : _AlbumPhotoCard(
-                                photo: photos[index],
-                                isCover:
-                                    album?.coverPhoto?.id == photos[index].id,
-                                storage: widget.state.storage,
-                              ),
-                      ),
-                    ),
-                  ),
-                );
-              },
             ),
-          ),
-          SizedBox(height: 14),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 180),
-            child: current == null
-                ? SizedBox(key: Key('album-add-caption'), height: 44)
-                : Row(
-                    key: ValueKey(current.id),
+            SizedBox(height: 18),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(
-                          koreanDate(
-                            regionPhotoDate(current.takenAt, current.createdAt),
-                          ),
-                          style: const TextStyle(
-                            color: SasangColors.secondary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      Text(
+                        widget.region.localizedName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: SasangColors.ink,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -.4,
                         ),
                       ),
-                      if (album?.coverPhoto?.id != current.id)
-                        CupertinoButton(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          onPressed: () => widget.state.setRegionCoverPhoto(
-                            widget.mode,
-                            widget.region.code,
-                            current.id,
-                          ),
+                      SizedBox(height: 4),
+                      Text(
+                        photos.isEmpty
+                            ? tr('첫 사진을 추가해 보세요')
+                            : tr('사진 ${photos.length}장'),
+                        style: const TextStyle(
+                          color: SasangColors.secondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                CupertinoButton(
+                  key: const Key('region-album-close'),
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(36, 36),
+                  borderRadius: BorderRadius.circular(18),
+                  color: const Color(0xFFF4F4F5),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Icon(
+                    CupertinoIcons.xmark,
+                    color: SasangColors.secondary,
+                    size: 15,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 18),
+            SizedBox(
+              height: 310,
+              child: PageView.builder(
+                key: const Key('region-photo-carousel'),
+                controller: _controller,
+                itemCount: itemCount,
+                onPageChanged: (value) => setState(() => _page = value),
+                itemBuilder: (context, index) {
+                  final page = _controller.hasClients
+                      ? _controller.page ?? safePage.toDouble()
+                      : safePage.toDouble();
+                  final distance = (index - page).clamp(-1.0, 1.0);
+                  final scale = 1 - distance.abs() * .065;
+                  final isPhoto = index < photos.length;
+                  final restingAngle = isPhoto
+                      ? (index.isEven ? -.026 : .022)
+                      : 0.0;
+                  final angle = restingAngle + distance * .035;
+                  return Transform.translate(
+                    offset: Offset(0, distance.abs() * 9),
+                    child: Transform.rotate(
+                      key: Key('region-album-card-tilt-$index'),
+                      angle: angle,
+                      child: Transform.scale(
+                        scale: scale,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: index == photos.length
+                              ? _AddPhotoCard(loading: _adding, onPressed: _add)
+                              : _AlbumPhotoCard(
+                                  photo: photos[index],
+                                  isCover:
+                                      album?.coverPhoto?.id == photos[index].id,
+                                  storage: widget.state.storage,
+                                ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: 14),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: current == null
+                  ? SizedBox(key: Key('album-add-caption'), height: 44)
+                  : Row(
+                      key: ValueKey(current.id),
+                      children: [
+                        Expanded(
                           child: Text(
-                            tr('대표 사진으로'),
+                            koreanDate(
+                              regionPhotoDate(
+                                current.takenAt,
+                                current.createdAt,
+                              ),
+                            ),
+                            style: const TextStyle(
+                              color: SasangColors.secondary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        if (album?.coverPhoto?.id != current.id)
+                          CupertinoButton(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            onPressed: () => widget.state.setRegionCoverPhoto(
+                              widget.mode,
+                              widget.region.code,
+                              current.id,
+                            ),
+                            child: Text(
+                              tr('대표 사진으로'),
+                              style: TextStyle(
+                                color: SasangColors.accent,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        CupertinoButton(
+                          padding: const EdgeInsets.only(left: 8),
+                          onPressed: () => _delete(current),
+                          child: Text(
+                            tr('삭제'),
                             style: TextStyle(
-                              color: SasangColors.accent,
+                              color: CupertinoColors.systemRed,
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
-                      CupertinoButton(
-                        padding: const EdgeInsets.only(left: 8),
-                        onPressed: () => _delete(current),
-                        child: Text(
-                          tr('삭제'),
-                          style: TextStyle(
-                            color: CupertinoColors.systemRed,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
-        ],
+                      ],
+                    ),
+            ),
+          ],
+        ),
       );
     },
   );

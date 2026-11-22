@@ -101,15 +101,31 @@ class SasangPrimaryButton extends StatelessWidget {
             Icon(icon, color: Colors.white, size: 20),
             SizedBox(width: 8),
           ],
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.2,
+          if (MediaQuery.textScalerOf(context).scale(1) >= 1.5)
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.2,
+                ),
+              ),
+            )
+          else
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.2,
+              ),
             ),
-          ),
         ],
       ),
     ),
