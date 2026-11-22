@@ -39,6 +39,9 @@ flutter test \
 - 변경 전 기준과 갱신 후 이미지를 PR에서 비교하고, 영향받은 component/state를 적는다.
 - 실제 사진, 광고, 시간, 네트워크는 고정 fixture/placeholder로 대체한다.
 - 지도 asset 변경으로 preview가 달라지면 지도 데이터 버전과 Golden을 함께 검토한다.
+- host OS rasterizer의 미세 차이는 `test/flutter_test_config.dart`에서 최대 0.01%까지만 허용한다.
+  이 값은 macOS CI의 이미지당 1~29px 차이를 흡수하는 범위이며, 허용치 확대는 실패 diff와
+  영향을 받는 Golden을 PR에서 검토한 경우에만 가능하다.
 
 ## 4. 수동 검증 행렬
 
