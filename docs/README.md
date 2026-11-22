@@ -16,6 +16,7 @@
 - [디자인 시스템 원칙](design/02-design-principles.md)
 - [디자인 토큰 제안](design/03-design-tokens-proposal.md)
 - [디자인 토큰 Foundation](design/06-token-foundation.md)
+- [Phase 4-A 지도 및 장소 적용 기록](design/07-phase-4a-map-places-application.md)
 - [사진 앨범](photo-albums.md)
 - [다국어 지원](localization.md)
 - [첫 실행 온보딩](onboarding.md)

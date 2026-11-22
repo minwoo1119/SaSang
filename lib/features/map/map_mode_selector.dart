@@ -7,6 +7,7 @@ import '../../core/l10n/sasang_localizations.dart';
 
 import '../../core/theme/sasang_theme.dart';
 import '../../models/map_models.dart';
+import '../../widgets/sasang_ui.dart';
 import 'map_preview.dart';
 import 'owned_map.dart';
 
@@ -33,49 +34,60 @@ class MapModeSelector extends StatelessWidget {
   final Map<MapMode, RegionMapAsset> previewAssets;
 
   @override
-  Widget build(BuildContext context) => CupertinoButton(
-    padding: EdgeInsets.zero,
-    minimumSize: Size.zero,
-    onPressed: () => _show(context),
-    child: Container(
-      key: const Key('map-mode-selector-pill'),
-      constraints: const BoxConstraints(maxWidth: 168),
-      height: 38,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: elevated ? .94 : .92),
-        borderRadius: SasangRadii.pill,
-        border: Border.all(
-          color: elevated ? SasangOverlayStyle.border : SasangColors.divider,
-          width: .6,
-        ),
-        boxShadow: elevated ? SasangOverlayStyle.shadows : null,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: Text(
-              value.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF27272A),
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
+  Widget build(BuildContext context) {
+    final content = ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 144),
+      child: SizedBox(
+        height: 38,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                value.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: SasangSemanticTypography.supporting.copyWith(
+                  color: SasangSemanticColors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-          ),
-          SizedBox(width: 7),
-          const Icon(
-            CupertinoIcons.chevron_down,
-            size: 16,
-            color: Color(0xFF52525B),
-          ),
-        ],
+            SizedBox(width: SasangSemanticSpacing.close),
+            const Icon(
+              CupertinoIcons.chevron_down,
+              size: 16,
+              color: SasangSemanticColors.textSecondary,
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+    final pill = elevated
+        ? SasangSurface(
+            key: const Key('map-mode-selector-pill'),
+            blur: true,
+            radius: SasangSemanticRadii.radiusPill,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: content,
+          )
+        : Container(
+            key: const Key('map-mode-selector-pill'),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: .92),
+              borderRadius: SasangSemanticRadii.pill,
+              border: Border.fromBorderSide(SasangBorders.subtle),
+            ),
+            child: content,
+          );
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      minimumSize: Size.zero,
+      onPressed: () => _show(context),
+      child: pill,
+    );
+  }
 
   Future<void> _show(BuildContext context) async {
     final ownedMaps = buildOwnedMapLibrary(purchasedMaps: purchasedMaps);

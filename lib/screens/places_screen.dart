@@ -15,6 +15,7 @@ import '../features/photos/region_photo_flow.dart';
 import '../features/state/sasang_state.dart';
 import '../models/map_models.dart';
 import '../widgets/ad_banner.dart';
+import '../widgets/sasang_ui.dart';
 
 class PlacesScreen extends StatefulWidget {
   const PlacesScreen({
@@ -85,7 +86,12 @@ class _PlacesScreenState extends State<PlacesScreen> {
             children: [
               Padding(
                 key: const Key('places-filter-bar'),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                padding: const EdgeInsets.fromLTRB(
+                  SasangSemanticSpacing.mapOverlayInset,
+                  SasangSemanticSpacing.mapOverlayInset,
+                  SasangSemanticSpacing.mapOverlayInset,
+                  18,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -94,7 +100,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
                       onChanged: widget.state.setMode,
                       elevated: true,
                     ),
-                    SizedBox(width: 10),
+                    SizedBox(width: SasangSemanticSpacing.small),
                     _SortButton(
                       newest: _newest,
                       onPressed: () => setState(() => _newest = !_newest),
@@ -127,14 +133,15 @@ class _PlacesScreenState extends State<PlacesScreen> {
                               minimumSize: Size.zero,
                               onPressed: () => _manage(item),
                               child: Container(
+                                key: Key('places-card-${item.region.code}'),
                                 clipBehavior: Clip.antiAlias,
                                 decoration: BoxDecoration(
-                                  color: CupertinoColors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: SasangOverlayStyle.border,
+                                  color: SasangSemanticColors.surface,
+                                  borderRadius: SasangSemanticRadii.media,
+                                  border: Border.fromBorderSide(
+                                    SasangBorders.subtle,
                                   ),
-                                  boxShadow: SasangOverlayStyle.shadows,
+                                  boxShadow: SasangElevation.low,
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,11 +181,9 @@ class _PlacesScreenState extends State<PlacesScreen> {
                                                   maxLines: 1,
                                                   overflow:
                                                       TextOverflow.ellipsis,
-                                                  style: const TextStyle(
-                                                    color: SasangColors.ink,
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w800,
-                                                  ),
+                                                  style:
+                                                      SasangSemanticTypography
+                                                          .optionTitle,
                                                 ),
                                               ),
                                               SizedBox(width: 8),
@@ -189,9 +194,8 @@ class _PlacesScreenState extends State<PlacesScreen> {
                                                       vertical: 3,
                                                     ),
                                                 decoration: BoxDecoration(
-                                                  color: const Color(
-                                                    0x1A007AFF,
-                                                  ),
+                                                  color: SasangSemanticColors
+                                                      .accentSoft,
                                                   borderRadius:
                                                       BorderRadius.circular(10),
                                                 ),
@@ -199,11 +203,13 @@ class _PlacesScreenState extends State<PlacesScreen> {
                                                   tr(
                                                     '${item.album.photos.length}장',
                                                   ),
-                                                  style: const TextStyle(
-                                                    color: SasangColors.accent,
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.w800,
-                                                  ),
+                                                  style: SasangSemanticTypography
+                                                      .micro
+                                                      .copyWith(
+                                                        color:
+                                                            SasangSemanticColors
+                                                                .accentText,
+                                                      ),
                                                 ),
                                               ),
                                             ],
@@ -214,11 +220,12 @@ class _PlacesScreenState extends State<PlacesScreen> {
                                                 (mode == MapMode.korea
                                                     ? tr('대한민국')
                                                     : tr('해외')),
-                                            style: const TextStyle(
-                                              color: Color(0xFF52525B),
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                            style: SasangSemanticTypography
+                                                .supporting
+                                                .copyWith(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
                                           ),
                                           SizedBox(height: 4),
                                           Text(
@@ -228,11 +235,8 @@ class _PlacesScreenState extends State<PlacesScreen> {
                                                 item.photo.createdAt,
                                               ),
                                             ),
-                                            style: const TextStyle(
-                                              color: SasangColors.secondary,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                            style: SasangSemanticTypography
+                                                .caption,
                                           ),
                                         ],
                                       ),
@@ -257,30 +261,24 @@ class _PlacesScreenState extends State<PlacesScreen> {
     children: [
       Container(
         key: const Key('places-empty-state'),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+        padding: const EdgeInsets.symmetric(
+          horizontal: SasangSemanticSpacing.xLarge,
+          vertical: 28,
+        ),
         decoration: BoxDecoration(
-          color: CupertinoColors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: SasangOverlayStyle.border, width: .6),
-          boxShadow: SasangOverlayStyle.shadows,
+          color: SasangSemanticColors.surface,
+          borderRadius: SasangSemanticRadii.contentCard,
+          border: Border.fromBorderSide(SasangBorders.subtle),
+          boxShadow: SasangElevation.low,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              tr('아직 기록이 없어요'),
-              style: TextStyle(
-                color: SasangColors.ink,
-                fontSize: 22,
-                height: 1.32,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
+            Text(tr('아직 기록이 없어요'), style: SasangSemanticTypography.sheetTitle),
             SizedBox(height: 5),
             Text(
               tr('지도에서 첫 사진을 추가해보세요.'),
-              style: TextStyle(
-                color: SasangColors.secondary,
+              style: SasangSemanticTypography.supporting.copyWith(
                 fontSize: 14,
                 height: 1.43,
                 fontWeight: FontWeight.w500,
@@ -293,18 +291,17 @@ class _PlacesScreenState extends State<PlacesScreen> {
               child: CupertinoButton(
                 key: const Key('places-empty-action'),
                 padding: const EdgeInsets.symmetric(horizontal: 17),
-                borderRadius: BorderRadius.circular(16),
-                color: SasangColors.accent,
+                borderRadius: SasangSemanticRadii.control,
+                color: SasangSemanticColors.accent,
                 onPressed: widget.onOpenMap,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       tr('지도에서 시작하기'),
-                      style: TextStyle(
+                      style: SasangSemanticTypography.button.copyWith(
                         color: CupertinoColors.white,
                         fontSize: 14,
-                        fontWeight: FontWeight.w800,
                       ),
                     ),
                     Icon(
@@ -337,34 +334,31 @@ class _SortButton extends StatelessWidget {
     padding: EdgeInsets.zero,
     minimumSize: Size.zero,
     onPressed: onPressed,
-    child: Container(
+    child: SasangSurface(
       key: const Key('places-sort-surface'),
-      height: 38,
+      blur: true,
+      radius: SasangSemanticRadii.radiusPill,
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: CupertinoColors.white.withValues(alpha: .94),
-        borderRadius: BorderRadius.circular(19),
-        border: Border.all(color: SasangOverlayStyle.border, width: .6),
-        boxShadow: SasangOverlayStyle.shadows,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            CupertinoIcons.arrow_up_arrow_down,
-            size: 13,
-            color: Color(0xFF52525B),
-          ),
-          SizedBox(width: 6),
-          Text(
-            newest ? tr('최신순') : tr('오래된순'),
-            style: const TextStyle(
-              color: Color(0xFF27272A),
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
+      child: SizedBox(
+        height: 38,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              CupertinoIcons.arrow_up_arrow_down,
+              size: 13,
+              color: SasangSemanticColors.textSecondary,
             ),
-          ),
-        ],
+            SizedBox(width: SasangSemanticSpacing.close),
+            Text(
+              newest ? tr('최신순') : tr('오래된순'),
+              style: SasangSemanticTypography.supporting.copyWith(
+                color: SasangSemanticColors.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
       ),
     ),
   );

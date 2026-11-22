@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,14 +7,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sasang/features/backup/backup_progress_dialog.dart';
 import 'package:sasang/features/map/map_mode_selector.dart';
 import 'package:sasang/features/map/map_repository.dart';
+import 'package:sasang/features/map/region_map_view.dart';
 import 'package:sasang/features/photos/north_korea_visit_gate.dart';
 import 'package:sasang/features/share/export_progress_dialog.dart';
 import 'package:sasang/features/share/map_share_service.dart';
 import 'package:sasang/features/state/sasang_state.dart';
 import 'package:sasang/core/storage/sasang_storage.dart';
+import 'package:sasang/core/theme/sasang_theme.dart';
 import 'package:sasang/models/map_models.dart';
 import 'package:sasang/screens/map_screen.dart';
 import 'package:sasang/screens/more_screen.dart';
+import 'package:sasang/screens/places_screen.dart';
 import 'package:sasang/widgets/sasang_center_modal.dart';
 import 'package:sasang/widgets/sasang_ui.dart';
 
@@ -257,6 +262,144 @@ void main() {
     );
   });
 
+  testWidgets('captures Phase 4-A map search and zoom controls', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final controller = TextEditingController();
+    addTearDown(controller.dispose);
+    const asset = RegionMapAsset(
+      version: 'golden',
+      width: 360,
+      height: 520,
+      regions: [
+        MapRegion(
+          code: '11680',
+          name: '강남구',
+          provinceName: '서울특별시',
+          geometryType: 'Polygon',
+          polygonCount: 1,
+          bounds: RegionBounds(x: 70, y: 120, width: 220, height: 260),
+          pathData: 'M 70 120 L 290 120 L 290 380 L 70 380 Z',
+        ),
+      ],
+    );
+    final storage = _ReviewStorage();
+
+    await tester.pumpWidget(
+      MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: _reviewTheme(platform: TargetPlatform.iOS),
+        home: Scaffold(
+          body: Stack(
+            children: [
+              RegionMapView(
+                asset: asset,
+                mode: MapMode.korea,
+                photos: const {},
+                selectedRegionCode: null,
+                onSelectRegion: (_) {},
+                storage: storage,
+              ),
+              SafeArea(
+                minimum: const EdgeInsets.all(
+                  SasangSemanticSpacing.mapOverlayInset,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    MapTopBar(
+                      count: 3,
+                      totalCount: 161,
+                      mode: MapMode.korea,
+                      onShare: _ignoreVoid,
+                      onModeChanged: _ignoreMapMode,
+                    ),
+                    SizedBox(height: SasangSemanticSpacing.medium),
+                    MapSearchBar(
+                      controller: controller,
+                      mode: MapMode.korea,
+                      onChanged: (_) {},
+                      onClear: controller.clear,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await expectLater(
+      find.byType(Scaffold),
+      matchesGoldenFile('goldens/map_search_and_zoom_controls.png'),
+    );
+  });
+
+  testWidgets('captures the Phase 4-A places photo card', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final storage = _ReviewStorage();
+    final state = SasangState(storage);
+    state.addRegionPhoto(
+      MapMode.korea,
+      '11680',
+      const RegionPhoto(
+        id: 'golden-photo',
+        uri: 'fixed://photo',
+        width: 1200,
+        height: 900,
+        scale: 1,
+        offsetX: 0,
+        offsetY: 0,
+        createdAt: '2026-11-18T00:00:00Z',
+        takenAt: '2026-11-18',
+      ),
+    );
+    final mapAsset = Future.value(
+      const RegionMapAsset(
+        version: 'golden',
+        width: 360,
+        height: 520,
+        regions: [
+          MapRegion(
+            code: '11680',
+            name: '강남구',
+            provinceName: '서울특별시',
+            geometryType: 'Polygon',
+            polygonCount: 1,
+            bounds: RegionBounds(x: 0, y: 0, width: 10, height: 10),
+            pathData: 'M 0 0 L 10 0 L 10 10 Z',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: _reviewTheme(platform: TargetPlatform.iOS),
+        home: Scaffold(
+          backgroundColor: SasangSemanticColors.canvasSubtle,
+          body: PlacesScreen(
+            state: state,
+            onOpenMap: _ignoreVoid,
+            mapAsset: mapAsset,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await expectLater(
+      find.byType(Scaffold),
+      matchesGoldenFile('goldens/places_photo_card.png'),
+    );
+  });
+
   testWidgets('captures the current settings group cards', (tester) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -305,6 +448,14 @@ void main() {
       matchesGoldenFile('goldens/primary_button_states.png'),
     );
   });
+}
+
+class _ReviewStorage extends SasangStorage {
+  @override
+  Future<File?> resolveImage(String? uri) async => null;
+
+  @override
+  Future<void> writePhotoAlbums(Map<String, RegionPhotoAlbum> albums) async {}
 }
 
 void _ignoreMapMode(MapMode value) {}

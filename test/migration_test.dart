@@ -36,6 +36,7 @@ import 'package:sasang/screens/info_detail_screen.dart';
 import 'package:sasang/screens/places_screen.dart';
 import 'package:sasang/widgets/ad_banner.dart';
 import 'package:sasang/widgets/sasang_center_modal.dart';
+import 'package:sasang/widgets/sasang_ui.dart';
 
 void main() {
   tearDown(() => SasangLocalizations.use(SasangLanguage.korean));
@@ -1118,7 +1119,7 @@ void main() {
         find.byKey(const Key('map-mode-selector-pill')),
       );
       final selectorDecoration = selectorPill.decoration! as BoxDecoration;
-      expect(selectorDecoration.borderRadius, SasangRadii.pill);
+      expect(selectorDecoration.borderRadius, SasangSemanticRadii.pill);
 
       expect(find.text('내 지도'), findsOneWidget);
       expect(find.text('보유한 지도 2개'), findsOneWidget);
@@ -1678,18 +1679,19 @@ void main() {
       find.byType(MapModeSelector),
     );
     expect(mapSelector.elevated, isTrue);
-    final sortSurface = tester.widget<Container>(
+    final sortSurface = tester.widget<SasangSurface>(
       find.byKey(const Key('places-sort-surface')),
     );
-    final sortDecoration = sortSurface.decoration! as BoxDecoration;
-    expect(sortDecoration.boxShadow, isNotEmpty);
+    expect(sortSurface.blur, isTrue);
+    expect(sortSurface.radius, SasangSemanticRadii.radiusPill);
     final emptyState = tester.widget<Container>(
       find.byKey(const Key('places-empty-state')),
     );
     final emptyDecoration = emptyState.decoration! as BoxDecoration;
     expect(emptyDecoration.color, CupertinoColors.white);
     expect(emptyDecoration.border, isNotNull);
-    expect(emptyDecoration.boxShadow, sortDecoration.boxShadow);
+    expect(emptyDecoration.borderRadius, SasangSemanticRadii.contentCard);
+    expect(emptyDecoration.boxShadow, SasangElevation.low);
     final emptyAction = tester.widget<CupertinoButton>(
       find.byKey(const Key('places-empty-action')),
     );
@@ -1702,6 +1704,60 @@ void main() {
     );
     expect(selectorRect.left, lessThan(sortRect.left));
     expect(selectorRect.center.dy, closeTo(sortRect.center.dy, 1));
+  });
+
+  testWidgets('places photo card uses approved media tokens', (tester) async {
+    final storage = _MemoryStorage();
+    final state = SasangState(storage);
+    state.addRegionPhoto(
+      MapMode.korea,
+      '11680',
+      _photo('gangnam', '2026-11-18'),
+    );
+    final mapAsset = Future.value(
+      const RegionMapAsset(
+        version: 'test',
+        width: 360,
+        height: 520,
+        regions: [
+          MapRegion(
+            code: '11680',
+            name: '강남구',
+            provinceName: '서울특별시',
+            geometryType: 'Polygon',
+            polygonCount: 1,
+            bounds: RegionBounds(x: 0, y: 0, width: 10, height: 10),
+            pathData: 'M 0 0 L 10 0 L 10 10 Z',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: PlacesScreen(
+            state: state,
+            onOpenMap: () {},
+            mapAsset: mapAsset,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final card = tester.widget<Container>(
+      find.byKey(const Key('places-card-11680')),
+    );
+    final decoration = card.decoration! as BoxDecoration;
+    expect(decoration.borderRadius, SasangSemanticRadii.media);
+    expect(decoration.boxShadow, SasangElevation.low);
+    expect(decoration.border, Border.fromBorderSide(SasangBorders.subtle));
+
+    final title = tester.widget<Text>(find.text('강남구'));
+    expect(title.style?.fontWeight, FontWeight.w700);
+    final count = tester.widget<Text>(find.text('1장'));
+    expect(count.style?.color, SasangSemanticColors.accentText);
   });
 
   testWidgets('more screen groups navigation, information, and account rows', (
