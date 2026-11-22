@@ -751,52 +751,54 @@ class _ShareSheetContent extends StatelessWidget {
   final VoidCallback onCancel;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(4, 4, 4, 10),
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Center(
-          child: Container(
-            width: 34,
-            height: 5,
-            decoration: BoxDecoration(
-              color: const Color(0xFFD4D4D8),
-              borderRadius: BorderRadius.circular(3),
-            ),
-          ),
-        ),
-        SizedBox(height: 18),
-        Row(
-          children: [
-            Expanded(child: Text(title, style: SasangTypography.sheetTitle)),
-            SizedBox(
+  Widget build(BuildContext context) => SingleChildScrollView(
+    child: Padding(
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 10),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
               width: 34,
-              height: 34,
-              child: CupertinoButton(
-                key: const Key('share-sheet-close'),
-                padding: EdgeInsets.zero,
-                borderRadius: BorderRadius.circular(17),
-                color: const Color(0xFFF4F4F5),
-                onPressed: onCancel,
-                child: const Icon(
-                  CupertinoIcons.xmark,
-                  size: 14,
-                  color: SasangColors.secondary,
-                ),
+              height: 5,
+              decoration: BoxDecoration(
+                color: const Color(0xFFD4D4D8),
+                borderRadius: BorderRadius.circular(3),
               ),
             ),
+          ),
+          SizedBox(height: 18),
+          Row(
+            children: [
+              Expanded(child: Text(title, style: SasangTypography.sheetTitle)),
+              SizedBox(
+                width: 34,
+                height: 34,
+                child: CupertinoButton(
+                  key: const Key('share-sheet-close'),
+                  padding: EdgeInsets.zero,
+                  borderRadius: BorderRadius.circular(17),
+                  color: const Color(0xFFF4F4F5),
+                  onPressed: onCancel,
+                  child: const Icon(
+                    CupertinoIcons.xmark,
+                    size: 14,
+                    color: SasangColors.secondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 6),
+          Text(subtitle, style: SasangTypography.sheetDescription),
+          SizedBox(height: 18),
+          for (var index = 0; index < actions.length; index++) ...[
+            actions[index],
+            if (index != actions.length - 1) SizedBox(height: 2),
           ],
-        ),
-        SizedBox(height: 6),
-        Text(subtitle, style: SasangTypography.sheetDescription),
-        SizedBox(height: 18),
-        for (var index = 0; index < actions.length; index++) ...[
-          actions[index],
-          if (index != actions.length - 1) SizedBox(height: 2),
         ],
-      ],
+      ),
     ),
   );
 }

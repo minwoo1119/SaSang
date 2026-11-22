@@ -48,6 +48,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final isLastPage = _page == _pageCount - 1;
+    final usesAccessibilityLayout =
+        MediaQuery.textScalerOf(context).scale(1) >= 1.5;
+    final headerSideWidth = usesAccessibilityLayout ? 92.0 : 72.0;
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -57,11 +60,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: Column(
               children: [
                 SizedBox(
-                  height: 44,
+                  height: usesAccessibilityLayout ? 52 : 44,
                   child: Row(
                     children: [
                       SizedBox(
-                        width: 72,
+                        width: headerSideWidth,
                         child: _page == 0
                             ? null
                             : CupertinoButton(
@@ -99,7 +102,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 72),
+                      SizedBox(width: headerSideWidth),
                     ],
                   ),
                 ),
@@ -289,49 +292,66 @@ class _FeaturePage extends StatelessWidget {
   final String description;
   final Widget visual;
 
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(0, 34, 0, 28),
-    child: Column(
-      children: [
+  Widget _details({required bool compact}) => Column(
+    mainAxisSize: compact ? MainAxisSize.min : MainAxisSize.max,
+    children: [
+      if (compact)
+        SizedBox(
+          height: 190,
+          child: Center(
+            child: FittedBox(fit: BoxFit.scaleDown, child: visual),
+          ),
+        )
+      else
         Expanded(
           child: Center(
             child: FittedBox(fit: BoxFit.scaleDown, child: visual),
           ),
         ),
-        Container(
-          width: 46,
-          height: 46,
-          decoration: const BoxDecoration(
-            color: Color(0xFFEAF4FF),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: SasangColors.accent, size: 24),
+      Container(
+        width: 46,
+        height: 46,
+        decoration: const BoxDecoration(
+          color: Color(0xFFEAF4FF),
+          shape: BoxShape.circle,
         ),
-        const SizedBox(height: 18),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: SasangColors.ink,
-            fontSize: 27,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.7,
-          ),
+        child: Icon(icon, color: SasangColors.accent, size: 24),
+      ),
+      const SizedBox(height: 18),
+      Text(
+        title,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: SasangColors.ink,
+          fontSize: 27,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -0.7,
         ),
-        const SizedBox(height: 12),
-        Text(
-          description,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: SasangColors.secondary,
-            fontSize: 15,
-            height: 1.55,
-          ),
+      ),
+      const SizedBox(height: 12),
+      Text(
+        description,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: SasangColors.secondary,
+          fontSize: 15,
+          height: 1.55,
         ),
-      ],
-    ),
+      ),
+    ],
   );
+
+  @override
+  Widget build(BuildContext context) {
+    final usesAccessibilityLayout =
+        MediaQuery.textScalerOf(context).scale(1) >= 1.5;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 34, 0, 28),
+      child: usesAccessibilityLayout
+          ? SingleChildScrollView(child: _details(compact: true))
+          : _details(compact: false),
+    );
+  }
 }
 
 class _VisualCard extends StatelessWidget {

@@ -8,6 +8,21 @@ import '../core/l10n/sasang_localizations.dart';
 
 import '../core/ads/sasang_ads.dart';
 
+const adBannerReservedHeight = 58.0;
+
+class AdBannerFrame extends StatelessWidget {
+  const AdBannerFrame({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    height: adBannerReservedHeight,
+    child: Center(child: child),
+  );
+}
+
 enum AdPlacement { home, places, more }
 
 String? adUnitIdFor({
@@ -92,23 +107,27 @@ class _AdBannerState extends State<AdBanner> {
   Widget build(BuildContext context) {
     final ad = _ad;
     if (!_loaded || ad == null) {
-      return Container(
-        height: 58,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: const Color(0xFFF8F8FA),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Text(
-          tr('광고'),
-          style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 11),
+      return AdBannerFrame(
+        child: Container(
+          height: adBannerReservedHeight,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8F8FA),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text(
+            tr('광고'),
+            style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 11),
+          ),
         ),
       );
     }
-    return SizedBox(
-      width: ad.size.width.toDouble(),
-      height: ad.size.height.toDouble(),
-      child: AdWidget(ad: ad),
+    return AdBannerFrame(
+      child: SizedBox(
+        width: ad.size.width.toDouble(),
+        height: ad.size.height.toDouble(),
+        child: AdWidget(ad: ad),
+      ),
     );
   }
 }
