@@ -10,6 +10,8 @@ This section is the highest-priority repository instruction for every agent.
 - Read [`docs/README.md`](docs/README.md), [`docs/project-overview.md`](docs/project-overview.md),
   [`docs/architecture.md`](docs/architecture.md), and
   [`docs/development-workflow.md`](docs/development-workflow.md) before changing the repository.
+- Before creating or changing Flutter UI, also read
+  [`docs/design/README.md`](docs/design/README.md) and the official design documents it routes to.
 - Every task must have a GitHub issue before implementation starts. If the user supplied an
   existing issue, use it; otherwise create one with `gh issue create`.
 - Refresh `dev`, then create one issue branch from `dev`. Never implement ordinary work directly
@@ -30,6 +32,33 @@ This section is the highest-priority repository instruction for every agent.
   create and verify the version commit, fast-forward `main`, and create/push the version tag.
 - If any older section of this file conflicts with the current implementation or workflow docs,
   this section and the documents linked above take precedence.
+
+### 0.1 Mandatory UI Design System Rules
+
+For every new Flutter UI or visual modification:
+
+1. Check the official Sasang design guide before implementation.
+2. Prefer `SasangSemantic*`, `SasangBorders`, `SasangElevation`, `SasangMotion`, and
+   `SasangComponentStates` over legacy or raw visual values.
+3. Check whether an existing shared or domain component can be reused before creating a widget.
+4. Do not add arbitrary colors, shadows, corner radii, font sizes, or spacing values.
+5. If no existing token can express the required meaning, document why, add or approve the token
+   in the design documentation, and update token tests in the same PR.
+6. Preserve Sasang's Full-screen Map, Floating Overlay, polygon photo clipping, and photo-first
+   hierarchy unless the user explicitly approves a structural change.
+7. Avoid decorative icons, nested cards, unnecessary shadows, and more than two simultaneous
+   selection/emphasis signals.
+8. Verify shared brand hierarchy and behavior on both iOS and Android; preserve platform-standard
+   accessibility behavior where the platforms differ.
+9. Compare before/after screenshots for every visual change and follow the repository screenshot
+   workflow above.
+10. Update the relevant design documentation and Widget/Golden tests whenever a token, shared
+    component, variant, state rule, or approved exception changes.
+
+Run `dart run tool/check_design_style.dart` for UI work. New raw style findings fail the check.
+Existing reviewed debt is ratcheted in `tool/design_style_baseline.txt`. A justified visual or
+rendering exception must use `// sasang-design-exception: <concrete reason>` on the same or
+immediately preceding line; never refresh the baseline merely to make CI pass.
 
 ---
 

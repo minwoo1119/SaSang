@@ -1,16 +1,20 @@
-# Sasang 디자인 토큰 제안
+# Sasang 최종 디자인 토큰
+
+> 상태: Phase 6 공식 기준. 실제 Flutter API의 단일 기준은
+> `lib/core/theme/sasang_theme.dart`이며, 이 문서는 토큰의 의미와 적용 경계를 설명한다.
 
 ## 1. 적용 원칙
 
 - 토큰 이름은 시각값(`gray500`, `radius24`)보다 의미(`textSecondary`, `radiusSelection`)를 우선한다.
 - 현재의 화이트·블루 팔레트를 유지한다.
 - 표의 “현재값”은 Phase 1 감사에서 확인한 대표값이며 화면별 예외가 있으면 함께 적는다.
-- “최종값”은 Phase 2-A 제안값이다. Flutter 적용은 별도 승인 이후 진행한다.
+- “최종값”은 구현·검증된 공식 값이다. 기존 legacy API는 호환성을 위해
+  남아 있지만 신규 UI는 Semantic API를 사용한다.
 - 값 변경이 없는 토큰도 현재 의도가 유지되어야 한다는 의미로 포함한다.
 
 ## 2. Semantic Color
 
-| 토큰 이름 | 현재 코드 값 | 제안 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
+| 토큰 이름 | 현재 코드 값 | 공식 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
 |---|---|---|---|---|---|
 | `color.canvas` | `#FAFAFA` | `#FAFAFA` | 기본 scaffold, 페이지 배경 | 브랜드 중립 배경 유지 | 없음 |
 | `color.canvasSubtle` | `#F7F7F8` | `#F7F7F8` | 더보기, 정보, 상점 | 계층이 이미 안정적 | 없음 |
@@ -38,10 +42,10 @@
 
 공통 글꼴은 플랫폼 기본 sans-serif를 사용한다. 한국어/일본어/중국어에는 강한 음수 자간을 적용하지 않고, 영문도 같은 토큰을 사용한다. 행간은 Flutter `height` 환산 시 실제 font metrics를 골든 테스트로 확인한다.
 
-| 토큰 이름 | 현재 코드 값 | 제안 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
+| 토큰 이름 | 현재 코드 값 | 공식 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
 |---|---|---|---|---|---|
 | `type.display` | 온보딩 27, 더보기 30, 문서 28 | 28/34, w800, letter -0.4(KO 0 권장) | 온보딩/브랜드 강조만 | w800을 브랜드 강조에 제한 | 더보기는 `pageTitle`로 내려감 |
-| `type.pageTitle` | 24/26/28/30, w700~800 혼재 | 28/34, w700 | 더보기, 문서 본문 제목 | 모든 제목의 w800 강제 방지 | 더보기 30→28 후보, 기존 화면은 이번 단계 미적용 |
+| `type.pageTitle` | 24/26/28/30, w700~800 혼재 | 28/34, w700 | 더보기, 문서 본문 제목 | 모든 제목의 w800 강제 방지 | 미이관 화면은 기존 외형을 유지하고 단계적으로 적용 |
 | `type.navTitle` | 17/w700 | 17/22, w700 | Cupertino nav bar | 표준 계층 유지 | 없음 |
 | `type.sheetTitle` | 21/22/23 | 22/28, w800 | 5종 Bottom Sheet | 1dp 차이 제거 | 날짜 +1, 상품 -1 |
 | `type.sectionTitle` | 15/18 | 18/24, w700 | 문서/상점 큰 섹션 | 주요 섹션 통일 | 더보기의 작은 group label은 별도 토큰 |
@@ -60,7 +64,7 @@
 
 모든 간격을 8dp 배수로 강제하지 않는다. 4dp 기본 리듬과 관계 밀도를 기준으로 한다.
 
-| 토큰 이름 | 현재 코드 값 | 제안 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
+| 토큰 이름 | 현재 코드 값 | 공식 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
 |---|---|---|---|---|---|
 | `space.optical` | 2, 3 산발적 | 2 | divider/아이콘 광학 보정만 | 임의 미세값 제한 | 거의 없음 |
 | `space.xs` | 4/5/6/7 | 4 | title 내부, badge | 기본 최소 리듬 | 5~7 값 정리 |
@@ -78,7 +82,7 @@
 
 ## 5. Corner Radius
 
-| 토큰 이름 | 현재 코드 값 | 제안 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
+| 토큰 이름 | 현재 코드 값 | 공식 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
 |---|---|---|---|---|---|
 | `radius.media` | 장소 8, close 8 | 8 | 사진 중심 장소 카드/작은 preview | 이미지 모서리 예외 보존 | 장소 카드 즉시 변경 없음 |
 | `radius.compact` | 10/11/12/14 | 12 | badge, 작은 preview | 작은 요소 통합 | 미세 변화 |
@@ -94,7 +98,7 @@
 
 ## 6. Border
 
-| 토큰 이름 | 현재 코드 값 | 제안 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
+| 토큰 이름 | 현재 코드 값 | 공식 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
 |---|---|---|---|---|---|
 | `border.hairline` | .5/.6 | 0.5 logical 또는 device hairline | nav/divider | 플랫폼 픽셀 정렬 | 거의 없음 |
 | `border.subtle` | .6/.7/.8 | 0.75 | 정적 카드 | 유사값 통합 | 육안 변화 미미 |
@@ -107,7 +111,7 @@
 
 Flutter 구현 시 토큰은 한 개 또는 두 개의 `BoxShadow` 묶음으로 제공한다.
 
-| 토큰 이름 | 현재 코드 값 | 제안 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
+| 토큰 이름 | 현재 코드 값 | 공식 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
 |---|---|---|---|---|---|
 | `elevation.none` | 일부 카드 border only | shadow 없음 | settings/content static | 불필요한 부유감 제거 | 정적 카드가 평평해짐 |
 | `elevation.low` | 장소/Surface blur20 y7 | `#0F18181B` blur12 y4 + `#08000000` blur2 y1 | 장소 사진, 선택 preview | 콘텐츠 분리만 제공 | 그림자 강도 감소 |
@@ -118,7 +122,7 @@ Flutter 구현 시 토큰은 한 개 또는 두 개의 `BoxShadow` 묶음으로 
 
 ## 8. Interactive State
 
-| 토큰 이름 | 현재 코드 값 | 제안 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
+| 토큰 이름 | 현재 코드 값 | 공식 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
 |---|---|---|---|---|---|
 | `state.pressedOpacity` | .62 및 Cupertino 기본 | .72 content / .64 destructive | 모든 button wrapper | 과도한 깜빡임 완화 | press가 조금 부드러움 |
 | `state.selectedSurface` | accent soft 여러 값 | `color.accentSoft` | 선택 카드 | 일관된 선택 배경 | 색 통합 |
@@ -132,7 +136,7 @@ Flutter 구현 시 토큰은 한 개 또는 두 개의 `BoxShadow` 묶음으로 
 
 ## 9. Motion / Animation
 
-| 토큰 이름 | 현재 코드 값 | 제안 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
+| 토큰 이름 | 현재 코드 값 | 공식 최종값 | 적용 컴포넌트 | 변경 이유 | 기존 UI 영향 |
 |---|---|---|---|---|---|
 | `motion.instant` | 없음 | 100ms, easeOut | pressed/color feedback | 즉각 반응 | 더 일관된 press |
 | `motion.standard` | 180ms 다수 | 180ms, easeOutCubic | selection, switch, fade | 현행 좋은 기준 유지 | 없음 |
@@ -148,10 +152,9 @@ Flutter 구현 시 토큰은 한 개 또는 두 개의 `BoxShadow` 묶음으로 
 - 시스템 컴포넌트 내부 수치까지 강제로 덮어쓰지 않는다. `LicensePage`, `CupertinoDatePicker`, 플랫폼 share UI가 해당한다.
 - 지도 painter의 stroke width와 photo opacity는 디자인 토큰이 아니라 지도 렌더링 도메인 값으로 유지한다.
 - safe area, 하단 바 높이 66, map overlay overlap 36, zoom offset 136은 레이아웃 계약이다. 시각 토큰으로 흡수하지 않는다.
-- 장소 카드 radius 8은 `radius.media` 예외로 유지하고 실기 비교 후 별도 결정한다.
-- Phase 2-B에서는 장소 카드 radius 8을 변경하거나 비교 후보를 적용하지 않는다.
+- 장소 카드 radius 8은 승인된 `radius.media` 예외이며 별도 실기 비교와 시각 회귀 검증 없이
+  변경하지 않는다.
 - Bottom Sheet 배경은 `color.surface #FFFFFF`를 사용한다. `color.canvas`는 sheet 바깥
   페이지와 지도 라이브러리 주변 배경의 의미로 한정한다.
-- 사진/영상 내보내기 및 내 지도 Bottom Sheet의 콘텐츠 구성은 Token Foundation 범위에서
-  변경하지 않는다.
-- PR #10 온보딩은 현재 병합됐지만 Phase 2-B 적용 범위에서는 제외하며 별도 승인을 받는다.
+- 사진/영상 내보내기 및 내 지도 Bottom Sheet의 콘텐츠 구성은 보존한다.
+- 온보딩의 사진 중심 구성과 도메인 전용 일러스트레이션은 화면 예외 규칙을 따른다.

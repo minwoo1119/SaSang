@@ -1,4 +1,8 @@
-# Sasang 컴포넌트 Variant 제안
+# Sasang 공식 컴포넌트 Variant 및 상태 규칙
+
+> 상태: Phase 6 공식 동작·시각 규칙. 모든 Variant가 별도 public Flutter class로 구현된 것은
+> 아니다. 현재 재사용 가능한 API는 `09-common-components.md`를 기준으로 하며, 미구현
+> Variant는 기존 컴포넌트를 확장하거나 별도 이슈에서 추가한다.
 
 ## 1. 공통 구현 전략
 
@@ -182,7 +186,8 @@ showSasangDialog(
 )
 ```
 
-이는 제안 API이며 현재 코드를 이번 단계에서 변경하지 않는다.
+이는 Variant의 규범적 인터페이스다. 현재 재사용 가능한 실제 API와 구현 상태는
+`09-common-components.md`를 기준으로 하며, 누락된 통합 API는 별도 이슈에서 추가한다.
 
 ### Variant
 

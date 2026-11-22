@@ -10,6 +10,8 @@
     "start": "flutter run",
     "analyze:app": "flutter analyze",
     "test:app": "flutter test",
+    "design:check": "dart run tool/check_design_style.dart",
+    "test:ui": "flutter test test/design_tokens_test.dart test/migration_test.dart test/ui_quality_test.dart test/visual_review_test.dart --concurrency=1",
     "build:android": "flutter build appbundle --release",
     "build:ios": "flutter build ios --release --no-codesign",
     "dev": "pnpm --filter @sasang/backend dev",
