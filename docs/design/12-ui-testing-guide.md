@@ -81,9 +81,9 @@ dart run tool/check_design_style.dart
 3. `flutter analyze`
 4. token, migration, accessibility, Golden Test 직렬 실행
 
-Golden rasterizer 차이를 줄이기 위해 macOS runner와 프로젝트 Flutter 버전을 고정한다. CI 통과는 실제
-iOS/Android 실행을 대체하지 않으며, 플랫폼 build/integration은 변경 위험에 따라 PR에서 별도로
-수행한다.
+Golden rasterizer 차이를 줄이기 위해 지원되는 `macos-15` runner와 프로젝트 Flutter 버전을
+고정한다. CI 통과는 실제 iOS/Android 실행을 대체하지 않으며, 플랫폼 build/integration은 변경
+위험에 따라 PR에서 별도로 수행한다.
 
 ## 7. PR 증거
 
