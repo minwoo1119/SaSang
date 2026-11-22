@@ -1,0 +1,45 @@
+name: Flutter UI quality
+
+on:
+  pull_request:
+    branches: [dev, main]
+    paths:
+      - 'lib/**'
+      - 'test/**'
+      - 'tool/**'
+      - 'docs/design/**'
+      - 'pubspec.yaml'
+      - 'analysis_options.yaml'
+      - 'AGENTS.md'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
+      - '.github/workflows/flutter-ui-quality.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui-quality:
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.3'
+          channel: stable
+          cache: true
+      - name: Install Flutter dependencies
+        run: flutter pub get
+      - name: Check semantic style guard
+        run: dart run tool/check_design_style.dart
+      - name: Analyze Flutter code
+        run: flutter analyze
+      - name: Run token, accessibility, widget, and Golden tests
+        run: >-
+          flutter test
+          test/design_tokens_test.dart
+          test/migration_test.dart
+          test/ui_quality_test.dart
+          test/visual_review_test.dart
+          --concurrency=1

@@ -1,12 +1,12 @@
-# Sasang 디자인 시스템 원칙 제안
+# Sasang 공식 디자인 원칙
 
 ## 1. 문서 상태
 
-- 단계: Phase 2-A 설계 제안
-- 근거: `00-current-ui-audit.md`, `01-component-inventory.md`
-- 범위: 원칙과 적용 규칙만 정의하며 Flutter UI 코드는 변경하지 않는다.
-- 선행 조건: Phase 1 문서 PR #12가 `dev`에 병합된 뒤 이 문서의 상대 링크가 유효해진다.
-- 온보딩: PR #10은 `dev`에 병합됐지만 Phase 2-B 실제 마이그레이션 대상에서는 제외한다.
+- 상태: Phase 6부터 신규 UI와 UI 변경에 적용하는 공식 기준
+- 근거: `00-current-ui-audit.md`, `01-component-inventory.md`, Phase 2~5 구현 및 검증
+- 적용 범위: Flutter의 신규 UI, 기존 UI 변경, 공통 컴포넌트와 디자인 토큰 변경
+- 기존 부채: 아직 이전되지 않은 화면은 `08-phase-5-ui-quality-report.md`에 기록하며, 새 코드가
+  기존 하드코딩을 복제할 근거가 되지는 않는다.
 
 ## 2. 디자인 목표
 
@@ -166,11 +166,11 @@ Progress는 기존에 결정한 Toss 스타일 중앙 모달을 유지한다. �
 - 지역 사진 관리의 carousel과 대표 사진/날짜/삭제 기능
 - Flutter 표준 `LicensePage`
 - 장소 카드 8dp radius(실기 비교 전)
-- PR #10 온보딩 코드(현재 병합 상태와 무관하게 Phase 2-B 제외)
+- 온보딩의 사진 중심 구성과 도메인 전용 일러스트레이션
 
 지도 검색창은 일반 control radius 대상이 아니다. 기존 pill silhouette를 유지하며
-`radius.search = radius.pill`로 명시한다. 장소 카드 8dp radius도 이번 Token Foundation
-단계에서는 비교안 생성 없이 그대로 유지한다.
+`radius.search = radius.pill`로 명시한다. 장소 카드 8dp radius는 승인된 화면 예외로
+유지하며, 별도 이슈에서 실기 비교와 회귀 검증을 거친 경우에만 변경한다.
 
 ## 5. 명시적 개선 대상
 

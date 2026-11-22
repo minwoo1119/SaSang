@@ -39,6 +39,19 @@ docs/pr-screenshots/<issue-number>/에 저장하고 커밋 SHA 기반 raw URL을
 
 -
 
+## 디자인 시스템
+
+<!-- UI 변경이 아니면 첫 항목에 체크하고 사유를 적으세요. -->
+
+- [ ] 해당 없음 — UI/시각 변경이 아닙니다. 사유:
+- [ ] `docs/design/README.md`와 관련 Variant/예외 규칙을 확인했습니다.
+- [ ] `SasangSemantic*` 토큰과 기존 공통 컴포넌트를 우선 사용했습니다.
+- [ ] 새 raw 색상, 간격, 반경, 그림자, 글꼴 크기를 추가하지 않았거나 예외 이유를 코드와 PR에 기록했습니다.
+- [ ] Full-screen Map, Floating Overlay, 사진 중심 구조와 승인된 화면 예외를 유지했습니다.
+- [ ] 한국어/영어/일본어/중국어, 큰 글꼴, 작은 화면 영향을 검토했습니다.
+- [ ] iOS/Android 결과와 변경 전후 스크린샷을 비교했습니다.
+- [ ] 디자인 시스템 변경 시 문서, style baseline, Widget/Golden Test를 함께 갱신했습니다.
+
 ## 체크리스트
 
 - [ ] 이 PR은 하나의 GitHub 이슈와 하나의 작업 범위만 포함합니다.
