@@ -96,10 +96,12 @@ flutter_launcher_icons:
 
 flutter_native_splash:
   color: "#FAFAFA"
-  image: assets/icon/app_icon.png
+  # Use the transparent brand lockup here, not the opaque rounded app icon.
+  image: assets/images/main-text-design.png
   android_12:
     color: "#FAFAFA"
-    image: assets/icon/app_icon.png
+    # Android 12 masks this square canvas; keep the mark inside its safe area.
+    image: assets/images/splash-mark.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
