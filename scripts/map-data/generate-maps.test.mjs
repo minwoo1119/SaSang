@@ -8,6 +8,7 @@ const load = (name) =>
     readFileSync(new URL(`./sources/${name}`, import.meta.url), "utf8"),
   );
 const koreaSource = load("korea-sigungu-2025-2q.geojson");
+const koreaLocalizations = load("korea-region-localizations.json");
 const worldSource = load("natural-earth-admin0-5.1.2.geojson");
 
 function assertValidMap(map, codePattern) {
@@ -99,6 +100,75 @@ test("generates every Korea district with a stable five-digit code", () => {
       0,
     ) < 3000,
   );
+  assert.equal(result.metadata.version, "sgis-sigungu-2025-2q-v7");
+  assert.equal(result.metadata.localizationVersion, "2026-11-23");
+});
+
+test("generates complete multilingual names for every Korea region", () => {
+  const result = generateMap(koreaSource, MAP_CONFIGS.korea);
+  assert.equal(
+    Object.keys(koreaLocalizations.regions).length,
+    result.regions.length,
+  );
+  assert.deepEqual(
+    Object.keys(koreaLocalizations.regions).sort(),
+    result.regions.map(({ code }) => code).sort(),
+  );
+
+  for (const region of result.regions) {
+    assert.ok(region.englishName?.length > 0, `${region.code} English name`);
+    assert.ok(region.japaneseName?.length > 0, `${region.code} Japanese name`);
+    assert.ok(
+      region.simplifiedChineseName?.length > 0,
+      `${region.code} Simplified Chinese name`,
+    );
+    if (region.provinceCode) {
+      assert.ok(
+        region.englishProvinceName?.length > 0,
+        `${region.code} English province name`,
+      );
+      assert.ok(
+        region.japaneseProvinceName?.length > 0,
+        `${region.code} Japanese province name`,
+      );
+      assert.ok(
+        region.simplifiedChineseProvinceName?.length > 0,
+        `${region.code} Simplified Chinese province name`,
+      );
+    }
+  }
+
+  const yangpyeong = result.regions.find(({ code }) => code === "41830");
+  assert.deepEqual(
+    {
+      englishName: yangpyeong?.englishName,
+      japaneseName: yangpyeong?.japaneseName,
+      simplifiedChineseName: yangpyeong?.simplifiedChineseName,
+      englishProvinceName: yangpyeong?.englishProvinceName,
+    },
+    {
+      englishName: "Yangpyeong-gun",
+      japaneseName: "楊平郡",
+      simplifiedChineseName: "杨平郡",
+      englishProvinceName: "Gyeonggi-do",
+    },
+  );
+  assert.equal(
+    result.regions.find(({ code }) => code === "48820")?.japaneseName,
+    "固城郡",
+  );
+  assert.equal(
+    result.regions.find(({ code }) => code === "51820")?.japaneseName,
+    "高城郡",
+  );
+  assert.equal(
+    result.regions.find(({ code }) => code === "48820")?.simplifiedChineseName,
+    "固城郡",
+  );
+  assert.equal(
+    result.regions.find(({ code }) => code === "51820")?.simplifiedChineseName,
+    "高城郡",
+  );
 });
 
 test("generates world countries with ISO alpha-2 codes", () => {
@@ -120,8 +190,7 @@ test("generates world countries with ISO alpha-2 codes", () => {
     "アメリカ合衆国",
   );
   assert.equal(
-    result.regions.find(({ code }) => code === "JP")
-      ?.simplifiedChineseName,
+    result.regions.find(({ code }) => code === "JP")?.simplifiedChineseName,
     "日本",
   );
   assert.ok(

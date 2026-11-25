@@ -57,13 +57,17 @@ void main() {
     expect(tr('보유한 지도 3개'), '已拥有3张地图');
   });
 
-  test('uses the selected language for world region names', () {
+  test('uses the selected language for region and province names', () {
     final region = MapRegion(
-      code: 'JP',
-      name: '일본',
-      englishName: 'Japan',
-      japaneseName: '日本',
-      simplifiedChineseName: '日本',
+      code: '41830',
+      name: '양평군',
+      englishName: 'Yangpyeong-gun',
+      japaneseName: '楊平郡',
+      simplifiedChineseName: '杨平郡',
+      provinceName: '경기도',
+      englishProvinceName: 'Gyeonggi-do',
+      japaneseProvinceName: '京畿道',
+      simplifiedChineseProvinceName: '京畿道',
       geometryType: 'Polygon',
       polygonCount: 1,
       bounds: const RegionBounds(x: 0, y: 0, width: 1, height: 1),
@@ -71,11 +75,41 @@ void main() {
     );
 
     SasangLocalizations.use(SasangLanguage.english);
-    expect(region.localizedName, 'Japan');
+    expect(region.localizedName, 'Yangpyeong-gun');
+    expect(region.localizedProvinceName, 'Gyeonggi-do');
     SasangLocalizations.use(SasangLanguage.japanese);
-    expect(region.localizedName, '日本');
+    expect(region.localizedName, '楊平郡');
+    expect(region.localizedProvinceName, '京畿道');
     SasangLocalizations.use(SasangLanguage.simplifiedChinese);
-    expect(region.localizedName, '日本');
+    expect(region.localizedName, '杨平郡');
+    expect(region.localizedProvinceName, '京畿道');
+  });
+
+  test('matches Korea regions by every supported language and province', () {
+    const region = MapRegion(
+      code: '41830',
+      name: '양평군',
+      englishName: 'Yangpyeong-gun',
+      japaneseName: '楊平郡',
+      simplifiedChineseName: '杨平郡',
+      provinceName: '경기도',
+      englishProvinceName: 'Gyeonggi-do',
+      japaneseProvinceName: '京畿道',
+      simplifiedChineseProvinceName: '京畿道',
+      geometryType: 'Polygon',
+      polygonCount: 1,
+      bounds: RegionBounds(x: 0, y: 0, width: 1, height: 1),
+      pathData: 'M0 0Z',
+    );
+
+    expect(regionMatchesSearchQuery(region, '양평'), isTrue);
+    expect(regionMatchesSearchQuery(region, 'yangpyeong'), isTrue);
+    expect(regionMatchesSearchQuery(region, 'Yangpyeong gun'), isTrue);
+    expect(regionMatchesSearchQuery(region, '楊平郡'), isTrue);
+    expect(regionMatchesSearchQuery(region, '杨平郡'), isTrue);
+    expect(regionMatchesSearchQuery(region, 'Gyeonggi'), isTrue);
+    expect(regionMatchesSearchQuery(region, 'Tokyo'), isFalse);
+    expect(regionMatchesSearchQuery(region, '  '), isFalse);
   });
 
   test('persists a language change with the current session', () async {
@@ -659,6 +693,7 @@ void main() {
       code: '11680',
       name: '강남구',
       provinceName: '서울특별시',
+      englishProvinceName: 'Seoul',
       geometryType: 'Polygon',
       polygonCount: 1,
       bounds: RegionBounds(x: 0, y: 0, width: 10, height: 10),
@@ -667,6 +702,8 @@ void main() {
 
     expect(regionDisplaySubtitle(antarctica, MapMode.world), 'Antarctica');
     expect(regionDisplaySubtitle(gangnam, MapMode.korea), '서울특별시');
+    SasangLocalizations.use(SasangLanguage.english);
+    expect(regionDisplaySubtitle(gangnam, MapMode.korea), 'Seoul');
     expect(
       regionDisplaySubtitle(antarctica, MapMode.world),
       isNot(contains('AQ')),

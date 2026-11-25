@@ -36,7 +36,7 @@ class MapScreen extends StatefulWidget {
 }
 
 String regionDisplaySubtitle(MapRegion region, MapMode mode) {
-  final provinceName = region.provinceName?.trim();
+  final provinceName = region.localizedProvinceName?.trim();
   if (provinceName != null && provinceName.isNotEmpty) return provinceName;
   final englishName = region.englishName?.trim();
   if (mode == MapMode.world &&
@@ -46,6 +46,20 @@ String regionDisplaySubtitle(MapRegion region, MapMode mode) {
     return englishName;
   }
   return mode == MapMode.korea ? tr('대한민국') : tr('세계 지도');
+}
+
+String _normalizeRegionSearch(String value) => value
+    .trim()
+    .toLowerCase()
+    .replaceAll(RegExp(r'[-_·]'), ' ')
+    .replaceAll(RegExp(r'\s+'), ' ');
+
+bool regionMatchesSearchQuery(MapRegion region, String query) {
+  final normalizedQuery = _normalizeRegionSearch(query);
+  if (normalizedQuery.isEmpty) return false;
+  return region.searchableNames.any(
+    (name) => _normalizeRegionSearch(name).contains(normalizedQuery),
+  );
 }
 
 class _MapScreenState extends State<MapScreen> {
@@ -314,16 +328,11 @@ class _MapScreenState extends State<MapScreen> {
     final selected = map?.regions
         .where((region) => region.code == widget.state.selectedRegionCode)
         .firstOrNull;
-    final query = _search.text.trim().toLowerCase();
+    final query = _search.text.trim();
     final results = query.isEmpty || map == null
         ? const <MapRegion>[]
         : map.regions
-              .where(
-                (region) =>
-                    '${region.name} ${region.englishName ?? ''} ${region.japaneseName ?? ''} ${region.simplifiedChineseName ?? ''} ${region.provinceName ?? ''}'
-                        .toLowerCase()
-                        .contains(query),
-              )
+              .where((region) => regionMatchesSearchQuery(region, query))
               .take(6)
               .toList();
     final count =

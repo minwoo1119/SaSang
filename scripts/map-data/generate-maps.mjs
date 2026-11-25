@@ -17,6 +17,12 @@ const KOREA_CODES = JSON.parse(
     "utf8",
   ),
 ).regions;
+const KOREA_LOCALIZATIONS = JSON.parse(
+  readFileSync(
+    new URL("./sources/korea-region-localizations.json", import.meta.url),
+    "utf8",
+  ),
+);
 const KOREA_OUTPUT = new URL(
   "../../assets/maps/korea/regions.json",
   import.meta.url,
@@ -47,10 +53,12 @@ export const MAP_CONFIGS = {
     minimumProjectedPolygonSize: 0.08,
     codePattern: /^\d{5}$/,
     regionProperties: KOREA_CODES,
+    regionLocalizations: KOREA_LOCALIZATIONS.regions,
+    provinceLocalizations: KOREA_LOCALIZATIONS.provinces,
     mergeByProvinceCodes: MERGED_SPECIAL_AND_METROPOLITAN_CITY_CODES,
     mergeCityDistricts: true,
     metadata: {
-      version: "sgis-sigungu-2025-2q-v6",
+      version: "sgis-sigungu-2025-2q-v7",
       generatedAt: "2025-06-30T00:00:00.000Z",
       source:
         "https://www.data.go.kr/data/15129688/fileData.do (bnd_sigungu_00_2025_2Q)",
@@ -58,6 +66,9 @@ export const MAP_CONFIGS = {
       referenceDate: "2025 Q2",
       identifierPolicy:
         "Official five-digit legal-district prefix from code.go.kr; Seoul, Busan, Daegu, Incheon, Gwangju, Daejeon, and Ulsan are represented by their five-digit special/metropolitan-city codes; non-metropolitan cities split into districts named '{city} {district-gu}' are represented by the parent city code with shared district boundaries dissolved",
+      localizationVersion: KOREA_LOCALIZATIONS.metadata.version,
+      localizationPolicy:
+        "Korean identity names are paired with reviewed English, Japanese, and Simplified Chinese display names by the generated five-digit region code; province names use the same language-specific lookup",
       excludedFeatures: [],
     },
   },
@@ -101,15 +112,18 @@ function signedRingArea(ring) {
   let area = 0;
   for (let index = 0; index < ring.length - 1; index += 1) {
     area +=
-      ring[index][0] * ring[index + 1][1] -
-      ring[index + 1][0] * ring[index][1];
+      ring[index][0] * ring[index + 1][1] - ring[index + 1][0] * ring[index][1];
   }
   return area / 2;
 }
 
 function pointInRing(point, ring) {
   let inside = false;
-  for (let current = 0, previous = ring.length - 1; current < ring.length; previous = current++) {
+  for (
+    let current = 0, previous = ring.length - 1;
+    current < ring.length;
+    previous = current++
+  ) {
     const [x, y] = ring[current];
     const [previousX, previousY] = ring[previous];
     if (
@@ -279,6 +293,38 @@ function normalizeFeatures(source, config) {
 }
 
 function localizeRegionProperties(properties, config) {
+  if (config.regionLocalizations) {
+    const localization = config.regionLocalizations[properties.code];
+    if (!localization) {
+      throw new Error(`Missing localization for region ${properties.code}.`);
+    }
+    if (localization.name !== properties.name) {
+      throw new Error(
+        `Localization name mismatch for ${properties.code}: ${localization.name} != ${properties.name}.`,
+      );
+    }
+    let localized = { ...properties, ...localization };
+    if (properties.provinceCode) {
+      const province = config.provinceLocalizations?.[properties.provinceCode];
+      if (!province) {
+        throw new Error(
+          `Missing localization for province ${properties.provinceCode}.`,
+        );
+      }
+      if (province.name !== properties.provinceName) {
+        throw new Error(
+          `Province localization name mismatch for ${properties.provinceCode}: ${province.name} != ${properties.provinceName}.`,
+        );
+      }
+      localized = {
+        ...localized,
+        englishProvinceName: province.englishName,
+        japaneseProvinceName: province.japaneseName,
+        simplifiedChineseProvinceName: province.simplifiedChineseName,
+      };
+    }
+    return localized;
+  }
   if (!config.localizeNamesToKorean) return properties;
   const koreanName = KOREAN_REGION_NAMES.of(properties.code);
   if (!koreanName || koreanName === properties.code) return properties;
@@ -385,6 +431,10 @@ export function generateMap(source, config) {
           ? {
               provinceCode: properties.provinceCode,
               provinceName: properties.provinceName,
+              englishProvinceName: properties.englishProvinceName,
+              japaneseProvinceName: properties.japaneseProvinceName,
+              simplifiedChineseProvinceName:
+                properties.simplifiedChineseProvinceName,
             }
           : {}),
         geometryType: polygons.length === 1 ? "Polygon" : "MultiPolygon",

@@ -1,0 +1,1040 @@
+{
+  "notice": "CURATED LOCALIZATION SOURCE. UPDATE THROUGH REVIEWED MAP-DATA CHANGES.",
+  "metadata": {
+    "version": "2026-11-23",
+    "englishSource": "National Spatial Information Portal (V-World) administrative boundary properties, 2023-07-29; merged city names follow the same official romanization pattern",
+    "japaneseSource": "Wikidata Japanese labels, CC0, retrieved 2026-11-23; ambiguous Goseong counties resolved by province",
+    "simplifiedChineseSource": "JayMuShui/chinese-global-compliant-geodata Korea level 2 labels, MIT, updated 2025-06-13; merged city labels reviewed against the same naming convention",
+    "identityPolicy": "Keys use the generated Korea map five-digit region code. Korean name is retained for cross-checking and must match the generated region."
+  },
+  "provinces": {
+    "36": {
+      "name": "세종특별자치시",
+      "englishName": "Sejong Special Self-Governing City",
+      "japaneseName": "世宗特別自治市",
+      "simplifiedChineseName": "世宗特别自治市"
+    },
+    "41": {
+      "name": "경기도",
+      "englishName": "Gyeonggi-do",
+      "japaneseName": "京畿道",
+      "simplifiedChineseName": "京畿道"
+    },
+    "43": {
+      "name": "충청북도",
+      "englishName": "Chungcheongbuk-do",
+      "japaneseName": "忠清北道",
+      "simplifiedChineseName": "忠清北道"
+    },
+    "44": {
+      "name": "충청남도",
+      "englishName": "Chungcheongnam-do",
+      "japaneseName": "忠清南道",
+      "simplifiedChineseName": "忠清南道"
+    },
+    "46": {
+      "name": "전라남도",
+      "englishName": "Jeollanam-do",
+      "japaneseName": "全羅南道",
+      "simplifiedChineseName": "全罗南道"
+    },
+    "47": {
+      "name": "경상북도",
+      "englishName": "Gyeongsangbuk-do",
+      "japaneseName": "慶尚北道",
+      "simplifiedChineseName": "庆尚北道"
+    },
+    "48": {
+      "name": "경상남도",
+      "englishName": "Gyeongsangnam-do",
+      "japaneseName": "慶尚南道",
+      "simplifiedChineseName": "庆尚南道"
+    },
+    "50": {
+      "name": "제주특별자치도",
+      "englishName": "Jeju Special Self-Governing Province",
+      "japaneseName": "済州特別自治道",
+      "simplifiedChineseName": "济州特别自治道"
+    },
+    "51": {
+      "name": "강원특별자치도",
+      "englishName": "Gangwon State",
+      "japaneseName": "江原特別自治道",
+      "simplifiedChineseName": "江原特别自治道"
+    },
+    "52": {
+      "name": "전북특별자치도",
+      "englishName": "Jeonbuk State",
+      "japaneseName": "全北特別自治道",
+      "simplifiedChineseName": "全北特别自治道"
+    }
+  },
+  "regions": {
+    "11000": {
+      "name": "서울특별시",
+      "englishName": "Seoul",
+      "japaneseName": "ソウル特別市",
+      "simplifiedChineseName": "首尔特别市"
+    },
+    "26000": {
+      "name": "부산광역시",
+      "englishName": "Busan",
+      "japaneseName": "釜山広域市",
+      "simplifiedChineseName": "釜山广域市"
+    },
+    "27000": {
+      "name": "대구광역시",
+      "englishName": "Daegu",
+      "japaneseName": "大邱広域市",
+      "simplifiedChineseName": "大邱广域市"
+    },
+    "28000": {
+      "name": "인천광역시",
+      "englishName": "Incheon",
+      "japaneseName": "仁川広域市",
+      "simplifiedChineseName": "仁川广域市"
+    },
+    "29000": {
+      "name": "광주광역시",
+      "englishName": "Gwangju",
+      "japaneseName": "光州広域市",
+      "simplifiedChineseName": "光州广域市"
+    },
+    "30000": {
+      "name": "대전광역시",
+      "englishName": "Daejeon",
+      "japaneseName": "大田広域市",
+      "simplifiedChineseName": "大田广域市"
+    },
+    "31000": {
+      "name": "울산광역시",
+      "englishName": "Ulsan",
+      "japaneseName": "蔚山広域市",
+      "simplifiedChineseName": "蔚山广域市"
+    },
+    "36110": {
+      "name": "세종시",
+      "englishName": "Sejong",
+      "japaneseName": "世宗特別自治市",
+      "simplifiedChineseName": "世宗特别自治市"
+    },
+    "41110": {
+      "name": "수원시",
+      "englishName": "Suwon-si",
+      "japaneseName": "水原市",
+      "simplifiedChineseName": "水原市"
+    },
+    "41130": {
+      "name": "성남시",
+      "englishName": "Seongnam-si",
+      "japaneseName": "城南市",
+      "simplifiedChineseName": "城南市"
+    },
+    "41150": {
+      "name": "의정부시",
+      "englishName": "Uijeongbu-si",
+      "japaneseName": "議政府市",
+      "simplifiedChineseName": "议政府市"
+    },
+    "41170": {
+      "name": "안양시",
+      "englishName": "Anyang-si",
+      "japaneseName": "安養市",
+      "simplifiedChineseName": "安养市"
+    },
+    "41190": {
+      "name": "부천시",
+      "englishName": "Bucheon-si",
+      "japaneseName": "富川市",
+      "simplifiedChineseName": "富川市"
+    },
+    "41210": {
+      "name": "광명시",
+      "englishName": "Gwangmyeong-si",
+      "japaneseName": "光明市",
+      "simplifiedChineseName": "光明市"
+    },
+    "41220": {
+      "name": "평택시",
+      "englishName": "Pyeongtaek-si",
+      "japaneseName": "平沢市",
+      "simplifiedChineseName": "平泽市"
+    },
+    "41250": {
+      "name": "동두천시",
+      "englishName": "Dongducheon-si",
+      "japaneseName": "東豆川市",
+      "simplifiedChineseName": "东豆川市"
+    },
+    "41270": {
+      "name": "안산시",
+      "englishName": "Ansan-si",
+      "japaneseName": "安山市",
+      "simplifiedChineseName": "安山市"
+    },
+    "41280": {
+      "name": "고양시",
+      "englishName": "Goyang-si",
+      "japaneseName": "高陽市",
+      "simplifiedChineseName": "高阳市"
+    },
+    "41290": {
+      "name": "과천시",
+      "englishName": "Gwacheon-si",
+      "japaneseName": "果川市",
+      "simplifiedChineseName": "果川市"
+    },
+    "41310": {
+      "name": "구리시",
+      "englishName": "Guri-si",
+      "japaneseName": "九里市",
+      "simplifiedChineseName": "九里市"
+    },
+    "41360": {
+      "name": "남양주시",
+      "englishName": "Namyangju-si",
+      "japaneseName": "南楊州市",
+      "simplifiedChineseName": "南杨州市"
+    },
+    "41370": {
+      "name": "오산시",
+      "englishName": "Osan-si",
+      "japaneseName": "烏山市",
+      "simplifiedChineseName": "乌山市"
+    },
+    "41390": {
+      "name": "시흥시",
+      "englishName": "Siheung-si",
+      "japaneseName": "始興市",
+      "simplifiedChineseName": "始兴市"
+    },
+    "41410": {
+      "name": "군포시",
+      "englishName": "Gunpo-si",
+      "japaneseName": "軍浦市",
+      "simplifiedChineseName": "军浦市"
+    },
+    "41430": {
+      "name": "의왕시",
+      "englishName": "Uiwang-si",
+      "japaneseName": "義王市",
+      "simplifiedChineseName": "义王市"
+    },
+    "41450": {
+      "name": "하남시",
+      "englishName": "Hanam-si",
+      "japaneseName": "河南市",
+      "simplifiedChineseName": "河南市"
+    },
+    "41460": {
+      "name": "용인시",
+      "englishName": "Yongin-si",
+      "japaneseName": "龍仁市",
+      "simplifiedChineseName": "龙仁市"
+    },
+    "41480": {
+      "name": "파주시",
+      "englishName": "Paju-si",
+      "japaneseName": "坡州市",
+      "simplifiedChineseName": "坡州市"
+    },
+    "41500": {
+      "name": "이천시",
+      "englishName": "Icheon-si",
+      "japaneseName": "利川市",
+      "simplifiedChineseName": "利川市"
+    },
+    "41550": {
+      "name": "안성시",
+      "englishName": "Anseong-si",
+      "japaneseName": "安城市",
+      "simplifiedChineseName": "安城市"
+    },
+    "41570": {
+      "name": "김포시",
+      "englishName": "Gimpo-si",
+      "japaneseName": "金浦市",
+      "simplifiedChineseName": "金浦市"
+    },
+    "41590": {
+      "name": "화성시",
+      "englishName": "Hwaseong-si",
+      "japaneseName": "華城市",
+      "simplifiedChineseName": "华城市"
+    },
+    "41610": {
+      "name": "광주시",
+      "englishName": "Gwangju-si",
+      "japaneseName": "広州市",
+      "simplifiedChineseName": "广州市"
+    },
+    "41630": {
+      "name": "양주시",
+      "englishName": "Yangju-si",
+      "japaneseName": "楊州市",
+      "simplifiedChineseName": "杨州市"
+    },
+    "41650": {
+      "name": "포천시",
+      "englishName": "Pocheon-si",
+      "japaneseName": "抱川市",
+      "simplifiedChineseName": "抱川市"
+    },
+    "41670": {
+      "name": "여주시",
+      "englishName": "Yeoju-si",
+      "japaneseName": "驪州市",
+      "simplifiedChineseName": "骊州市"
+    },
+    "41800": {
+      "name": "연천군",
+      "englishName": "Yeoncheon-gun",
+      "japaneseName": "漣川郡",
+      "simplifiedChineseName": "涟川郡"
+    },
+    "41820": {
+      "name": "가평군",
+      "englishName": "Gapyeong-gun",
+      "japaneseName": "加平郡",
+      "simplifiedChineseName": "加平郡"
+    },
+    "41830": {
+      "name": "양평군",
+      "englishName": "Yangpyeong-gun",
+      "japaneseName": "楊平郡",
+      "simplifiedChineseName": "杨平郡"
+    },
+    "43110": {
+      "name": "청주시",
+      "englishName": "Cheongju-si",
+      "japaneseName": "清州市",
+      "simplifiedChineseName": "清州市"
+    },
+    "43130": {
+      "name": "충주시",
+      "englishName": "Chungju-si",
+      "japaneseName": "忠州市",
+      "simplifiedChineseName": "忠州市"
+    },
+    "43150": {
+      "name": "제천시",
+      "englishName": "Jecheon-si",
+      "japaneseName": "堤川市",
+      "simplifiedChineseName": "堤川市"
+    },
+    "43720": {
+      "name": "보은군",
+      "englishName": "Boeun-gun",
+      "japaneseName": "報恩郡",
+      "simplifiedChineseName": "报恩郡"
+    },
+    "43730": {
+      "name": "옥천군",
+      "englishName": "Okcheon-gun",
+      "japaneseName": "沃川郡",
+      "simplifiedChineseName": "沃川郡"
+    },
+    "43740": {
+      "name": "영동군",
+      "englishName": "Yeongdong-gun",
+      "japaneseName": "永同郡",
+      "simplifiedChineseName": "永同郡"
+    },
+    "43745": {
+      "name": "증평군",
+      "englishName": "Jeungpyeong-gun",
+      "japaneseName": "曽坪郡",
+      "simplifiedChineseName": "曾坪郡"
+    },
+    "43750": {
+      "name": "진천군",
+      "englishName": "Jincheon-gun",
+      "japaneseName": "鎮川郡",
+      "simplifiedChineseName": "镇川郡"
+    },
+    "43760": {
+      "name": "괴산군",
+      "englishName": "Goesan-gun",
+      "japaneseName": "槐山郡",
+      "simplifiedChineseName": "槐山郡"
+    },
+    "43770": {
+      "name": "음성군",
+      "englishName": "Eumseong-gun",
+      "japaneseName": "陰城郡",
+      "simplifiedChineseName": "阴城郡"
+    },
+    "43800": {
+      "name": "단양군",
+      "englishName": "Danyang-gun",
+      "japaneseName": "丹陽郡",
+      "simplifiedChineseName": "丹阳郡"
+    },
+    "44130": {
+      "name": "천안시",
+      "englishName": "Cheonan-si",
+      "japaneseName": "天安市",
+      "simplifiedChineseName": "天安市"
+    },
+    "44150": {
+      "name": "공주시",
+      "englishName": "Gongju-si",
+      "japaneseName": "公州市",
+      "simplifiedChineseName": "公州市"
+    },
+    "44180": {
+      "name": "보령시",
+      "englishName": "Boryeong-si",
+      "japaneseName": "保寧市",
+      "simplifiedChineseName": "保宁市"
+    },
+    "44200": {
+      "name": "아산시",
+      "englishName": "Asan-si",
+      "japaneseName": "牙山市",
+      "simplifiedChineseName": "牙山市"
+    },
+    "44210": {
+      "name": "서산시",
+      "englishName": "Seosan-si",
+      "japaneseName": "瑞山市",
+      "simplifiedChineseName": "瑞山市"
+    },
+    "44230": {
+      "name": "논산시",
+      "englishName": "Nonsan-si",
+      "japaneseName": "論山市",
+      "simplifiedChineseName": "论山市"
+    },
+    "44250": {
+      "name": "계룡시",
+      "englishName": "Gyeryong-si",
+      "japaneseName": "鶏龍市",
+      "simplifiedChineseName": "鸡龙市"
+    },
+    "44270": {
+      "name": "당진시",
+      "englishName": "Dangjin-si",
+      "japaneseName": "唐津市",
+      "simplifiedChineseName": "唐津市"
+    },
+    "44710": {
+      "name": "금산군",
+      "englishName": "Geumsan-gun",
+      "japaneseName": "錦山郡",
+      "simplifiedChineseName": "锦山郡"
+    },
+    "44760": {
+      "name": "부여군",
+      "englishName": "Buyeo-gun",
+      "japaneseName": "扶余郡",
+      "simplifiedChineseName": "扶余郡"
+    },
+    "44770": {
+      "name": "서천군",
+      "englishName": "Seocheon-gun",
+      "japaneseName": "舒川郡",
+      "simplifiedChineseName": "舒川郡"
+    },
+    "44790": {
+      "name": "청양군",
+      "englishName": "Cheongyang-gun",
+      "japaneseName": "青陽郡",
+      "simplifiedChineseName": "青阳郡"
+    },
+    "44800": {
+      "name": "홍성군",
+      "englishName": "Hongseong-gun",
+      "japaneseName": "洪城郡",
+      "simplifiedChineseName": "洪城郡"
+    },
+    "44810": {
+      "name": "예산군",
+      "englishName": "Yesan-gun",
+      "japaneseName": "礼山郡",
+      "simplifiedChineseName": "礼山郡"
+    },
+    "44825": {
+      "name": "태안군",
+      "englishName": "Taean-gun",
+      "japaneseName": "泰安郡",
+      "simplifiedChineseName": "泰安郡"
+    },
+    "46110": {
+      "name": "목포시",
+      "englishName": "Mokpo-si",
+      "japaneseName": "木浦市",
+      "simplifiedChineseName": "木浦市"
+    },
+    "46130": {
+      "name": "여수시",
+      "englishName": "Yeosu-si",
+      "japaneseName": "麗水市",
+      "simplifiedChineseName": "丽水市"
+    },
+    "46150": {
+      "name": "순천시",
+      "englishName": "Suncheon-si",
+      "japaneseName": "順天市",
+      "simplifiedChineseName": "顺天市"
+    },
+    "46170": {
+      "name": "나주시",
+      "englishName": "Naju-si",
+      "japaneseName": "羅州市",
+      "simplifiedChineseName": "罗州市"
+    },
+    "46230": {
+      "name": "광양시",
+      "englishName": "Gwangyang-si",
+      "japaneseName": "光陽市",
+      "simplifiedChineseName": "光阳市"
+    },
+    "46710": {
+      "name": "담양군",
+      "englishName": "Damyang-gun",
+      "japaneseName": "潭陽郡",
+      "simplifiedChineseName": "潭阳郡"
+    },
+    "46720": {
+      "name": "곡성군",
+      "englishName": "Gokseong-gun",
+      "japaneseName": "谷城郡",
+      "simplifiedChineseName": "谷城郡"
+    },
+    "46730": {
+      "name": "구례군",
+      "englishName": "Gurye-gun",
+      "japaneseName": "求礼郡",
+      "simplifiedChineseName": "求礼郡"
+    },
+    "46770": {
+      "name": "고흥군",
+      "englishName": "Goheung-gun",
+      "japaneseName": "高興郡",
+      "simplifiedChineseName": "高兴郡"
+    },
+    "46780": {
+      "name": "보성군",
+      "englishName": "Boseong-gun",
+      "japaneseName": "宝城郡",
+      "simplifiedChineseName": "宝城郡"
+    },
+    "46790": {
+      "name": "화순군",
+      "englishName": "Hwasun-gun",
+      "japaneseName": "和順郡",
+      "simplifiedChineseName": "和顺郡"
+    },
+    "46800": {
+      "name": "장흥군",
+      "englishName": "Jangheung-gun",
+      "japaneseName": "長興郡",
+      "simplifiedChineseName": "长兴郡"
+    },
+    "46810": {
+      "name": "강진군",
+      "englishName": "Gangjin-gun",
+      "japaneseName": "康津郡",
+      "simplifiedChineseName": "康津郡"
+    },
+    "46820": {
+      "name": "해남군",
+      "englishName": "Haenam-gun",
+      "japaneseName": "海南郡",
+      "simplifiedChineseName": "海南郡"
+    },
+    "46830": {
+      "name": "영암군",
+      "englishName": "Yeongam-gun",
+      "japaneseName": "霊岩郡",
+      "simplifiedChineseName": "灵岩郡"
+    },
+    "46840": {
+      "name": "무안군",
+      "englishName": "Muan-gun",
+      "japaneseName": "務安郡",
+      "simplifiedChineseName": "务安郡"
+    },
+    "46860": {
+      "name": "함평군",
+      "englishName": "Hampyeong-gun",
+      "japaneseName": "咸平郡",
+      "simplifiedChineseName": "咸平郡"
+    },
+    "46870": {
+      "name": "영광군",
+      "englishName": "Yeonggwang-gun",
+      "japaneseName": "霊光郡",
+      "simplifiedChineseName": "灵光郡"
+    },
+    "46880": {
+      "name": "장성군",
+      "englishName": "Jangseong-gun",
+      "japaneseName": "長城郡",
+      "simplifiedChineseName": "长城郡"
+    },
+    "46890": {
+      "name": "완도군",
+      "englishName": "Wando-gun",
+      "japaneseName": "莞島郡",
+      "simplifiedChineseName": "莞岛郡"
+    },
+    "46900": {
+      "name": "진도군",
+      "englishName": "Jindo-gun",
+      "japaneseName": "珍島郡",
+      "simplifiedChineseName": "珍岛郡"
+    },
+    "46910": {
+      "name": "신안군",
+      "englishName": "Sinan-gun",
+      "japaneseName": "新安郡",
+      "simplifiedChineseName": "新安郡"
+    },
+    "47110": {
+      "name": "포항시",
+      "englishName": "Pohang-si",
+      "japaneseName": "浦項市",
+      "simplifiedChineseName": "浦项市"
+    },
+    "47130": {
+      "name": "경주시",
+      "englishName": "Gyeongju-si",
+      "japaneseName": "慶州市",
+      "simplifiedChineseName": "庆州市"
+    },
+    "47150": {
+      "name": "김천시",
+      "englishName": "Gimcheon-si",
+      "japaneseName": "金泉市",
+      "simplifiedChineseName": "金泉市"
+    },
+    "47170": {
+      "name": "안동시",
+      "englishName": "Andong-si",
+      "japaneseName": "安東市",
+      "simplifiedChineseName": "安东市"
+    },
+    "47190": {
+      "name": "구미시",
+      "englishName": "Gumi-si",
+      "japaneseName": "亀尾市",
+      "simplifiedChineseName": "龟尾市"
+    },
+    "47210": {
+      "name": "영주시",
+      "englishName": "Yeongju-si",
+      "japaneseName": "栄州市",
+      "simplifiedChineseName": "荣州市"
+    },
+    "47230": {
+      "name": "영천시",
+      "englishName": "Yeongcheon-si",
+      "japaneseName": "永川市",
+      "simplifiedChineseName": "永川市"
+    },
+    "47250": {
+      "name": "상주시",
+      "englishName": "Sangju-si",
+      "japaneseName": "尚州市",
+      "simplifiedChineseName": "尚州市"
+    },
+    "47280": {
+      "name": "문경시",
+      "englishName": "Mungyeong-si",
+      "japaneseName": "聞慶市",
+      "simplifiedChineseName": "闻庆市"
+    },
+    "47290": {
+      "name": "경산시",
+      "englishName": "Gyeongsan-si",
+      "japaneseName": "慶山市",
+      "simplifiedChineseName": "庆山市"
+    },
+    "47730": {
+      "name": "의성군",
+      "englishName": "Uiseong-gun",
+      "japaneseName": "義城郡",
+      "simplifiedChineseName": "义城郡"
+    },
+    "47750": {
+      "name": "청송군",
+      "englishName": "Cheongsong-gun",
+      "japaneseName": "青松郡",
+      "simplifiedChineseName": "青松郡"
+    },
+    "47760": {
+      "name": "영양군",
+      "englishName": "Yeongyang-gun",
+      "japaneseName": "英陽郡",
+      "simplifiedChineseName": "英阳郡"
+    },
+    "47770": {
+      "name": "영덕군",
+      "englishName": "Yeongdeok-gun",
+      "japaneseName": "盈徳郡",
+      "simplifiedChineseName": "盈德郡"
+    },
+    "47820": {
+      "name": "청도군",
+      "englishName": "Cheongdo-gun",
+      "japaneseName": "清道郡",
+      "simplifiedChineseName": "淸道郡"
+    },
+    "47830": {
+      "name": "고령군",
+      "englishName": "Goryeong-gun",
+      "japaneseName": "高霊郡",
+      "simplifiedChineseName": "高灵郡"
+    },
+    "47840": {
+      "name": "성주군",
+      "englishName": "Seongju-gun",
+      "japaneseName": "星州郡",
+      "simplifiedChineseName": "星州郡"
+    },
+    "47850": {
+      "name": "칠곡군",
+      "englishName": "Chilgok-gun",
+      "japaneseName": "漆谷郡",
+      "simplifiedChineseName": "漆谷郡"
+    },
+    "47900": {
+      "name": "예천군",
+      "englishName": "Yecheon-gun",
+      "japaneseName": "醴泉郡",
+      "simplifiedChineseName": "醴泉郡"
+    },
+    "47920": {
+      "name": "봉화군",
+      "englishName": "Bonghwa-gun",
+      "japaneseName": "奉化郡",
+      "simplifiedChineseName": "奉化郡"
+    },
+    "47930": {
+      "name": "울진군",
+      "englishName": "Uljin-gun",
+      "japaneseName": "蔚珍郡",
+      "simplifiedChineseName": "蔚珍郡"
+    },
+    "47940": {
+      "name": "울릉군",
+      "englishName": "Ulleung-gun",
+      "japaneseName": "鬱陵郡",
+      "simplifiedChineseName": "郁陵郡"
+    },
+    "48120": {
+      "name": "창원시",
+      "englishName": "Changwon-si",
+      "japaneseName": "昌原市",
+      "simplifiedChineseName": "昌原市"
+    },
+    "48170": {
+      "name": "진주시",
+      "englishName": "Jinju-si",
+      "japaneseName": "晋州市",
+      "simplifiedChineseName": "晋州市"
+    },
+    "48220": {
+      "name": "통영시",
+      "englishName": "Tongyeong-si",
+      "japaneseName": "統営市",
+      "simplifiedChineseName": "统营市"
+    },
+    "48240": {
+      "name": "사천시",
+      "englishName": "Sacheon-si",
+      "japaneseName": "泗川市",
+      "simplifiedChineseName": "泗川市"
+    },
+    "48250": {
+      "name": "김해시",
+      "englishName": "Gimhae-si",
+      "japaneseName": "金海市",
+      "simplifiedChineseName": "金海市"
+    },
+    "48270": {
+      "name": "밀양시",
+      "englishName": "Miryang-si",
+      "japaneseName": "密陽市",
+      "simplifiedChineseName": "密阳市"
+    },
+    "48310": {
+      "name": "거제시",
+      "englishName": "Geoje-si",
+      "japaneseName": "巨済市",
+      "simplifiedChineseName": "巨济市"
+    },
+    "48330": {
+      "name": "양산시",
+      "englishName": "Yangsan-si",
+      "japaneseName": "梁山市",
+      "simplifiedChineseName": "梁山市"
+    },
+    "48720": {
+      "name": "의령군",
+      "englishName": "Uiryeong-gun",
+      "japaneseName": "宜寧郡",
+      "simplifiedChineseName": "宜宁郡"
+    },
+    "48730": {
+      "name": "함안군",
+      "englishName": "Haman-gun",
+      "japaneseName": "咸安郡",
+      "simplifiedChineseName": "咸安郡"
+    },
+    "48740": {
+      "name": "창녕군",
+      "englishName": "Changnyeong-gun",
+      "japaneseName": "昌寧郡",
+      "simplifiedChineseName": "昌宁郡"
+    },
+    "48820": {
+      "name": "고성군",
+      "englishName": "Goseong-gun",
+      "japaneseName": "固城郡",
+      "simplifiedChineseName": "固城郡"
+    },
+    "48840": {
+      "name": "남해군",
+      "englishName": "Namhae-gun",
+      "japaneseName": "南海郡",
+      "simplifiedChineseName": "南海郡"
+    },
+    "48850": {
+      "name": "하동군",
+      "englishName": "Hadong-gun",
+      "japaneseName": "河東郡",
+      "simplifiedChineseName": "河东郡"
+    },
+    "48860": {
+      "name": "산청군",
+      "englishName": "Sancheong-gun",
+      "japaneseName": "山清郡",
+      "simplifiedChineseName": "山清郡"
+    },
+    "48870": {
+      "name": "함양군",
+      "englishName": "Hamyang-gun",
+      "japaneseName": "咸陽郡",
+      "simplifiedChineseName": "咸阳郡"
+    },
+    "48880": {
+      "name": "거창군",
+      "englishName": "Geochang-gun",
+      "japaneseName": "居昌郡",
+      "simplifiedChineseName": "居昌郡"
+    },
+    "48890": {
+      "name": "합천군",
+      "englishName": "Hapcheon-gun",
+      "japaneseName": "陜川郡",
+      "simplifiedChineseName": "陜川郡"
+    },
+    "50110": {
+      "name": "제주시",
+      "englishName": "Jeju-si",
+      "japaneseName": "済州市",
+      "simplifiedChineseName": "济州市"
+    },
+    "50130": {
+      "name": "서귀포시",
+      "englishName": "Seogwipo-si",
+      "japaneseName": "西帰浦市",
+      "simplifiedChineseName": "西归浦市"
+    },
+    "51110": {
+      "name": "춘천시",
+      "englishName": "Chuncheon-si",
+      "japaneseName": "春川市",
+      "simplifiedChineseName": "春川市"
+    },
+    "51130": {
+      "name": "원주시",
+      "englishName": "Wonju-si",
+      "japaneseName": "原州市",
+      "simplifiedChineseName": "原州市"
+    },
+    "51150": {
+      "name": "강릉시",
+      "englishName": "Gangneung-si",
+      "japaneseName": "江陵市",
+      "simplifiedChineseName": "江陵市"
+    },
+    "51170": {
+      "name": "동해시",
+      "englishName": "Donghae-si",
+      "japaneseName": "東海市",
+      "simplifiedChineseName": "东海市"
+    },
+    "51190": {
+      "name": "태백시",
+      "englishName": "Taebaek-si",
+      "japaneseName": "太白市",
+      "simplifiedChineseName": "太白市"
+    },
+    "51210": {
+      "name": "속초시",
+      "englishName": "Sokcho-si",
+      "japaneseName": "束草市",
+      "simplifiedChineseName": "束草市"
+    },
+    "51230": {
+      "name": "삼척시",
+      "englishName": "Samcheok-si",
+      "japaneseName": "三陟市",
+      "simplifiedChineseName": "三陟市"
+    },
+    "51720": {
+      "name": "홍천군",
+      "englishName": "Hongcheon-gun",
+      "japaneseName": "洪川郡",
+      "simplifiedChineseName": "洪川郡"
+    },
+    "51730": {
+      "name": "횡성군",
+      "englishName": "Hoengseong-gun",
+      "japaneseName": "横城郡",
+      "simplifiedChineseName": "横城郡"
+    },
+    "51750": {
+      "name": "영월군",
+      "englishName": "Yeongwol-gun",
+      "japaneseName": "寧越郡",
+      "simplifiedChineseName": "宁越郡"
+    },
+    "51760": {
+      "name": "평창군",
+      "englishName": "Pyeongchang-gun",
+      "japaneseName": "平昌郡",
+      "simplifiedChineseName": "平昌郡"
+    },
+    "51770": {
+      "name": "정선군",
+      "englishName": "Jeongseon-gun",
+      "japaneseName": "旌善郡",
+      "simplifiedChineseName": "旌善郡"
+    },
+    "51780": {
+      "name": "철원군",
+      "englishName": "Cheorwon-gun",
+      "japaneseName": "鉄原郡",
+      "simplifiedChineseName": "铁原郡"
+    },
+    "51790": {
+      "name": "화천군",
+      "englishName": "Hwacheon-gun",
+      "japaneseName": "華川郡",
+      "simplifiedChineseName": "华川郡"
+    },
+    "51800": {
+      "name": "양구군",
+      "englishName": "Yanggu-gun",
+      "japaneseName": "楊口郡",
+      "simplifiedChineseName": "杨口郡"
+    },
+    "51810": {
+      "name": "인제군",
+      "englishName": "Inje-gun",
+      "japaneseName": "麟蹄郡",
+      "simplifiedChineseName": "麟蹄郡"
+    },
+    "51820": {
+      "name": "고성군",
+      "englishName": "Goseong-gun",
+      "japaneseName": "高城郡",
+      "simplifiedChineseName": "高城郡"
+    },
+    "51830": {
+      "name": "양양군",
+      "englishName": "Yangyang-gun",
+      "japaneseName": "襄陽郡",
+      "simplifiedChineseName": "襄阳郡"
+    },
+    "52110": {
+      "name": "전주시",
+      "englishName": "Jeonju-si",
+      "japaneseName": "全州市",
+      "simplifiedChineseName": "全州市"
+    },
+    "52130": {
+      "name": "군산시",
+      "englishName": "Gunsan-si",
+      "japaneseName": "群山市",
+      "simplifiedChineseName": "群山市"
+    },
+    "52140": {
+      "name": "익산시",
+      "englishName": "Iksan-si",
+      "japaneseName": "益山市",
+      "simplifiedChineseName": "益山市"
+    },
+    "52180": {
+      "name": "정읍시",
+      "englishName": "Jeongeup-si",
+      "japaneseName": "井邑市",
+      "simplifiedChineseName": "井邑市"
+    },
+    "52190": {
+      "name": "남원시",
+      "englishName": "Namwon-si",
+      "japaneseName": "南原市",
+      "simplifiedChineseName": "南原市"
+    },
+    "52210": {
+      "name": "김제시",
+      "englishName": "Gimje-si",
+      "japaneseName": "金堤市",
+      "simplifiedChineseName": "金堤市"
+    },
+    "52710": {
+      "name": "완주군",
+      "englishName": "Wanju-gun",
+      "japaneseName": "完州郡",
+      "simplifiedChineseName": "完州郡"
+    },
+    "52720": {
+      "name": "진안군",
+      "englishName": "Jinan-gun",
+      "japaneseName": "鎮安郡",
+      "simplifiedChineseName": "镇安郡"
+    },
+    "52730": {
+      "name": "무주군",
+      "englishName": "Muju-gun",
+      "japaneseName": "茂朱郡",
+      "simplifiedChineseName": "茂朱郡"
+    },
+    "52740": {
+      "name": "장수군",
+      "englishName": "Jangsu-gun",
+      "japaneseName": "長水郡",
+      "simplifiedChineseName": "长水郡"
+    },
+    "52750": {
+      "name": "임실군",
+      "englishName": "Imsil-gun",
+      "japaneseName": "任実郡",
+      "simplifiedChineseName": "任实郡"
+    },
+    "52770": {
+      "name": "순창군",
+      "englishName": "Sunchang-gun",
+      "japaneseName": "淳昌郡",
+      "simplifiedChineseName": "淳昌郡"
+    },
+    "52790": {
+      "name": "고창군",
+      "englishName": "Gochang-gun",
+      "japaneseName": "高敞郡",
+      "simplifiedChineseName": "高敞郡"
+    },
+    "52800": {
+      "name": "부안군",
+      "englishName": "Buan-gun",
+      "japaneseName": "扶安郡",
+      "simplifiedChineseName": "扶安郡"
+    }
+  }
+}

@@ -98,6 +98,9 @@ class MapRegion {
     this.simplifiedChineseName,
     this.provinceCode,
     this.provinceName,
+    this.englishProvinceName,
+    this.japaneseProvinceName,
+    this.simplifiedChineseProvinceName,
     this.anchor,
     this.anchorBounds,
   });
@@ -110,6 +113,10 @@ class MapRegion {
     simplifiedChineseName: json['simplifiedChineseName'] as String?,
     provinceCode: json['provinceCode'] as String?,
     provinceName: json['provinceName'] as String?,
+    englishProvinceName: json['englishProvinceName'] as String?,
+    japaneseProvinceName: json['japaneseProvinceName'] as String?,
+    simplifiedChineseProvinceName:
+        json['simplifiedChineseProvinceName'] as String?,
     anchor: switch (json['anchor']) {
       final Map<String, dynamic> value => MapCoordinate.fromJson(value),
       _ => null,
@@ -131,6 +138,9 @@ class MapRegion {
   final String? simplifiedChineseName;
   final String? provinceCode;
   final String? provinceName;
+  final String? englishProvinceName;
+  final String? japaneseProvinceName;
+  final String? simplifiedChineseProvinceName;
   final String geometryType;
   final int polygonCount;
   final RegionBounds bounds;
@@ -144,6 +154,26 @@ class MapRegion {
     SasangLanguage.simplifiedChinese => simplifiedChineseName ?? name,
     SasangLanguage.korean => name,
   };
+
+  String? get localizedProvinceName =>
+      switch (SasangLocalizations.currentLanguage) {
+        SasangLanguage.english => englishProvinceName ?? provinceName,
+        SasangLanguage.japanese => japaneseProvinceName ?? provinceName,
+        SasangLanguage.simplifiedChinese =>
+          simplifiedChineseProvinceName ?? provinceName,
+        SasangLanguage.korean => provinceName,
+      };
+
+  Iterable<String> get searchableNames => <String?>[
+    name,
+    englishName,
+    japaneseName,
+    simplifiedChineseName,
+    provinceName,
+    englishProvinceName,
+    japaneseProvinceName,
+    simplifiedChineseProvinceName,
+  ].whereType<String>();
 }
 
 class RegionPhoto {
