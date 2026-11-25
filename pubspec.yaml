@@ -96,8 +96,8 @@ flutter_launcher_icons:
 
 flutter_native_splash:
   color: "#FAFAFA"
-  # Use the transparent brand lockup here, not the opaque rounded app icon.
-  image: assets/images/main-text-design.png
+  # Use the transparent brand mark here, not the opaque rounded app icon.
+  image: assets/images/splash-mark.png
   android_12:
     color: "#FAFAFA"
     # Android 12 masks this square canvas; keep the mark inside its safe area.
