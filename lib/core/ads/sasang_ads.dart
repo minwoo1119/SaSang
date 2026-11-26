@@ -5,10 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-typedef AdsStartupStep = Future<void> Function();
+import '../config/sasang_build_flags.dart';
 
-/// Disables advertising only in binaries built for deterministic store captures.
-const bool kSasangStoreCapture = bool.fromEnvironment('SASANG_STORE_CAPTURE');
+typedef AdsStartupStep = Future<void> Function();
 
 class SasangAds {
   SasangAds({
