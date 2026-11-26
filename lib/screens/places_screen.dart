@@ -229,7 +229,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
                                           ),
                                           SizedBox(height: 4),
                                           Text(
-                                            koreanDate(
+                                            localizedPhotoDate(
                                               regionPhotoDate(
                                                 item.photo.takenAt,
                                                 item.photo.createdAt,

@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:exif/exif.dart';
 
+import '../../core/l10n/sasang_localizations.dart';
+
 class PhotoMetadata {
   const PhotoMetadata({this.takenAt, this.latitude, this.longitude});
 
@@ -97,4 +99,5 @@ DateTime regionPhotoDate(String? takenAt, String createdAt) =>
     parsePhotoDate(createdAt) ??
     DateTime.fromMillisecondsSinceEpoch(0);
 
-String koreanDate(DateTime date) => '${date.year}년 ${date.month}월 ${date.day}일';
+String localizedPhotoDate(DateTime date) =>
+    tr('${date.year}년 ${date.month}월 ${date.day}일');

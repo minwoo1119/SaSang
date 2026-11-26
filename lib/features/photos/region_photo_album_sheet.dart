@@ -220,7 +220,7 @@ class _RegionPhotoAlbumSheetState extends State<RegionPhotoAlbumSheet> {
                       children: [
                         Expanded(
                           child: Text(
-                            koreanDate(
+                            localizedPhotoDate(
                               regionPhotoDate(
                                 current.takenAt,
                                 current.createdAt,

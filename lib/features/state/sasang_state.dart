@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../../core/config/sasang_build_flags.dart';
 import '../../core/l10n/sasang_localizations.dart';
 import '../../core/storage/sasang_storage.dart';
 import '../../models/map_models.dart';
@@ -18,7 +19,7 @@ class SasangState extends ChangeNotifier {
   SasangLanguage language;
   String name = '여행자';
   String? profileImageUri;
-  MapMode mode = MapMode.korea;
+  MapMode mode = kSasangStoreCaptureWorld ? MapMode.world : MapMode.korea;
   String? selectedRegionCode;
   final Map<String, RegionPhoto> regionPhotos = {};
   final Map<String, RegionPhotoAlbum> regionPhotoAlbums = {};

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../core/config/sasang_build_flags.dart';
 import '../core/l10n/sasang_localizations.dart';
 
 import '../core/ads/sasang_ads.dart';
@@ -105,6 +106,7 @@ class _AdBannerState extends State<AdBanner> {
 
   @override
   Widget build(BuildContext context) {
+    if (kSasangStoreCapture) return const SizedBox.shrink();
     final ad = _ad;
     if (!_loaded || ad == null) {
       return AdBannerFrame(

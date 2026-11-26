@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../config/sasang_build_flags.dart';
+
 typedef AdsStartupStep = Future<void> Function();
 
 class SasangAds {
@@ -34,6 +36,10 @@ class SasangAds {
   Future<bool> start() {
     if (_started) return ready;
     _started = true;
+    if (kSasangStoreCapture) {
+      _ready.complete(false);
+      return ready;
+    }
     unawaited(_start());
     return ready;
   }

@@ -74,7 +74,7 @@ Future<DateTime?> showPhotoDateDialog(
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          koreanDate(selected),
+                          localizedPhotoDate(selected),
                           key: const Key('selected-photo-date'),
                           style: const TextStyle(
                             color: SasangColors.ink,
@@ -97,7 +97,7 @@ Future<DateTime?> showPhotoDateDialog(
                         ),
                         const Spacer(),
                         Text(
-                          koreanDate(selected),
+                          localizedPhotoDate(selected),
                           key: const Key('selected-photo-date'),
                           style: const TextStyle(
                             color: SasangColors.ink,
