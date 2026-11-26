@@ -7,6 +7,9 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 typedef AdsStartupStep = Future<void> Function();
 
+/// Disables advertising only in binaries built for deterministic store captures.
+const bool kSasangStoreCapture = bool.fromEnvironment('SASANG_STORE_CAPTURE');
+
 class SasangAds {
   SasangAds({
     TargetPlatform? platform,
@@ -34,6 +37,10 @@ class SasangAds {
   Future<bool> start() {
     if (_started) return ready;
     _started = true;
+    if (kSasangStoreCapture) {
+      _ready.complete(false);
+      return ready;
+    }
     unawaited(_start());
     return ready;
   }

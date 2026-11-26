@@ -112,6 +112,19 @@ void main() {
     expect(regionMatchesSearchQuery(region, '  '), isFalse);
   });
 
+  test('formats photo dates in the selected language', () {
+    final date = DateTime(2026, 11, 18);
+
+    SasangLocalizations.use(SasangLanguage.korean);
+    expect(localizedPhotoDate(date), '2026년 11월 18일');
+    SasangLocalizations.use(SasangLanguage.english);
+    expect(localizedPhotoDate(date), '11/18/2026');
+    SasangLocalizations.use(SasangLanguage.japanese);
+    expect(localizedPhotoDate(date), '2026年11月18日');
+    SasangLocalizations.use(SasangLanguage.simplifiedChinese);
+    expect(localizedPhotoDate(date), '2026年11月18日');
+  });
+
   test('persists a language change with the current session', () async {
     final storage = _MemoryStorage();
     final state = SasangState(storage)..start();

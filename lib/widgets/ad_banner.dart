@@ -105,6 +105,7 @@ class _AdBannerState extends State<AdBanner> {
 
   @override
   Widget build(BuildContext context) {
+    if (kSasangStoreCapture) return const SizedBox.shrink();
     final ad = _ad;
     if (!_loaded || ad == null) {
       return AdBannerFrame(

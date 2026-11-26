@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../core/ads/sasang_ads.dart';
 import '../core/l10n/sasang_localizations.dart';
 
 import '../core/theme/sasang_theme.dart';
@@ -101,7 +102,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_adShown) {
+    if (!_adShown && !kSasangStoreCapture) {
       _adShown = true;
       WidgetsBinding.instance.addPostFrameCallback((_) => _showAdSheet());
     }
